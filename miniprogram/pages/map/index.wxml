@@ -8,9 +8,9 @@
       scale="{{mapCenter.scale}}"
       markers="{{mapMarkers}}"
       show-location="{{showUserLocation}}"
-      enable-scroll
-      enable-zoom
-      show-compass
+      enable-scroll="{{true}}"
+      enable-zoom="{{true}}"
+      show-compass="{{true}}"
       bindmarkertap="selectMarkerFromMap"
     >
       <cover-view class="map-topbar">
@@ -23,6 +23,8 @@
 
       <cover-view class="locate-btn {{locating ? 'locating' : ''}}" bindtap="locate" aria-label="定位到当前位置">
         <cover-view class="locate-icon">
+          <cover-view class="locate-line locate-line-v"></cover-view>
+          <cover-view class="locate-line locate-line-h"></cover-view>
           <cover-view class="locate-core"></cover-view>
         </cover-view>
       </cover-view>

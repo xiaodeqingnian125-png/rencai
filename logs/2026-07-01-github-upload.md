@@ -4,6 +4,7 @@
 
 - 新增 `.gitignore`，排除 macOS 临时文件、微信开发者工具私有配置、依赖目录和常见构建产物。
 - 准备将项目初始化为 Git 仓库，并关联 GitHub 远程仓库 `https://github.com/xiaodeqingnian125-png/rencai.git`。
+- 上传前纳入当前工作区的地图页定位权限、地图 pin 图标等最新文件状态。
 
 ## 说明
 

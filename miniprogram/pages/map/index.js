@@ -119,13 +119,6 @@ Page({
 
   moveToApartment(apartment, scale = 13) {
     if (!apartment) return;
-    if (this.mapCtx && this.mapCtx.moveToLocation) {
-      this.mapCtx.moveToLocation({
-        latitude: apartment.latitude,
-        longitude: apartment.longitude
-      });
-      return;
-    }
     this.setData({
       mapCenter: this.getApartmentCenter(apartment, scale)
     });
@@ -173,16 +166,7 @@ Page({
         this.setData({
           locating: false,
           showUserLocation: true,
-          locationLabel: "已定位当前位置"
-        });
-        if (this.mapCtx && this.mapCtx.moveToLocation) {
-          this.mapCtx.moveToLocation({
-            latitude: res.latitude,
-            longitude: res.longitude
-          });
-          return;
-        }
-        this.setData({
+          locationLabel: "已定位当前位置",
           mapCenter: {
             latitude: res.latitude,
             longitude: res.longitude,
