@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 — 郑州人才公寓</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   Apple Design System — Tokens
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  /* ─── Warm Community palette ──────────────────────────────────────
+   * 基调：暖白底 + 奶油卡面 → "有温度的家"
+   * 主色：陶土橙，温暖但不灼眼
+   * 理念：Apple 的结构纪律 × 本地社区的温度 */
+  --bg: #fafaf6;
+  --surface: #fffdf7;
+  --surface-warm: #fef8ef;
+  --fg: #2d2318;
+  --fg-2: #5c4a38;
+  --muted: #8c7a68;
+  --meta: #a69682;
+  --border: #e8e0d4;
+  --border-soft: #f0eae0;
+  --accent: #e8723c;
+  --accent-on: #ffffff;
+  --accent-hover: #f0804a;
+  --accent-active: #d4622c;
+
+  --font-display: "SF Pro Display", "PingFang SC", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "PingFang SC", "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 21px;
+
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 980px;
+
+  --elev-raised: 0 12px 32px rgba(0,0,0,0.06);
+  --ease-standard: cubic-bezier(0.28, 0, 0.22, 1);
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+
+  /* Product-level semantic tokens — subdued, warm-tinted */
+  --price-orange: #e8590c;
+  --community-green: #5b9a6f;
+  --map-blue: #5b8cb8;
+  --guide-plum: #9b7eb8;
+  --badge-red: #e04a3a;
+
+  /* Card image gradient palette */
+  --card-img-warm1: #f0ece2;
+  --card-img-warm2: #e3dbca;
+  --card-img-warm3: #dcd3c0;
+  --card-img-gra1a: #f5efe0; --card-img-gra1b: #e8dcc8; --card-img-gra1c: #dcd0ba;
+  --card-img-gra2a: #f0f2eb; --card-img-gra2b: #dce3d0; --card-img-gra2c: #ced5c2;
+  --card-img-gra3a: #f2efeb; --card-img-gra3b: #e3dbce; --card-img-gra3c: #d4cdc0;
+  --card-img-gra4a: #ebf0f3; --card-img-gra4b: #d4e0e8; --card-img-gra4c: #c4d2db;
+  --card-img-gra5a: #f3efe8; --card-img-gra5b: #e5dac8; --card-img-gra5c: #d6ccbc;
+  --card-img-gra6a: #f1f0ea; --card-img-gra6b: #e2dfd0; --card-img-gra6c: #d3d0c2;
+
+  /* Device frame — not part of UI palette */
+  --device-bg: #d8d0c4;
+  --phone-bezel: #0a0a0a;
+  --phone-inner: #0a0a0a; /* Dynamic Island */
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Reset & Base
+   ═══════════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  display: grid; place-items: center;
+  min-height: 100vh;
+  background: var(--device-bg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Phone Frame — iPhone 15 Pro
+   ═══════════════════════════════════════════════════════════════════════ */
+.phone-frame {
+  width: 390px; min-width: 390px;
+  height: 844px;
+  background: var(--phone-bezel);
+  border-radius: 50px;
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+.phone-screen {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  border-radius: 38px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.dynamic-island {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 34px;
+  background: var(--phone-inner); border-radius: 20px;
+  z-index: 100;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Status Bar
+   ═══════════════════════════════════════════════════════════════════════ */
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px 0;
+  height: 50px;
+  font-size: 14px; font-weight: 600;
+  color: var(--fg);
+}
+.status-time { flex: 1; }
+.status-icons { display: flex; align-items: center; gap: 6px; }
+.status-icons svg { width: 16px; height: 16px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Mini-Program Nav Bar
+   ═══════════════════════════════════════════════════════════════════════ */
+.mp-nav {
+  display: flex; align-items: center; justify-content: center;
+  height: 44px; padding: 0 16px;
+  position: relative;
+  flex-shrink: 0;
+}
+.mp-nav-title {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.mp-nav-dots {
+  position: absolute; right: 16px;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.mp-nav-dots:hover { background: var(--surface); }
+.mp-nav-dots svg { width: 20px; height: 20px; color: var(--fg); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Scroll Area
+   ═══════════════════════════════════════════════════════════════════════ */
+.mp-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Slogan Area — Brand emotional anchor
+   ═══════════════════════════════════════════════════════════════════════ */
+.slogan-area {
+  padding: 16px 20px 8px;
+  overflow: hidden;
+  transition: max-height var(--motion-base) var(--ease-standard),
+              opacity var(--motion-base) var(--ease-standard),
+              padding var(--motion-base) var(--ease-standard);
+  max-height: 72px;
+  opacity: 1;
+}
+.slogan-area.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.slogan-text {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--fg);
+}
+.slogan-sub {
+  font-family: var(--font-body);
+  font-size: 13px; font-weight: 400;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Search Box
+   ═══════════════════════════════════════════════════════════════════════ */
+.search-area {
+  padding: 8px 16px;
+  flex-shrink: 0;
+}
+.search-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  transition: border-color var(--motion-fast) var(--ease-standard),
+              box-shadow var(--motion-fast) var(--ease-standard);
+}
+.search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 82%);
+}
+.search-box svg { width: 18px; height: 18px; color: var(--meta); flex-shrink: 0; }
+.search-box input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--fg);
+}
+.search-box input::placeholder {
+  color: var(--meta);
+}
+.search-clear {
+  display: none;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--border-soft);
+  color: var(--meta);
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.search-clear.show {
+  display: flex;
+}
+.search-clear svg {
+  width: 12px;
+  height: 12px;
+}
+.search-count {
+  display: none;
+  font-size: 12px; color: var(--meta);
+  flex: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Quick Entries — 2×2 Grid
+   ═══════════════════════════════════════════════════════════════════════ */
+.quick-entries {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px 16px;
+  flex-shrink: 0;
+}
+.quick-entry {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard),
+              box-shadow var(--motion-fast) var(--ease-standard),
+              border-color var(--motion-fast) var(--ease-standard);
+  user-select: none;
+}
+.quick-entry:active {
+  transform: scale(0.97);
+  border-color: var(--accent);
+}
+.quick-entry-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.quick-entry-icon svg { width: 22px; height: 22px; }
+.quick-entry-text { font-size: 14px; font-weight: 500; color: var(--fg); }
+
+.qe-roommate .quick-entry-icon { background: color-mix(in oklab, var(--accent) 12%, transparent); color: var(--accent); }
+.qe-community .quick-entry-icon { background: color-mix(in oklab, var(--community-green) 14%, transparent); color: var(--community-green); }
+.qe-map .quick-entry-icon { background: color-mix(in oklab, var(--map-blue) 14%, transparent); color: var(--map-blue); }
+.qe-guide .quick-entry-icon { background: color-mix(in oklab, var(--guide-plum) 14%, transparent); color: var(--guide-plum); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Filter Bar
+   ═══════════════════════════════════════════════════════════════════════ */
+.filter-bar {
+  display: flex; gap: 10px;
+  padding: 8px 16px;
+  flex-shrink: 0;
+  position: sticky; top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.filter-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 7px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 500;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-standard);
+  user-select: none;
+  white-space: nowrap;
+}
+.filter-btn.active {
+  background: var(--accent);
+  color: var(--accent-on);
+  border-color: var(--accent);
+}
+.filter-btn svg { width: 12px; height: 12px; }
+.filter-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px;
+  background: var(--accent);
+  color: var(--accent-on);
+  border-radius: 50%;
+  font-size: 11px; font-weight: 600;
+  margin-left: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Filter Dropdown Overlay
+   ═══════════════════════════════════════════════════════════════════════ */
+.filter-overlay {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--elev-raised);
+  z-index: 20;
+  display: none;
+  padding: 8px 16px 16px;
+}
+.filter-overlay.show { display: block; }
+.filter-overlay-title {
+  font-size: 12px; font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 0;
+}
+.filter-options {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.filter-option {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-standard);
+  user-select: none;
+  white-space: nowrap;
+}
+.filter-option:active { transform: scale(0.96); }
+.filter-option.selected {
+  background: var(--accent);
+  color: var(--accent-on);
+  border-color: var(--accent);
+}
+
+/* Scroll blocker overlay */
+.filter-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.15);
+  z-index: 15;
+  display: none;
+}
+.filter-backdrop.show { display: block; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Apartment Card List
+   ═══════════════════════════════════════════════════════════════════════ */
+.apt-list {
+  padding: 4px 16px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.apt-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard),
+              box-shadow var(--motion-fast) var(--ease-standard);
+  user-select: none;
+}
+.apt-card:active { transform: scale(0.985); }
+.apt-card a { color:inherit; text-decoration:none; display:block; }
+.apt-card-img {
+  width: 100%; aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, var(--card-img-warm1) 0%, var(--card-img-warm2) 50%, var(--card-img-warm3) 100%);
+  position: relative;
+  overflow: hidden;
+}
+/* Subtle building silhouette */
+.apt-card-img::before {
+  content: '';
+  position: absolute; bottom: 0; left: 5%; right: 5%; height: 65%;
+  background: linear-gradient(to top, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.25) 35%, transparent 100%);
+  border-radius: 6px 6px 0 0;
+}
+.apt-card-img::after {
+  content: '';
+  position: absolute; bottom: 0; left: 25%; width: 50%; height: 85%;
+  background: linear-gradient(to top, rgba(180,170,150,0.6) 0%, rgba(200,190,170,0.2) 30%, transparent 100%);
+  border-radius: 8px 8px 0 0;
+}
+.apt-card-img .apt-tag-row {
+  position: absolute; top: 10px; left: 10px;
+  display: flex; gap: 6px;
+}
+.apt-fav-mark {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--bg);
+  background: rgba(0,0,0,0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  z-index: 3;
+  transition: transform var(--motion-fast) var(--ease-standard),
+              color var(--motion-fast) var(--ease-standard),
+              background var(--motion-fast) var(--ease-standard);
+}
+.apt-fav-mark:active { transform: scale(0.92); }
+.apt-fav-mark svg { width: 18px; height: 18px; }
+.apt-fav-mark.faved {
+  color: var(--badge-red);
+  background: rgba(255,255,255,0.88);
+}
+.apt-card-body { padding: 14px 16px; }
+.apt-card-name {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.apt-card-price {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 600;
+  color: var(--price-orange);
+  margin-bottom: 6px;
+}
+.apt-card-price-unit {
+  font-size: 13px; font-weight: 400;
+  color: var(--muted);
+}
+.apt-card-location {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 13px; color: var(--muted);
+}
+.apt-card-location svg { width: 14px; height: 14px; flex-shrink: 0; }
+.apt-card-tags {
+  display: flex; gap: 6px; margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+/* Tags */
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 500;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: transparent;
+}
+.tag-hot { color: var(--price-orange); border-color: color-mix(in oklab, var(--price-orange) 30%, transparent); background: color-mix(in oklab, var(--price-orange) 8%, transparent); }
+.tag-new { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 30%, transparent); background: color-mix(in oklab, var(--accent) 8%, transparent); }
+.tag-subway { color: var(--map-blue); border-color: color-mix(in oklab, var(--map-blue) 30%, transparent); background: color-mix(in oklab, var(--map-blue) 8%, transparent); }
+
+/* Empty state */
+.apt-empty {
+  text-align: center; padding: 48px 20px;
+  color: var(--muted);
+}
+.apt-empty svg { width: 56px; height: 56px; color: var(--border); margin-bottom: 16px; }
+.apt-empty p { font-size: 14px; line-height: 1.5; }
+.apt-empty .reset-link {
+  display: inline-block; margin-top: 12px;
+  color: var(--accent); font-size: 14px; font-weight: 500;
+  cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TabBar
+   ═══════════════════════════════════════════════════════════════════════ */
+.mp-tabbar {
+  display: flex; align-items: flex-start;
+  padding: 6px 4px 0;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-soft);
+  flex-shrink: 0;
+  position: relative;
+}
+.tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 6px 0 8px;
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-standard);
+  user-select: none;
+  color: var(--meta);
+}
+.tab-item.active { color: var(--accent); }
+.tab-item svg { width: 24px; height: 24px; }
+.tab-label { font-size: 10px; font-weight: 500; letter-spacing: 0.01em; }
+.tab-badge {
+  position: absolute; top: 2px; right: 50%; transform: translateX(18px);
+  min-width: 8px; height: 8px;
+  background: var(--badge-red); border-radius: 50%;
+  border: 2px solid var(--bg);
+}
+
+/* Home indicator */
+.home-indicator {
+  width: 134px; height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  margin: 8px auto;
+  opacity: 0.2;
+}
+
+/* Toast */
+.toast {
+  position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+  background: var(--fg); color: var(--bg);
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 14px; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 200;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame {
+    width: 100vw; height: 100vh; height: 100dvh;
+    min-width: unset;
+    border-radius: 0; padding: 0;
+    box-shadow: none;
+  }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+  .status-bar { padding: 12px 20px 0; height: 44px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Phone Frame
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <!-- Dynamic Island -->
+    <div class="dynamic-island"></div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"></rect><rect x="3" y="5" width="2" height="6" rx="0.5"></rect><rect x="6" y="2" width="2" height="9" rx="0.5"></rect><rect x="9" y="0" width="2" height="11" rx="0.5"></rect></svg>
+        <svg viewBox="0 0 18 12" fill="currentColor"><path d="M1 3.5h1.5L3.5 8h11l1-4.5H16a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1v-6a1 1 0 011-1z"></path><rect x="4" y="8.5" width="10" height="1.5" rx="0.5"></rect></svg>
+        <svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"></rect><rect x="2" y="2" width="18" height="8" rx="1"></rect><rect x="25" y="3" width="2" height="6" rx="0.8"></rect></svg>
+      </div>
+    </div>
+
+    <!-- Mini-Program Navigation -->
+    <div class="mp-nav">
+      <span class="mp-nav-title">晓得青年</span>
+      <div class="mp-nav-dots" onclick="showToast('菜单')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Scrollable Content
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="mp-scroll" id="scrollArea" data-od-id="home-scroll">
+
+      <!-- Slogan -->
+      <div class="slogan-area" id="sloganArea" style="height: 66px;">
+        <p class="slogan-text">晓得了，住得好</p>
+        <p class="slogan-sub">帮你找到在郑州的第一个家</p>
+      </div>
+
+      <!-- Search Box -->
+      <div class="search-area" style="height: 52px;">
+        <label class="search-box" for="homeSearch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+          <input id="homeSearch" type="search" placeholder="搜索公寓名称/位置/区域" autocomplete="off" oninput="handleSearchInput(this.value)">
+          <button class="search-clear" id="searchClear" type="button" aria-label="清除搜索" onclick="clearSearch(event)">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l6 6M9 3L3 9"></path></svg>
+          </button>
+        </label>
+      </div>
+
+      <!-- Quick Entries 2×2 -->
+      <div class="quick-entries" data-od-id="quick-entries" style="height: 173px;">
+        <div class="quick-entry qe-roommate" onclick="window.location.href='app-roommate.html'">
+          <div class="quick-entry-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"></path></svg>
+          </div>
+          <span class="quick-entry-text">找个室友</span>
+        </div>
+        <div class="quick-entry qe-community" onclick="window.location.href='app-community.html'">
+          <div class="quick-entry-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path><path d="M8 9h8M8 13h5"></path></svg>
+          </div>
+          <span class="quick-entry-text">加入社群</span>
+        </div>
+        <div class="quick-entry qe-map" onclick="window.location.href='app-map.html'">
+          <div class="quick-entry-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          </div>
+          <span class="quick-entry-text">地图选房</span>
+        </div>
+        <div class="quick-entry qe-guide" onclick="window.location.href='app-guide.html'">
+          <div class="quick-entry-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13h6M9 17h4"></path></svg>
+          </div>
+          <span class="quick-entry-text">政策攻略</span>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar" id="filterBar" style="position: relative; height: 41.5px;" data-od-id="filter-bar">
+        <button class="filter-btn" id="districtBtn" onclick="toggleFilter('district')">
+          区域 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l3 3 3-3"></path></svg>
+        </button>
+        <button class="filter-btn" id="priceBtn" onclick="toggleFilter('price')">
+          价格 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l3 3 3-3"></path></svg>
+        </button>
+        <button class="filter-btn" id="roomBtn" onclick="toggleFilter('room')">
+          居室 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l3 3 3-3"></path></svg>
+        </button>
+        <span id="resultCount" style="font-size:12px;color:var(--muted);margin-left:auto;align-self:center;">6 个公寓</span>
+
+        <!-- District Filter Overlay -->
+        <div class="filter-overlay" id="districtOverlay">
+          <p class="filter-overlay-title">选择区域</p>
+          <div class="filter-options" id="districtOptions">
+          </div>
+        </div>
+
+        <!-- Price Filter Overlay -->
+        <div class="filter-overlay" id="priceOverlay">
+          <p class="filter-overlay-title">选择价格范围</p>
+          <div class="filter-options" id="priceOptions">
+          </div>
+        </div>
+
+        <!-- Room Filter Overlay -->
+        <div class="filter-overlay" id="roomOverlay">
+          <p class="filter-overlay-title">选择居室</p>
+          <div class="filter-options" id="roomOptions">
+          </div>
+        </div>
+
+        <!-- Backdrop -->
+        <div class="filter-backdrop" id="filterBackdrop" onclick="closeAllFilters()"></div>
+      </div>
+
+      <!-- Apartment Card List -->
+      <div class="apt-list" id="aptList" data-od-id="apartment-list">
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TabBar
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="mp-tabbar" data-od-id="tabbar">
+      <div class="tab-item active" onclick="switchTab(this, '首页')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab-item" onclick="switchTab(this, '服务')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 01-3.46 0"></path></svg>
+        <span class="tab-label">服务</span>
+      </div>
+      <div class="tab-item" onclick="switchTab(this, '借个锤子')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 3.5l6.1 6.1-2.6 2.6-6.1-6.1 2.6-2.6z"/><path d="M11.9 6.1l-1.7 1.7"/><path d="M10.2 7.8L4 14a2.1 2.1 0 000 3l3 3a2.1 2.1 0 003 0l6.2-6.2"/><path d="M5.8 15.8l2.4 2.4"/></svg>
+        <span class="tab-label">借个锤子</span>
+      </div>
+      <div class="tab-item" onclick="switchTab(this, '消息')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"></path></svg>
+        <span class="tab-label">消息</span>
+        <span class="tab-badge" style="top:2px;right:50%;transform:translateX(18px);"></span>
+      </div>
+      <div class="tab-item" onclick="switchTab(this, '我的')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><path d="M9 22v-4a3 3 0 013-3h0a3 3 0 013 3v4"></path></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Scripts
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+// ─── Apartment Data ──────────────────────────────────────────────────
+const apartments = [
+  {
+    id: 1, name: '郑东人才公寓', district: '郑东新区',
+    priceMin: 1200, priceMax: 1800,
+    rooms: '1-2居',
+    location: '金水东路与东风南路交叉口',
+    tags: ['hot','subway'], tagLabels: ['热门','近地铁'],
+    imgGradient: 'linear-gradient(150deg, var(--card-img-gra1a) 0%, var(--card-img-gra1b) 35%, var(--card-img-gra1c) 100%)'
+  },
+  {
+    id: 2, name: '高新人才家园', district: '高新区',
+    priceMin: 800, priceMax: 1200,
+    rooms: '开间/1居',
+    location: '科学大道与长椿路交叉口',
+    tags: ['new'], tagLabels: ['新上'],
+    imgGradient: 'linear-gradient(150deg, var(--card-img-gra2a) 0%, var(--card-img-gra2b) 35%, var(--card-img-gra2c) 100%)'
+  },
+  {
+    id: 3, name: '经开青年公寓', district: '经开区',
+    priceMin: 900, priceMax: 1400,
+    rooms: '1-2居',
+    location: '航海东路与经开第八大街',
+    tags: ['subway'], tagLabels: ['近地铁'],
+    imgGradient: 'linear-gradient(150deg, var(--card-img-gra3a) 0%, var(--card-img-gra3b) 35%, var(--card-img-gra3c) 100%)'
+  },
+  {
+    id: 4, name: '港区人才社区', district: '航空港区',
+    priceMin: 700, priceMax: 1000,
+    rooms: '开间/1居',
+    location: '华夏大道与迎宾路交叉口',
+    tags: [], tagLabels: [],
+    imgGradient: 'linear-gradient(150deg, var(--card-img-gra4a) 0%, var(--card-img-gra4b) 35%, var(--card-img-gra4c) 100%)'
+  },
+  {
+    id: 5, name: '二七人才公寓', district: '二七区',
+    priceMin: 1000, priceMax: 1500,
+    rooms: '2-3居',
+    location: '大学路与航海路交叉口',
+    tags: ['hot'], tagLabels: ['热门'],
+    imgGradient: 'linear-gradient(150deg, var(--card-img-gra5a) 0%, var(--card-img-gra5b) 35%, var(--card-img-gra5c) 100%)'
+  },
+  {
+    id: 6, name: '中原青年社区', district: '中原区',
+    priceMin: 850, priceMax: 1300,
+    rooms: '1-2居',
+    location: '建设路与秦岭路交叉口',
+    tags: ['new','subway'], tagLabels: ['新上','近地铁'],
+    imgGradient: 'linear-gradient(150deg, var(--card-img-gra6a) 0%, var(--card-img-gra6b) 35%, var(--card-img-gra6c) 100%)'
+  }
+];
+
+const districts = ['全部区域','郑东新区','高新区','经开区','航空港区','二七区','中原区','管城区','金水区','惠济区'];
+const priceRanges = [
+  { label: '全部价格', min: 0, max: 99999 },
+  { label: '¥500以下', min: 0, max: 500 },
+  { label: '¥500-1000', min: 500, max: 1000 },
+  { label: '¥1000-1500', min: 1000, max: 1500 },
+  { label: '¥1500-2000', min: 1500, max: 2000 },
+  { label: '¥2000以上', min: 2000, max: 99999 }
+];
+
+const roomOptions = ['全部','一居室','二居室','三居室','四居室'];
+
+let activeDistrict = '全部区域';
+let activePrice = '全部价格';
+let activeRoom = '全部';
+let activeFilter = null;
+let activeSearch = '';
+let favoriteAptIds = new Set([2]);
+
+// ─── Render Functions ────────────────────────────────────────────────
+
+function getTagClass(tag) {
+  if (tag === 'hot') return 'tag-hot';
+  if (tag === 'new') return 'tag-new';
+  if (tag === 'subway') return 'tag-subway';
+  return '';
+}
+
+function renderApartmentCards(filteredApartments) {
+  const container = document.getElementById('aptList');
+  if (filteredApartments.length === 0) {
+    container.innerHTML = `
+      <div class="apt-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <p>暂无符合条件的公寓<br>试试放宽筛选条件？</p>
+        <span class="reset-link" onclick="resetFilters()">清除筛选</span>
+      </div>`;
+    document.getElementById('resultCount').textContent = '0 个公寓';
+    return;
+  }
+
+  let html = '';
+  filteredApartments.forEach((apt, idx) => {
+    const tagsHtml = apt.tags.map((t, i) =>
+      `<span class="tag ${getTagClass(t)}">${apt.tagLabels[i]}</span>`
+    ).join('');
+
+    html += `
+      <div class="apt-card" onclick="goApartmentDetail(${apt.id})" style="animation: cardIn var(--motion-base) var(--ease-standard) ${idx * 0.05}s both;">
+        <div class="apt-card-img" style="background:${apt.imgGradient}">
+          <div class="apt-tag-row">${tagsHtml}</div>
+          <button class="apt-fav-mark ${favoriteAptIds.has(apt.id) ? 'faved' : ''}" type="button" aria-label="收藏${apt.name}" onclick="toggleHomeFavorite(event, ${apt.id})">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          </button>
+        </div>
+        <div class="apt-card-body">
+          <div class="apt-card-name">${apt.name}</div>
+          <div class="apt-card-price">¥${apt.priceMin}-${apt.priceMax}<span class="apt-card-price-unit">/月</span></div>
+          <div class="apt-card-location">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${apt.location}
+          </div>
+        </div>
+      </div>`;
+  });
+
+  container.innerHTML = html;
+  document.getElementById('resultCount').textContent = `${filteredApartments.length} 个公寓`;
+}
+
+function toggleHomeFavorite(event, aptId) {
+  event.stopPropagation();
+  if (!requireAuth(function() { toggleHomeFavorite(event, aptId); })) return;
+  const apt = apartments.find(item => item.id === aptId);
+  if (favoriteAptIds.has(aptId)) {
+    favoriteAptIds.delete(aptId);
+    showToast('已取消收藏');
+  } else {
+    favoriteAptIds.add(aptId);
+    showToast('已收藏');
+  }
+  if (apt) renderApartmentCards(filterApartments());
+}
+
+function filterApartments() {
+  let filtered = apartments;
+  const keyword = activeSearch.trim().toLowerCase();
+  if (keyword) {
+    filtered = filtered.filter(a => {
+      const searchable = [
+        a.name,
+        a.district,
+        a.location,
+        a.rooms,
+        ...(a.tagLabels || [])
+      ].join(' ').toLowerCase();
+      return searchable.includes(keyword);
+    });
+  }
+  if (activeDistrict !== '全部区域') {
+    filtered = filtered.filter(a => a.district === activeDistrict);
+  }
+  if (activePrice !== '全部价格') {
+    const range = priceRanges.find(r => r.label === activePrice);
+    if (range) {
+      filtered = filtered.filter(a => a.priceMin >= range.min && a.priceMin <= range.max);
+    }
+  }
+  if (activeRoom !== '全部') {
+    filtered = filtered.filter(a => roomMatches(a.rooms, activeRoom));
+  }
+  return filtered;
+}
+
+function roomMatches(roomText, selectedRoom) {
+  const roomNumberMap = {
+    '一居室': 1,
+    '二居室': 2,
+    '三居室': 3,
+    '四居室': 4
+  };
+  const target = roomNumberMap[selectedRoom];
+  if (!target) return true;
+  if (roomText.includes('开间') && target === 1) return true;
+  const numbers = roomText.match(/\d+/g) || [];
+  if (numbers.length >= 2) {
+    const min = Number(numbers[0]);
+    const max = Number(numbers[1]);
+    return target >= min && target <= max;
+  }
+  return numbers.some(n => Number(n) === target);
+}
+
+function applyFilters() {
+  renderApartmentCards(filterApartments());
+  updateFilterButtons();
+  updateSearchClear();
+}
+
+function goApartmentDetail(id) {
+  if (!requireAuth(function() { goApartmentDetail(id); })) return;
+  window.location.href = 'app-detail.html?id=' + encodeURIComponent(id);
+}
+
+function updateFilterButtons() {
+  const dBtn = document.getElementById('districtBtn');
+  const pBtn = document.getElementById('priceBtn');
+  const rBtn = document.getElementById('roomBtn');
+  dBtn.classList.toggle('active', activeDistrict !== '全部区域');
+  pBtn.classList.toggle('active', activePrice !== '全部价格');
+  rBtn.classList.toggle('active', activeRoom !== '全部');
+  if (activeDistrict !== '全部区域') {
+    dBtn.innerHTML = `${activeDistrict} <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l3 3 3-3"/></svg>`;
+  } else {
+    dBtn.innerHTML = `区域 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l3 3 3-3"/></svg>`;
+  }
+  if (activePrice !== '全部价格') {
+    pBtn.innerHTML = `${activePrice} <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l3 3 3-3"/></svg>`;
+  } else {
+    pBtn.innerHTML = `价格 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l3 3 3-3"/></svg>`;
+  }
+  if (activeRoom !== '全部') {
+    rBtn.innerHTML = `${activeRoom} <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l3 3 3-3"/></svg>`;
+  } else {
+    rBtn.innerHTML = `居室 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l3 3 3-3"/></svg>`;
+  }
+}
+
+function resetFilters() {
+  activeDistrict = '全部区域';
+  activePrice = '全部价格';
+  activeRoom = '全部';
+  activeSearch = '';
+  const searchInput = document.getElementById('homeSearch');
+  if (searchInput) searchInput.value = '';
+  applyFilters();
+  renderFilterOptions();
+}
+
+function handleSearchInput(value) {
+  activeSearch = value;
+  applyFilters();
+}
+
+function clearSearch(event) {
+  if (event) event.preventDefault();
+  activeSearch = '';
+  const searchInput = document.getElementById('homeSearch');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.focus();
+  }
+  applyFilters();
+}
+
+function updateSearchClear() {
+  const clearBtn = document.getElementById('searchClear');
+  if (!clearBtn) return;
+  clearBtn.classList.toggle('show', activeSearch.trim().length > 0);
+}
+
+// ─── Filter Dropdowns ──────────────────────────────────────────────────
+
+function buildDistrictOptions() {
+  return districts.map(d => {
+    const sel = d === activeDistrict ? ' selected' : '';
+    return `<span class="filter-option${sel}" onclick="selectDistrict('${d}')">${d}</span>`;
+  }).join('');
+}
+
+function buildPriceOptions() {
+  return priceRanges.map(r => {
+    const sel = r.label === activePrice ? ' selected' : '';
+    return `<span class="filter-option${sel}" onclick="selectPrice('${r.label}')">${r.label}</span>`;
+  }).join('');
+}
+
+function buildRoomOptions() {
+  return roomOptions.map(r => {
+    const sel = r === activeRoom ? ' selected' : '';
+    return `<span class="filter-option${sel}" onclick="selectRoom('${r}')">${r}</span>`;
+  }).join('');
+}
+
+function renderFilterOptions() {
+  document.getElementById('districtOptions').innerHTML = buildDistrictOptions();
+  document.getElementById('priceOptions').innerHTML = buildPriceOptions();
+  document.getElementById('roomOptions').innerHTML = buildRoomOptions();
+}
+
+function toggleFilter(type) {
+  if (activeFilter === type) { closeAllFilters(); return; }
+  closeAllFilters();
+  activeFilter = type;
+
+  document.getElementById('districtOverlay').classList.toggle('show', type === 'district');
+  document.getElementById('priceOverlay').classList.toggle('show', type === 'price');
+  document.getElementById('roomOverlay').classList.toggle('show', type === 'room');
+  document.getElementById('filterBackdrop').classList.add('show');
+}
+
+function closeAllFilters() {
+  activeFilter = null;
+  document.getElementById('districtOverlay').classList.remove('show');
+  document.getElementById('priceOverlay').classList.remove('show');
+  document.getElementById('roomOverlay').classList.remove('show');
+  document.getElementById('filterBackdrop').classList.remove('show');
+}
+
+function selectDistrict(district) {
+  activeDistrict = district;
+  closeAllFilters();
+  applyFilters();
+  renderFilterOptions();
+}
+
+function selectPrice(price) {
+  activePrice = price;
+  closeAllFilters();
+  applyFilters();
+  renderFilterOptions();
+}
+
+function selectRoom(room) {
+  activeRoom = room;
+  closeAllFilters();
+  applyFilters();
+  renderFilterOptions();
+}
+
+// ─── Slogan Collapse on Scroll ─────────────────────────────────────────
+
+(function() {
+  var scrollEl = document.getElementById('scrollArea');
+  var sloganEl = document.getElementById('sloganArea');
+  var lastScroll = 0;
+
+  scrollEl.addEventListener('scroll', function() {
+    var st = scrollEl.scrollTop;
+    if (st > 60 && st > lastScroll) {
+      sloganEl.classList.add('collapsed');
+    } else if (st < 30) {
+      sloganEl.classList.remove('collapsed');
+    }
+    lastScroll = st;
+  }, { passive: true });
+})();
+
+// ─── Toast ─────────────────────────────────────────────────────────────
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800);
+}
+
+// ─── Tab Switching ─────────────────────────────────────────────────────
+
+function switchTab(el, name) {
+  if (el.classList.contains('active')) return;
+  document.querySelectorAll('.tab-item').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  if (name === '服务') { window.location.href = 'app-service.html'; return; }
+  if (name === '我的') { window.location.href = 'app-profile.html'; return; }
+  if (name === '借个锤子') { window.location.href = 'app-borrow.html'; return; }
+  if (name === '消息') { window.location.href = 'app-messages.html'; return; }
+  showToast(name + ' — 即将开放');
+}
+
+// ─── Init ──────────────────────────────────────────────────────────────
+
+renderFilterOptions();
+renderApartmentCards(apartments);
+
+// ─── Card-in animation ─────────────────────────────────────────────────
+
+var styleSheet = document.createElement('style');
+styleSheet.textContent = '@keyframes cardIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }';
+document.head.appendChild(styleSheet);
+</script>
+
+<script src="auth-guard.js"></script>
+
+
+</body></html>

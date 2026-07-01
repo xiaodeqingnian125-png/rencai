@@ -1,0 +1,143 @@
+<view wx:if="{{apartment}}" class="detail-page">
+  <view class="detail-hero {{apartment.heroClass}}">
+    <button class="hero-btn back-btn" bindtap="goBack">‹</button>
+    <button class="hero-btn fav-btn {{favorite ? 'on' : ''}}" bindtap="toggleFavorite">♥</button>
+    <view class="hero-building low"></view>
+    <view class="hero-building high"></view>
+    <view class="hero-dots">
+      <view class="hero-dot active"></view>
+      <view class="hero-dot"></view>
+      <view class="hero-dot"></view>
+    </view>
+  </view>
+
+  <scroll-view class="detail-scroll" scroll-y>
+    <view class="price-hero">
+      <view class="detail-apt-name">{{apartment.name}}</view>
+      <view class="price-row">
+        <text class="price-value">{{apartment.priceText}}</text>
+        <text class="price-unit">/月</text>
+      </view>
+    </view>
+
+    <view class="location-bar">
+      <image src="/assets/icons/location.svg" mode="aspectFit"></image>
+      <view class="location-copy">
+        <view>{{apartment.location}}</view>
+        <text>{{apartment.locationMeta}}</text>
+      </view>
+      <button class="location-map" bindtap="goMap">查看地图</button>
+    </view>
+
+    <view class="info-section">
+      <view class="info-title">费用信息</view>
+      <view class="cost-grid">
+        <view wx:for="{{apartment.costs}}" wx:key="label" class="cost-cell {{item.active ? 'active' : 'inactive'}}">
+          <text class="cost-label">{{item.label}}</text>
+          <view class="cost-value">{{item.value}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="info-section">
+      <view class="info-title">配套设施</view>
+      <view class="fac-grid">
+        <view wx:for="{{apartment.privateFacilities}}" wx:key="label" class="fac-cell {{item.active ? 'active' : 'inactive'}}">
+          <view class="fac-icon">{{item.icon}}</view>
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="info-section">
+      <view class="info-title">公共设施</view>
+      <view class="fac-grid">
+        <view wx:for="{{apartment.publicFacilities}}" wx:key="label" class="fac-cell {{item.active ? 'active' : 'inactive'}}">
+          <view class="fac-icon">{{item.icon}}</view>
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="info-section">
+      <view class="info-title">周边服务</view>
+      <view class="nearby-row">
+        <text wx:for="{{apartment.nearby}}" wx:key="*this" class="nearby-tag">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="room-section">
+      <view class="info-title">户型选择</view>
+      <view class="room-list">
+        <view
+          wx:for="{{apartment.rooms}}"
+          wx:key="id"
+          class="room-card"
+          data-apt-id="{{apartment.id}}"
+          data-room-id="{{item.id}}"
+          bindtap="goRoomDetail"
+        >
+          <view class="room-img {{item.imageClass}}">
+            <view class="room-plan-line a"></view>
+            <view class="room-plan-line b"></view>
+          </view>
+          <view class="room-info">
+            <view class="room-name">{{item.name}}</view>
+            <view class="room-meta">{{item.area}} · {{item.orient}} · {{item.layout}}</view>
+          </view>
+          <view class="room-price">{{item.price}}<text>/月起</text></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="comment-section">
+      <view class="comment-header">
+        <view class="info-title">住户评价</view>
+        <button class="write-btn" bindtap="openCommentSheet">写评价</button>
+      </view>
+      <view class="comment-list">
+        <view wx:for="{{apartment.comments}}" wx:key="body" class="comment-item">
+          <view class="comment-user">
+            <view class="comment-avatar {{item.avatarClass}}">{{item.avatar}}</view>
+            <text class="comment-name">{{item.name}}</text>
+            <text class="comment-time">{{item.time}}</text>
+          </view>
+          <view class="comment-body">{{item.body}}</view>
+          <view class="comment-actions">
+            <button data-index="{{index}}" bindtap="likeComment">赞 {{item.likes}}</button>
+            <button bindtap="replyComment">回复</button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="scroll-spacer"></view>
+  </scroll-view>
+
+  <view class="bottom-bar">
+    <button class="share-btn" open-type="share">分享给朋友</button>
+    <button class="bottom-fav {{favorite ? 'on' : ''}}" bindtap="toggleFavorite">♥</button>
+  </view>
+
+  <view wx:if="{{commentSheetOpen}}" class="sheet-mask" bindtap="closeCommentSheet"></view>
+  <view wx:if="{{commentSheetOpen}}" class="comment-sheet">
+    <view class="sheet-grabber"></view>
+    <view class="sheet-title">写住户评价</view>
+    <view class="sheet-subtitle">仅支持纯文字评价，200 字以内；5 分钟内不可重复提交。</view>
+    <textarea
+      class="comment-textarea"
+      maxlength="200"
+      value="{{commentDraft}}"
+      placeholder="例如：住了三个月，通勤、物业、周边生活都是什么感受？"
+      bindinput="handleCommentInput"
+    ></textarea>
+    <view class="comment-rule">
+      <text>纯文字评价</text>
+      <text>{{commentCount}}</text>
+    </view>
+    <view class="sheet-actions">
+      <button class="cancel-btn" bindtap="closeCommentSheet">取消</button>
+      <button class="submit-btn" bindtap="submitComment">发布评价</button>
+    </view>
+  </view>
+</view>

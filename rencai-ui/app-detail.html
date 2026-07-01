@@ -1,0 +1,1071 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 · 公寓详情</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   Warm Community palette
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #fafaf6;
+  --surface: #fffdf7;
+  --surface-warm: #fef8ef;
+  --fg: #2d2318;
+  --fg-2: #5c4a38;
+  --muted: #8c7a68;
+  --meta: #a69682;
+  --border: #e8e0d4;
+  --border-soft: #f0eae0;
+  --accent: #e8723c;
+  --accent-on: #ffffff;
+  --accent-hover: #f0804a;
+  --accent-active: #d4622c;
+
+  --font-display: "SF Pro Display", "PingFang SC", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "PingFang SC", "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 21px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 980px;
+
+  --elev-raised: 0 12px 32px rgba(0,0,0,0.06);
+  --ease-standard: cubic-bezier(0.28, 0, 0.22, 1);
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+
+  --price-orange: #e8590c;
+  --community-green: #5b9a6f;
+  --map-blue: #5b8cb8;
+  --guide-plum: #9b7eb8;
+  --badge-red: #e04a3a;
+
+  --device-bg: #d8d0c4;
+  --phone-bezel: #0a0a0a;
+  --phone-inner: #0a0a0a;
+
+  /* Carousel & room image stops */
+  --cs1-a: #f5efe0; --cs1-b: #e8dcc8; --cs1-c: #dcd0ba;
+  --cs2-a: #f3efe8; --cs2-b: #e5dac8; --cs2-c: #d6ccbc;
+  --cs3-a: #f2efeb; --cs3-b: #e3dbce; --cs3-c: #d4cdc0;
+  --ri1-a: #efe8d8; --ri1-b: #e0d4b8;
+  --ri2-a: #e8efe8; --ri2-b: #d0e0d0;
+  --ri3-a: #efe8f0; --ri3-b: #ddd0e0;
+  --ca1-a: #e8a0b0; --ca1-b: #d08090;
+  --ca2-a: #8cb0c8; --ca2-b: #6c90a8;
+  --ca3-a: #a0c8a0; --ca3-b: #80b080;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  display: grid; place-items: center;
+  min-height: 100vh;
+  background: var(--device-bg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame {
+  width: 390px; min-width: 390px;
+  height: 844px;
+  background: var(--phone-bezel);
+  border-radius: 50px;
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+.phone-screen {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  border-radius: 38px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.dynamic-island {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 34px;
+  background: var(--phone-inner); border-radius: 20px;
+  z-index: 100;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   Photo Carousel
+   ═════════════════════════════════════════════════════════════════ */
+.carousel {
+  position: relative;
+  width: 100%; height: 240px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.carousel-slide {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease-standard);
+  background-size: cover;
+}
+.carousel-slide.active { opacity: 1; }
+.cs-1 { background: linear-gradient(150deg, var(--cs1-a) 0%, var(--cs1-b) 50%, var(--cs1-c) 100%); }
+.cs-2 { background: linear-gradient(150deg, var(--cs2-a) 0%, var(--cs2-b) 50%, var(--cs2-c) 100%); }
+.cs-3 { background: linear-gradient(150deg, var(--cs3-a) 0%, var(--cs3-b) 50%, var(--cs3-c) 100%); }
+.carousel-dots {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px;
+}
+.carousel-dot {
+  width: 6px; height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.5);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.carousel-dot.active { background: var(--bg); width: 18px; }
+
+/* Nav overlay on carousel */
+.carousel-nav {
+  position: absolute; top: 14px; left: 12px; right: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.carousel-back {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(6px);
+  display: grid; place-items: center;
+  cursor: pointer;
+  color: #fff;
+}
+.carousel-back svg { width: 20px; height: 20px; }
+.carousel-fav {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(6px);
+  display: grid; place-items: center;
+  cursor: pointer;
+  color: #fff;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.carousel-fav.faved { color: var(--badge-red); }
+.carousel-fav svg { width: 20px; height: 20px; }
+
+/* ═════════════════════════════════════════════════════════════════
+   Scroll Content
+   ═════════════════════════════════════════════════════════════════ */
+.mp-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding-bottom: 60px;
+}
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+/* ═════════════════════════════════════════════════════════════════
+   Price Hero
+   ═════════════════════════════════════════════════════════════════ */
+.price-hero {
+  padding: 16px 16px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.detail-apt-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+.price-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.price-value {
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 700;
+  color: var(--price-orange);
+  letter-spacing: -0.02em;
+}
+.price-unit {
+  font-size: 14px; font-weight: 400;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   Location
+   ═════════════════════════════════════════════════════════════════ */
+.location-bar {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 16px 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.location-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.location-icon svg { width: 16px; height: 16px; }
+.location-text { font-size: 14px; color: var(--fg-2); line-height: 1.5; }
+.location-map {
+  margin-left: auto;
+  font-size: 13px; font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   Info sections
+   ═════════════════════════════════════════════════════════════════ */
+.info-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.info-title {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.005em;
+  margin-bottom: 10px;
+}
+.facility-grid {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.facility-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--fg-2);
+}
+.facility-item svg { width: 16px; height: 16px; color: var(--accent); flex-shrink: 0; }
+
+/* Icon grid (matched to room-detail style): icon above, label below, 4-col */
+.fac-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 8px;
+  text-align: center;
+}
+.fac-icon-cell {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-size: 13px;
+  color: var(--fg-2);
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.fac-icon-cell svg { width: 28px; height: 28px; }
+.fac-icon-cell.active  { color: var(--fg); }
+.fac-icon-cell.active svg { color: var(--accent); }
+.fac-icon-cell.inactive { color: var(--meta); }
+.fac-icon-cell.inactive svg { color: var(--border); }
+
+/* Cost grid */
+.cost-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 8px;
+}
+.cost-cell {
+  text-align: center;
+  font-size: 13px;
+  padding: 12px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+}
+.cost-cell.active { color: var(--fg); }
+.cost-cell.inactive { color: var(--meta); background: transparent; border-color: var(--border-soft); }
+.cost-cell-label { font-size: 12px; margin-bottom: 4px; color: var(--muted); }
+.cost-cell-value { font-weight: 600; font-size: 14px; }
+
+/* ═════════════════════════════════════════════════════════════════
+   Room Type Cards
+   ═════════════════════════════════════════════════════════════════ */
+.room-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.room-list {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.room-card {
+  display: flex; gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard),
+              box-shadow var(--motion-fast) var(--ease-standard);
+}
+.room-card:active { transform: scale(0.985); }
+.room-img {
+  width: 80px; height: 64px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.ri-1 { background: linear-gradient(135deg, var(--ri1-a), var(--ri1-b)); }
+.ri-2 { background: linear-gradient(135deg, var(--ri2-a), var(--ri2-b)); }
+.ri-3 { background: linear-gradient(135deg, var(--ri3-a), var(--ri3-b)); }
+.room-info { flex: 1; min-width: 0; }
+.room-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.room-meta { font-size: 12px; color: var(--muted); }
+.room-price {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  color: var(--price-orange);
+  text-align: right;
+  flex-shrink: 0;
+  align-self: center;
+}
+.room-price-unit { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+/* ═════════════════════════════════════════════════════════════════
+   Comments
+   ═════════════════════════════════════════════════════════════════ */
+.comment-section {
+  padding: 16px;
+}
+.comment-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.comment-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.comment-item:last-child { border-bottom: none; }
+.comment-user {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 6px;
+}
+.comment-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 12px; font-weight: 700;
+  color: var(--accent-on);
+  flex-shrink: 0;
+}
+.ca-1 { background: linear-gradient(135deg, var(--ca1-a), var(--ca1-b)); }
+.ca-2 { background: linear-gradient(135deg, var(--ca2-a), var(--ca2-b)); }
+.ca-3 { background: linear-gradient(135deg, var(--ca3-a), var(--ca3-b)); }
+.comment-name { font-size: 14px; font-weight: 600; }
+.comment-time { font-size: 12px; color: var(--muted); margin-left: auto; }
+.comment-body { font-size: 14px; color: var(--fg-2); line-height: 1.5; margin-bottom: 6px; }
+.comment-actions {
+  display: flex; gap: 16px;
+  font-size: 12px; color: var(--muted);
+}
+.comment-like {
+  display: flex; align-items: center; gap: 4px;
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.comment-like:hover { color: var(--accent); }
+.comment-like svg { width: 14px; height: 14px; }
+.btn-write-cmt {
+  padding: 8px 18px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.btn-write-cmt:active { background: color-mix(in oklab, var(--accent) 8%, transparent); }
+
+.sheet-mask {
+  position: absolute; inset: 0;
+  background: rgba(0, 0, 0, 0.32);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 120;
+}
+.sheet-mask.show { opacity: 1; pointer-events: auto; }
+.comment-sheet {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: var(--bg);
+  border-radius: 24px 24px 0 0;
+  padding: 10px 18px 26px;
+  box-shadow: 0 -18px 44px rgba(0, 0, 0, 0.18);
+  transform: translateY(105%);
+  transition: transform var(--motion-base) var(--ease-standard);
+  z-index: 130;
+}
+.comment-sheet.show { transform: translateY(0); }
+.sheet-grabber {
+  width: 42px; height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  margin: 0 auto 14px;
+}
+.sheet-title {
+  font-size: 18px; font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 4px;
+}
+.sheet-subtitle {
+  font-size: 13px; color: var(--muted);
+  margin-bottom: 16px;
+}
+.form-field { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-size: 13px; font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 8px;
+}
+.comment-textarea {
+  width: 100%;
+  min-height: 96px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg);
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+}
+.comment-textarea:focus { border-color: var(--accent); box-shadow: var(--focus-ring); }
+.comment-rule {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.sheet-actions {
+  display: flex; gap: 10px;
+  margin-top: 16px;
+}
+.btn-cancel,
+.btn-submit {
+  flex: 1;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 13px 0;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-cancel { background: var(--surface); color: var(--fg-2); }
+.btn-submit { background: var(--accent); color: var(--accent-on); }
+
+/* ═════════════════════════════════════════════════════════════════
+   Bottom Bar
+   ═════════════════════════════════════════════════════════════════ */
+.bottom-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px 14px;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-soft);
+  z-index: 50;
+}
+.bottom-fav {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  display: grid; place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--motion-fast) var(--ease-standard);
+  color: var(--meta);
+  background: var(--surface);
+}
+.bottom-fav.faved { color: var(--badge-red); border-color: var(--badge-red); background: color-mix(in oklab, var(--badge-red) 6%, transparent); }
+.bottom-fav svg { width: 22px; height: 22px; }
+.btn-share {
+  flex: 1;
+  padding: 14px 0;
+  background: var(--accent);
+  color: var(--accent-on);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px; font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.btn-share:active { opacity: 0.85; }
+
+.home-indicator {
+  position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 134px; height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  opacity: 0.2;
+  z-index: 55;
+}
+
+.toast {
+  position: absolute; bottom: 140px; left: 50%; transform: translateX(-50%);
+  background: var(--fg); color: var(--bg);
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 14px; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 200;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame { width: 100vw; height: 100vh; height: 100dvh; min-width: unset; border-radius: 0; padding: 0; box-shadow: none; }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <!-- Carousel -->
+    <div class="carousel" data-od-id="carousel">
+      <div class="carousel-slide cs-1 active" id="slide0"></div>
+      <div class="carousel-slide cs-2" id="slide1"></div>
+      <div class="carousel-slide cs-3" id="slide2"></div>
+      <div class="carousel-dots" id="carouselDots">
+        <span class="carousel-dot active"></span>
+        <span class="carousel-dot"></span>
+        <span class="carousel-dot"></span>
+      </div>
+      <div class="carousel-nav">
+        <div class="carousel-back" onclick="history.back()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll -->
+    <div class="mp-scroll" data-od-id="detail-scroll" id="detailScroll">
+
+      <!-- Price -->
+      <div class="price-hero">
+        <div class="detail-apt-name" id="detailAptName">郑东人才公寓</div>
+        <div class="price-row">
+          <span class="price-value" id="detailPrice">¥1200-1800</span>
+          <span class="price-unit">/月</span>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="location-bar" data-od-id="location">
+        <span class="location-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <span class="location-text" id="detailLocation">金水东路与东风南路交叉口<br><span style="font-size:12px;color:var(--muted)">地铁1/5号线 · 距郑州东站约1.5km</span></span>
+        <span class="location-map" onclick="showToast('查看地图')">查看地图 →</span>
+      </div>
+
+      <!-- Cost Info -->
+      <div class="info-section" data-od-id="cost-info">
+        <div class="info-title">费用信息</div>
+        <div class="cost-grid">
+          <div class="cost-cell active">
+            <div class="cost-cell-label">水费</div>
+            <div class="cost-cell-value">¥4.5/t</div>
+          </div>
+          <div class="cost-cell active">
+            <div class="cost-cell-label">电费</div>
+            <div class="cost-cell-value">¥0.56/度</div>
+          </div>
+          <div class="cost-cell active">
+            <div class="cost-cell-label">燃气费</div>
+            <div class="cost-cell-value">¥2.5/m³</div>
+          </div>
+          <div class="cost-cell active">
+            <div class="cost-cell-label">物业费</div>
+            <div class="cost-cell-value">¥2.5/㎡</div>
+          </div>
+          <div class="cost-cell active">
+            <div class="cost-cell-label">暖气费</div>
+            <div class="cost-cell-value">¥22/㎡</div>
+          </div>
+          <div class="cost-cell inactive">
+            <div class="cost-cell-label">停车费</div>
+            <div class="cost-cell-value">暂无</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Facilities -->
+      <div class="info-section" data-od-id="facilities">
+        <div class="info-title">配套设施</div>
+        <div class="fac-icon-grid">
+          <div class="fac-icon-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 18v2M17 18v2"/><circle cx="8" cy="11" r="2"/><circle cx="16" cy="11" r="2"/><path d="M10 15h4"/></svg>
+            <span>洗衣机</span>
+          </div>
+          <div class="fac-icon-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12v2M16 12v2"/><path d="M7 4v2M17 4v2"/></svg>
+            <span>冰箱</span>
+          </div>
+          <div class="fac-icon-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/><path d="M18 6l-2 2M6 6l2 2"/></svg>
+            <span>油烟机</span>
+          </div>
+          <div class="fac-icon-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v4a8 8 0 01-16 0V4z"/><path d="M8 20h8v-4H8z"/><circle cx="12" cy="18" r="1"/><path d="M12 8v4"/></svg>
+            <span>暖气</span>
+          </div>
+          <div class="fac-icon-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 7h10M7 12h10M7 17h6"/><circle cx="18" cy="7" r="1"/></svg>
+            <span>空调</span>
+          </div>
+          <div class="fac-icon-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M4 10h16"/><path d="M8 14v2M16 14v2"/><path d="M8 4v2"/></svg>
+            <span>热水器</span>
+          </div>
+          <div class="fac-icon-cell inactive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><circle cx="12" cy="8" r="2"/><circle cx="4" cy="17" r="1"/><circle cx="20" cy="17" r="1"/></svg>
+            <span>燃气灶</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Public Facilities -->
+      <div class="info-section" data-od-id="public-facilities">
+        <div class="info-title">公共设施</div>
+        <div class="fac-icon-grid">
+          <div class="fac-icon-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9v6M15 9v6"/><circle cx="12" cy="12" r="2"/></svg>
+            <span>健身房</span>
+          </div>
+          <div class="fac-icon-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18v0"/><path d="M12 7v5"/><path d="M10 9h4"/></svg>
+            <span>快递柜</span>
+          </div>
+          <div class="fac-icon-cell inactive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/><rect x="8" y="6" width="8" height="2" rx="1"/></svg>
+            <span>充电桩</span>
+          </div>
+          <div class="fac-icon-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M6 7h12M6 11h12M6 15h8"/><path d="M17 15l2 2 2-2"/></svg>
+            <span>自习室</span>
+          </div>
+          <div class="fac-icon-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><circle cx="16" cy="11" r="2"/></svg>
+            <span>洗衣房</span>
+          </div>
+          <div class="fac-icon-cell inactive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/><circle cx="12" cy="12" r="4"/><path d="M4 7l4 4M20 7l-4 4"/></svg>
+            <span>乒乓球</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nearby -->
+      <div class="info-section" data-od-id="nearby">
+        <div class="info-title">周边服务</div>
+        <div class="facility-grid">
+          <span class="facility-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="2"/><circle cx="17" cy="17" r="2"/><path d="M11 11l4 4"/></svg>超市/便利店</span>
+          <span class="facility-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>快餐小吃</span>
+          <span class="facility-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>药店</span>
+          <span class="facility-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>社区医院</span>
+          <span class="facility-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18v0"/></svg>快递柜</span>
+        </div>
+      </div>
+
+      <!-- Room Types -->
+      <div class="room-section" data-od-id="room-types">
+        <div class="info-title" style="margin-bottom: 12px;">户型选择</div>
+        <div class="room-list" id="roomList">
+          <div class="room-card" onclick="goRoomDetail('app-room-detail.html?aptId=1&roomId=1')">
+            <div class="room-img ri-1"></div>
+            <div class="room-info">
+              <div class="room-name">精致一居室</div>
+              <div class="room-meta">35㎡ · 南向 · 1室1卫</div>
+            </div>
+            <div class="room-price">¥1200<span class="room-price-unit">/月起</span></div>
+          </div>
+          <div class="room-card" onclick="goRoomDetail('app-room-detail.html?aptId=1&roomId=2')">
+            <div class="room-img ri-2"></div>
+            <div class="room-info">
+              <div class="room-name">舒适两居室</div>
+              <div class="room-meta">55㎡ · 东南向 · 2室1厅1卫</div>
+            </div>
+            <div class="room-price">¥1500<span class="room-price-unit">/月起</span></div>
+          </div>
+          <div class="room-card" onclick="goRoomDetail('app-room-detail.html?aptId=1&roomId=3')">
+            <div class="room-img ri-3"></div>
+            <div class="room-info">
+              <div class="room-name">阳光大单间</div>
+              <div class="room-meta">28㎡ · 南向 · 开间</div>
+            </div>
+            <div class="room-price">¥1000<span class="room-price-unit">/月起</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comments -->
+      <div class="comment-section" data-od-id="comments">
+        <div class="comment-header">
+          <div class="info-title" style="margin-bottom:0">住户评价</div>
+          <button class="btn-write-cmt" onclick="openCommentSheet()">写评价</button>
+        </div>
+        <div id="aptCommentList">
+        <div class="comment-item">
+          <div class="comment-user">
+            <div class="comment-avatar ca-1">小</div>
+            <span class="comment-name">小玲</span>
+            <span class="comment-time">2026年6月</span>
+          </div>
+          <div class="comment-body">住了快一年了，物业态度超好，楼下快递柜很方便。离地铁走路5分钟，通勤非常友好。</div>
+          <div class="comment-actions">
+            <span class="comment-like" onclick="showToast('已点赞')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg> 12</span>
+            <span class="comment-like" onclick="showToast('已评论')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 回复</span>
+          </div>
+        </div>
+        <div class="comment-item">
+          <div class="comment-user">
+            <div class="comment-avatar ca-2">大</div>
+            <span class="comment-name">大鹏</span>
+            <span class="comment-time">2026年5月</span>
+          </div>
+          <div class="comment-body">健身房是加分项！就是周末有时候人多要排队。隔音还不错，比之前租的老小区好多了。</div>
+          <div class="comment-actions">
+            <span class="comment-like" onclick="showToast('已点赞')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg> 8</span>
+            <span class="comment-like" onclick="showToast('已评论')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 回复</span>
+          </div>
+        </div>
+        <div class="comment-item">
+          <div class="comment-user">
+            <div class="comment-avatar ca-3">阿</div>
+            <span class="comment-name">阿杰</span>
+            <span class="comment-time">2026年4月</span>
+          </div>
+          <div class="comment-body">刚搬进来，房间比想象中大！物业帮我搬行李上楼，感动。唯一小建议：洗衣机是公用的，希望以后能装独立。</div>
+          <div class="comment-actions">
+            <span class="comment-like" onclick="showToast('已点赞')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg> 5</span>
+            <span class="comment-like" onclick="showToast('已评论')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 回复</span>
+          </div>
+        </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="bottom-bar" data-od-id="bottom-bar">
+      <button class="btn-share" onclick="openShareSheet()">分享给朋友</button>
+      <button class="bottom-fav" id="detailFavBtn" type="button" aria-label="收藏公寓" onclick="toggleDetailFavorite()">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      </button>
+    </div>
+    <div class="home-indicator"></div>
+
+    <div class="toast" id="toast"></div>
+    <div class="sheet-mask" id="commentMask" onclick="closeCommentSheet()"></div>
+    <div class="comment-sheet" id="commentSheet" role="dialog" aria-modal="true" aria-labelledby="commentSheetTitle">
+      <div class="sheet-grabber"></div>
+      <div class="sheet-title" id="commentSheetTitle">写住户评价</div>
+      <div class="sheet-subtitle">仅支持纯文字评价，200 字以内；5 分钟内不可重复提交。</div>
+      <div class="form-field">
+        <label class="form-label" for="commentText">评价内容</label>
+        <textarea class="comment-textarea" id="commentText" maxlength="200" placeholder="例如：住了三个月，通勤、物业、周边生活都是什么感受？"></textarea>
+        <div class="comment-rule">
+          <span>纯文字评价</span>
+          <span id="commentCount">0/200</span>
+        </div>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn-cancel" type="button" onclick="closeCommentSheet()">取消</button>
+        <button class="btn-submit" type="button" onclick="submitComment()">发布评价</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Apartment Context ────────────────────────────────────────────
+var detailApartments = {
+  '1': {
+    name: '郑东人才公寓',
+    price: '¥1200-1800',
+    location: '金水东路与东风南路交叉口',
+    meta: '地铁1/5号线 · 距郑州东站约1.5km',
+    rooms: [
+      { id: 1, name: '精致一居室', area: '35㎡', orient: '南向', layout: '1室1卫', price: '¥1200', img: 'ri-1' },
+      { id: 2, name: '舒适两居室', area: '55㎡', orient: '东南向', layout: '2室1厅1卫', price: '¥1500', img: 'ri-2' },
+      { id: 3, name: '阳光大单间', area: '28㎡', orient: '南向', layout: '开间', price: '¥1000', img: 'ri-3' }
+    ]
+  },
+  '2': {
+    name: '高新人才家园',
+    price: '¥800-1200',
+    location: '科学大道与长椿路交叉口',
+    meta: '高新区通勤圈 · 靠近地铁8号线规划站点',
+    rooms: [
+      { id: 1, name: '高新阳光单间', area: '29㎡', orient: '南向', layout: '开间', price: '¥800', img: 'ri-3' },
+      { id: 2, name: '高新舒适一居', area: '36㎡', orient: '东南向', layout: '1室1卫', price: '¥1000', img: 'ri-1' },
+      { id: 3, name: '青年独立一居', area: '42㎡', orient: '南向', layout: '1室1厅1卫', price: '¥1200', img: 'ri-2' }
+    ]
+  },
+  '3': {
+    name: '经开青年公寓',
+    price: '¥900-1400',
+    location: '航海东路与经开第八大街',
+    meta: '经开产业园区 · 近公交主干线',
+    rooms: [
+      { id: 1, name: '经开标准一居', area: '32㎡', orient: '南向', layout: '1室1卫', price: '¥900', img: 'ri-1' },
+      { id: 2, name: '经开舒适两居', area: '58㎡', orient: '东南向', layout: '2室1厅1卫', price: '¥1400', img: 'ri-2' }
+    ]
+  },
+  '4': {
+    name: '港区人才社区',
+    price: '¥700-1000',
+    location: '华夏大道与迎宾路交叉口',
+    meta: '航空港就业圈 · 生活配套完善',
+    rooms: [
+      { id: 1, name: '港区经济单间', area: '26㎡', orient: '南向', layout: '开间', price: '¥700', img: 'ri-3' },
+      { id: 2, name: '港区独立一居', area: '34㎡', orient: '东向', layout: '1室1卫', price: '¥1000', img: 'ri-1' }
+    ]
+  },
+  '5': {
+    name: '二七人才公寓',
+    price: '¥1000-1500',
+    location: '大学路与航海路交叉口',
+    meta: '二七商圈 · 临近学校与社区商业',
+    rooms: [
+      { id: 1, name: '二七舒适两居', area: '56㎡', orient: '南向', layout: '2室1厅1卫', price: '¥1000', img: 'ri-2' },
+      { id: 2, name: '二七通透三居', area: '78㎡', orient: '南北通透', layout: '3室1厅1卫', price: '¥1500', img: 'ri-1' }
+    ]
+  },
+  '6': {
+    name: '中原青年社区',
+    price: '¥850-1300',
+    location: '建设路与秦岭路交叉口',
+    meta: '中原老城生活圈 · 交通成熟',
+    rooms: [
+      { id: 1, name: '中原温馨一居', area: '31㎡', orient: '南向', layout: '1室1卫', price: '¥850', img: 'ri-1' },
+      { id: 2, name: '中原合租两居', area: '54㎡', orient: '东南向', layout: '2室1厅1卫', price: '¥1300', img: 'ri-2' }
+    ]
+  }
+};
+
+var currentApartment = detailApartments['1'];
+var currentApartmentId = '1';
+function applyApartmentContext() {
+  var params = new URLSearchParams(window.location.search);
+  var aptId = params.get('id') || '1';
+  var apt = detailApartments[aptId] || detailApartments['1'];
+  currentApartmentId = aptId;
+  currentApartment = apt;
+  document.title = '晓得青年 · ' + apt.name;
+  document.getElementById('detailAptName').textContent = apt.name;
+  document.getElementById('detailPrice').textContent = apt.price;
+  document.getElementById('detailLocation').innerHTML = apt.location + '<br><span style="font-size:12px;color:var(--muted)">' + apt.meta + '</span>';
+  renderRoomList(aptId, apt.rooms || []);
+}
+
+function renderRoomList(aptId, rooms) {
+  var list = document.getElementById('roomList');
+  if (!list) return;
+  list.innerHTML = rooms.map(function(room, index) {
+    var href = 'app-room-detail.html?aptId=' + encodeURIComponent(aptId) + '&roomId=' + encodeURIComponent(room.id);
+    return "<div class=\"room-card\" onclick=\"goRoomDetail('" + href + "')\">" +
+      '<div class="room-img ' + room.img + '"></div>' +
+      '<div class="room-info">' +
+        '<div class="room-name">' + room.name + '</div>' +
+        '<div class="room-meta">' + room.area + ' · ' + room.orient + ' · ' + room.layout + '</div>' +
+      '</div>' +
+      '<div class="room-price">' + room.price + '<span class="room-price-unit">/月起</span></div>' +
+    '</div>';
+  }).join('');
+}
+function goRoomDetail(href) {
+  if (!requireAuth(function() {
+    window.location.href = href;
+  })) return;
+  window.location.href = href;
+}
+applyApartmentContext();
+
+// ─── Carousel ─────────────────────────────────────────────────────
+(function() {
+  var slides = document.querySelectorAll('.carousel-slide');
+  var dots = document.querySelectorAll('.carousel-dot');
+  var current = 0;
+  var total = slides.length;
+
+  function goTo(idx) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = idx;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+  }
+
+  var touchStart = 0;
+  var carousel = document.querySelector('.carousel');
+  carousel.addEventListener('touchstart', function(e) { touchStart = e.touches[0].clientX; }, {passive:true});
+  carousel.addEventListener('touchend', function(e) {
+    var diff = touchStart - e.changedTouches[0].clientX;
+    if (diff > 40) goTo((current + 1) % total);
+    else if (diff < -40) goTo((current - 1 + total) % total);
+  });
+
+  dots.forEach(function(d, i) {
+    d.addEventListener('click', function() { goTo(i); });
+  });
+
+  // Auto advance
+  setInterval(function() { goTo((current + 1) % total); }, 4500);
+})();
+
+// ─── Native Share ────────────────────────────────────────────────
+function openShareSheet() {
+  if (window.requireAuth && !window.isAuthorized()) {
+    requireAuth(openShareSheet);
+    return;
+  }
+  closeAllSheets();
+  showToast('已唤起微信分享转发');
+}
+
+function closeAllSheets() {
+  document.querySelectorAll('.sheet-mask.show, .comment-sheet.show').forEach(function(el) {
+    el.classList.remove('show');
+  });
+}
+
+var detailFavoriteOn = false;
+function toggleDetailFavorite() {
+  if (window.requireAuth && !window.isAuthorized()) {
+    requireAuth(toggleDetailFavorite);
+    return;
+  }
+  detailFavoriteOn = !detailFavoriteOn;
+  var btn = document.getElementById('detailFavBtn');
+  if (btn) btn.classList.toggle('faved', detailFavoriteOn);
+  showToast(detailFavoriteOn ? '已收藏' : '已取消收藏');
+}
+
+// ─── Comment Composer ────────────────────────────────────────────
+var lastApartmentCommentAt = 0;
+var COMMENT_REPEAT_INTERVAL = 5 * 60 * 1000;
+var commentTextInput = document.getElementById('commentText');
+var commentCount = document.getElementById('commentCount');
+if (commentTextInput && commentCount) {
+  commentTextInput.addEventListener('input', function() {
+    commentCount.textContent = commentTextInput.value.length + '/200';
+  });
+}
+
+function openCommentSheet() {
+  if (window.requireAuth && !window.isAuthorized()) {
+    requireAuth(openCommentSheet);
+    return;
+  }
+  closeAllSheets();
+  document.getElementById('commentMask').classList.add('show');
+  document.getElementById('commentSheet').classList.add('show');
+  if (commentTextInput && commentCount) {
+    commentCount.textContent = commentTextInput.value.length + '/200';
+    commentTextInput.focus();
+  }
+}
+
+function closeCommentSheet() {
+  document.getElementById('commentMask').classList.remove('show');
+  document.getElementById('commentSheet').classList.remove('show');
+}
+
+function escapeHtml(text) {
+  return text.replace(/[&<>"']/g, function(ch) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+
+function submitComment() {
+  if (window.requireAuth && !window.isAuthorized()) {
+    requireAuth(submitComment);
+    return;
+  }
+  var textarea = document.getElementById('commentText');
+  var text = textarea.value.trim();
+  if (!text) {
+    showToast('请先写下评价内容');
+    return;
+  }
+  if (text.length > 200) {
+    showToast('评价内容不能超过 200 字');
+    return;
+  }
+  var now = Date.now();
+  if (lastApartmentCommentAt && now - lastApartmentCommentAt < COMMENT_REPEAT_INTERVAL) {
+    showToast('5分钟内不能重复提交评价');
+    return;
+  }
+  document.getElementById('aptCommentList').insertAdjacentHTML('afterbegin',
+    '<div class="comment-item">' +
+      '<div class="comment-user">' +
+        '<div class="comment-avatar ca-1">我</div>' +
+        '<span class="comment-name">我</span>' +
+        '<span class="comment-time">刚刚</span>' +
+      '</div>' +
+      '<div class="comment-body">' + escapeHtml(text) + '</div>' +
+      '<div class="comment-actions">' +
+        '<span class="comment-like" onclick="showToast(&quot;已点赞&quot;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg> 0</span>' +
+        '<span class="comment-like" onclick="showToast(&quot;已回复&quot;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 回复</span>' +
+      '</div>' +
+    '</div>'
+  );
+  lastApartmentCommentAt = now;
+  textarea.value = '';
+  if (commentCount) commentCount.textContent = '0/200';
+  closeCommentSheet();
+  showToast('评价已发布');
+}
+
+// ─── Toast ────────────────────────────────────────────────────────
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800);
+}
+</script>
+
+<script src="auth-guard.js"></script>
+<script>requireAuth(function() {});</script>
+
+</body>
+</html>

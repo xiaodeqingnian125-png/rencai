@@ -1,0 +1,400 @@
+.profile-page {
+  min-height: 100vh;
+  padding-bottom: 44rpx;
+  background: #fafaf6;
+}
+
+.user-header {
+  padding: 24rpx 32rpx 40rpx;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 32rpx;
+  padding: 40rpx;
+  border: 1rpx solid #f0eae0;
+  border-radius: 36rpx;
+  background: #fef8ef;
+}
+
+.user-card:active,
+.menu-item:active,
+.admin-toggle:active,
+.record-btn:active {
+  transform: scale(0.99);
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8723c 0%, #e8590c 100%);
+  color: #ffffff;
+  font-size: 52rpx;
+  font-weight: 650;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  overflow: hidden;
+  color: #2d2318;
+  font-size: 40rpx;
+  font-weight: 650;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-status-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin-top: 8rpx;
+  color: #8c7a68;
+  font-size: 26rpx;
+  line-height: 1.35;
+}
+
+.user-status-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: #5b9a6f;
+  flex-shrink: 0;
+}
+
+.row-arrow,
+.menu-arrow {
+  width: 32rpx;
+  height: 32rpx;
+  flex-shrink: 0;
+}
+
+.menu-section {
+  padding: 0 32rpx 24rpx;
+}
+
+.menu-group {
+  overflow: hidden;
+  border: 1rpx solid #f0eae0;
+  border-radius: 36rpx;
+  background: #fffdf7;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 28rpx;
+  min-height: 136rpx;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid #f0eae0;
+}
+
+.menu-item:last-child {
+  border-bottom: 0;
+}
+
+.menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
+  flex-shrink: 0;
+}
+
+.menu-icon image {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.menu-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #2d2318;
+  font-size: 32rpx;
+  font-weight: 500;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40rpx;
+  height: 40rpx;
+  padding: 0 12rpx;
+  border-radius: 999rpx;
+  background: #e04a3a;
+  color: #ffffff;
+  font-size: 22rpx;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.icon-activity {
+  background: rgba(232, 114, 60, 0.1);
+}
+
+.icon-post {
+  background: rgba(91, 140, 184, 0.1);
+}
+
+.icon-lend {
+  background: rgba(91, 154, 111, 0.1);
+}
+
+.icon-borrow {
+  background: rgba(155, 126, 184, 0.1);
+}
+
+.icon-order {
+  background: rgba(232, 89, 12, 0.1);
+}
+
+.icon-fav {
+  background: rgba(224, 74, 58, 0.1);
+}
+
+.icon-comment,
+.icon-settings,
+.icon-admin {
+  background: rgba(140, 122, 104, 0.1);
+}
+
+.admin-section {
+  padding-bottom: 52rpx;
+}
+
+.admin-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  width: 100%;
+  height: 72rpx;
+  color: #8c7a68;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.admin-toggle image {
+  width: 28rpx;
+  height: 28rpx;
+  transition: transform 220ms ease;
+}
+
+.admin-toggle.open image {
+  transform: rotate(180deg);
+}
+
+.admin-panel {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 220ms ease, opacity 160ms ease;
+}
+
+.admin-panel.show {
+  max-height: 980rpx;
+  opacity: 1;
+}
+
+.admin-label {
+  padding: 8rpx 32rpx 16rpx;
+  color: #a69682;
+  font-size: 24rpx;
+  font-weight: 650;
+  letter-spacing: 1rpx;
+}
+
+.admin-item {
+  min-height: 120rpx;
+}
+
+.profile-overlay {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 80;
+  background: rgba(45, 35, 24, 0.28);
+}
+
+.business-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  max-height: 74vh;
+  overflow: hidden;
+  border-radius: 48rpx 48rpx 0 0;
+  background: #fffdf7;
+  box-shadow: 0 -28rpx 72rpx rgba(45, 35, 24, 0.18);
+}
+
+.sheet-handle {
+  width: 76rpx;
+  height: 8rpx;
+  margin: 20rpx auto 8rpx;
+  border-radius: 999rpx;
+  background: #e8e0d4;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 24rpx;
+  padding: 16rpx 36rpx 28rpx;
+  border-bottom: 1rpx solid #f0eae0;
+}
+
+.sheet-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.sheet-title {
+  color: #2d2318;
+  font-size: 40rpx;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.sheet-subtitle {
+  margin-top: 8rpx;
+  color: #8c7a68;
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+.sheet-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 50%;
+  background: #fef8ef;
+  flex-shrink: 0;
+}
+
+.sheet-close image {
+  width: 34rpx;
+  height: 34rpx;
+}
+
+.sheet-body {
+  max-height: calc(74vh - 160rpx);
+  overflow-y: auto;
+  padding: 28rpx 32rpx 40rpx;
+}
+
+.record-list {
+  display: grid;
+  gap: 24rpx;
+}
+
+.record-card {
+  padding: 28rpx;
+  border: 1rpx solid #f0eae0;
+  border-radius: 36rpx;
+  background: #fafaf6;
+}
+
+.record-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-bottom: 16rpx;
+}
+
+.record-title {
+  flex: 1;
+  min-width: 0;
+  color: #2d2318;
+  font-size: 32rpx;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.record-status {
+  flex-shrink: 0;
+  height: 44rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  color: #5b9a6f;
+  background: rgba(91, 154, 111, 0.13);
+  font-size: 22rpx;
+  font-weight: 650;
+  line-height: 44rpx;
+}
+
+.record-status.warn {
+  color: #e8590c;
+  background: rgba(232, 89, 12, 0.12);
+}
+
+.record-status.muted {
+  color: #5c4a38;
+  background: rgba(140, 122, 104, 0.12);
+}
+
+.record-meta {
+  display: grid;
+  gap: 10rpx;
+  color: #8c7a68;
+  font-size: 26rpx;
+  line-height: 1.45;
+}
+
+.record-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.record-btn {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 76rpx;
+  padding: 0 18rpx;
+  border: 1rpx solid #e8e0d4;
+  border-radius: 999rpx;
+  background: #fffdf7;
+  color: #5c4a38;
+  font-size: 26rpx;
+  font-weight: 650;
+}
+
+.record-btn.primary {
+  border-color: #e8723c;
+  background: #e8723c;
+  color: #ffffff;
+}
+
+.record-empty {
+  padding: 56rpx 32rpx;
+  text-align: center;
+  color: #8c7a68;
+  font-size: 28rpx;
+  line-height: 1.6;
+}

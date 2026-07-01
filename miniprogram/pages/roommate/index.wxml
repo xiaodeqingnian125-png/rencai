@@ -1,0 +1,198 @@
+<view class="roommate-page">
+  <view class="type-tabs">
+    <button
+      wx:for="{{tabs}}"
+      wx:key="value"
+      class="type-tab {{activeType === item.value ? 'active' : ''}}"
+      data-value="{{item.value}}"
+      bindtap="switchType"
+    >
+      <text>{{item.label}}</text>
+      <text class="chip-count">{{item.count}}</text>
+    </button>
+  </view>
+
+  <view class="sub-filter-row">
+    <button
+      class="sub-filter-btn {{activeFilter === 'district' ? 'active' : ''}} {{activeDistrict !== '全部区域' ? 'selected' : ''}}"
+      data-key="district"
+      bindtap="toggleFilter"
+    >
+      <text>{{activeDistrict === '全部区域' ? '区域' : activeDistrict}}</text>
+      <text class="filter-arrow">⌄</text>
+    </button>
+    <button
+      class="sub-filter-btn {{activeFilter === 'price' ? 'active' : ''}} {{activePrice !== '全部价格' ? 'selected' : ''}}"
+      data-key="price"
+      bindtap="toggleFilter"
+    >
+      <text>{{activePrice === '全部价格' ? '价格' : activePrice}}</text>
+      <text class="filter-arrow">⌄</text>
+    </button>
+    <button
+      class="sub-filter-btn {{activeFilter === 'room' ? 'active' : ''}} {{activeRoom !== '全部居室' ? 'selected' : ''}}"
+      data-key="room"
+      bindtap="toggleFilter"
+    >
+      <text>{{activeRoom === '全部居室' ? '居室' : activeRoom}}</text>
+      <text class="filter-arrow">⌄</text>
+    </button>
+  </view>
+
+  <view wx:if="{{activeFilter}}" class="filter-panel">
+    <view wx:if="{{activeFilter === 'district'}}" class="filter-options">
+      <button
+        wx:for="{{districtOptions}}"
+        wx:key="label"
+        class="filter-option {{activeDistrict === item.label ? 'selected' : ''}}"
+        data-value="{{item.label}}"
+        bindtap="selectDistrict"
+      >{{item.label}}</button>
+    </view>
+    <view wx:elif="{{activeFilter === 'price'}}" class="filter-options">
+      <button
+        wx:for="{{priceOptions}}"
+        wx:key="label"
+        class="filter-option {{activePrice === item.label ? 'selected' : ''}}"
+        data-value="{{item.label}}"
+        bindtap="selectPrice"
+      >{{item.label}}</button>
+    </view>
+    <view wx:else class="filter-options">
+      <button
+        wx:for="{{roomOptions}}"
+        wx:key="label"
+        class="filter-option {{activeRoom === item.label ? 'selected' : ''}}"
+        data-value="{{item.label}}"
+        bindtap="selectRoom"
+      >{{item.label}}</button>
+    </view>
+  </view>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" enable-back-to-top class="roommate-scroll">
+    <view wx:if="{{activeType !== 'need_room'}}" class="review-queue">
+      <view wx:for="{{reviewQueue}}" wx:key="title" class="review-card">
+        <view class="review-title">
+          <text>{{item.title}}</text>
+          <text class="review-badge">审核中</text>
+        </view>
+        <view class="review-desc">{{item.desc}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{filteredPosts.length}}" class="post-list">
+      <view wx:for="{{filteredPosts}}" wx:key="id" class="post-card" data-id="{{item.id}}" bindtap="openPostDetail">
+        <view class="post-header">
+          <view class="post-avatar av-{{item.avatarClass}}">{{item.avatar}}</view>
+          <view class="post-user">
+            <view class="post-username">{{item.name}}</view>
+            <view class="post-meta">{{item.meta}}</view>
+          </view>
+          <view class="post-badge {{item.type === 'has_room' ? 'has-room' : 'need-room'}}">
+            {{item.badge}}<text wx:if="{{item.confirmed}}">已确认</text>
+          </view>
+        </view>
+        <view class="post-title">{{item.apartment}}</view>
+        <view class="post-desc">{{item.desc}}</view>
+        <view class="post-tags">
+          <text>{{item.rooms}}</text>
+          <text>{{item.district}}</text>
+          <text>预算 ¥{{item.budget}}</text>
+          <text>{{item.moveIn}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="roommate-empty">
+      <view class="empty-icon">⌕</view>
+      <text class="empty-title">暂无找室友帖子</text>
+      <text class="empty-copy">切换筛选或发布你的找室友需求。</text>
+    </view>
+  </scroll-view>
+
+  <view class="float-pub" bindtap="openPostSheet">
+    <text>+</text>
+  </view>
+
+  <view wx:if="{{postSheetOpen || detailSheetOpen}}" class="sheet-mask" bindtap="closeAllSheets"></view>
+  <view wx:if="{{postSheetOpen}}" class="post-sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-head">
+      <view class="sheet-title">发布找室友</view>
+      <button class="sheet-close" bindtap="closePostSheet">×</button>
+    </view>
+    <view class="segment">
+      <button class="{{publishMode === 'has_room' ? 'active' : ''}}" data-value="has_room" bindtap="setPublishMode">有房找室友</button>
+      <button class="{{publishMode === 'need_room' ? 'active' : ''}}" data-value="need_room" bindtap="setPublishMode">无房找合租</button>
+    </view>
+    <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="form-scroll">
+      <view class="form-grid">
+        <view class="field"><text>昵称</text><input data-field="name" value="{{form.name}}" placeholder="例如：小陈" placeholder-class="input-placeholder" bindinput="handleInput" /></view>
+        <view class="field"><text>性别</text><input data-field="gender" value="{{form.gender}}" placeholder="女 / 男" placeholder-class="input-placeholder" bindinput="handleInput" /></view>
+        <view class="field"><text>年龄</text><input data-field="age" value="{{form.age}}" type="number" placeholder="例如：24" placeholder-class="input-placeholder" bindinput="handleInput" /></view>
+        <view wx:if="{{publishMode === 'has_room'}}" class="field"><text>公寓/小区</text><input data-field="apartment" value="{{form.apartment}}" placeholder="例如：郑东人才公寓" placeholder-class="input-placeholder" bindinput="handleInput" /></view>
+        <view wx:if="{{publishMode === 'has_room'}}" class="field"><text>房源信息</text><input data-field="rooms" value="{{form.rooms}}" placeholder="例如：2居室次卧" placeholder-class="input-placeholder" bindinput="handleInput" /></view>
+        <checkbox-group wx:if="{{publishMode === 'has_room'}}" bindchange="handleConfirm">
+          <label class="confirm-field">
+            <checkbox value="confirmed" checked="{{form.confirmed}}" color="#e8723c" />
+            <text>我已获得该公寓房源，确认后可提交审核</text>
+          </label>
+        </checkbox-group>
+        <view class="field"><text>期望区域</text><input data-field="district" value="{{form.district}}" placeholder="例如：高新区 / 郑东新区" placeholder-class="input-placeholder" bindinput="handleInput" /></view>
+        <view class="field"><text>预算</text><input data-field="budget" value="{{form.budget}}" placeholder="例如：800-1000" placeholder-class="input-placeholder" bindinput="handleInput" /></view>
+        <view class="field"><text>入住时间</text><input data-field="moveIn" value="{{form.moveIn}}" placeholder="例如：7月中旬" placeholder-class="input-placeholder" bindinput="handleInput" /></view>
+        <view class="field"><text>补充说明</text><textarea data-field="desc" value="{{form.desc}}" placeholder="作息、通勤、对室友的期待" placeholder-class="input-placeholder" bindinput="handleInput"></textarea></view>
+        <view class="field"><text>联系方式</text><input data-field="contact" value="{{form.contact}}" placeholder="例如：微信 xiaode-room-01" placeholder-class="input-placeholder" bindinput="handleInput" /></view>
+      </view>
+    </scroll-view>
+    <view class="sheet-actions">
+      <button class="cancel-btn" bindtap="closePostSheet">取消</button>
+      <button class="submit-btn" bindtap="submitPost">提交审核</button>
+    </view>
+  </view>
+
+  <view wx:if="{{detailSheetOpen}}" class="detail-sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-head">
+      <view class="sheet-title">帖子详情</view>
+      <button class="sheet-close" bindtap="closeDetailSheet">×</button>
+    </view>
+    <view class="detail-panel">
+      <view class="detail-user">
+        <view class="post-avatar av-{{selectedPost.avatarClass}}">{{selectedPost.avatar}}</view>
+        <view class="detail-user-main">
+          <view>{{selectedPost.name}}</view>
+          <text>{{selectedPost.meta}} · {{selectedPost.badge}}</text>
+        </view>
+      </view>
+      <view class="detail-row">
+        <text>{{selectedPost.type === 'has_room' ? '公寓/小区' : '目标区域'}}</text>
+        <view>{{selectedPost.type === 'has_room' ? selectedPost.apartment : selectedPost.district}}</view>
+      </view>
+      <view wx:if="{{selectedPost.type === 'has_room'}}" class="detail-row">
+        <text>房源信息</text>
+        <view>{{selectedPost.rooms}}</view>
+      </view>
+      <view class="detail-row">
+        <text>预算</text>
+        <view>¥{{selectedPost.budget}}/月</view>
+      </view>
+      <view class="detail-row">
+        <text>入住时间</text>
+        <view>{{selectedPost.moveIn}}</view>
+      </view>
+      <view class="detail-row">
+        <text>说明</text>
+        <view>{{selectedPost.desc}}</view>
+      </view>
+    </view>
+    <view class="contact-box">
+      <text>联系方式</text>
+      <view>{{selectedPost.contact || '提交后可交换联系方式'}}</view>
+      <text>沟通前建议先说明预算、入住时间和生活习惯。</text>
+    </view>
+    <view class="sheet-actions">
+      <button class="cancel-btn single" bindtap="closeDetailSheet">关闭</button>
+    </view>
+  </view>
+</view>

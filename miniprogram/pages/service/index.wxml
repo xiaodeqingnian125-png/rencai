@@ -1,0 +1,76 @@
+<view class="service-page">
+  <view class="section-hd">
+    <text class="section-hd-title">日常活动</text>
+    <view class="section-hd-more" data-name="全部活动" bindtap="showStaticTip">
+      <text>更多</text>
+      <image src="/assets/icons/chevron-right.svg" mode="aspectFit"></image>
+    </view>
+  </view>
+
+  <view class="activity-list">
+    <view
+      wx:for="{{activities}}"
+      wx:key="id"
+      class="activity-card"
+      data-name="{{item.title}}"
+      bindtap="showStaticTip"
+    >
+      <view class="activity-cover {{item.coverClass}}">
+        <view class="cover-orb orb-a"></view>
+        <view class="cover-orb orb-b"></view>
+        <text class="activity-badge badge-{{item.typeClass}}">{{item.typeLabel}}</text>
+      </view>
+      <view class="activity-body">
+        <view class="activity-title">{{item.title}}</view>
+        <view class="activity-meta">
+          <view class="activity-meta-item">
+            <image src="/assets/icons/calendar.svg" mode="aspectFit"></image>
+            <text>{{item.date}}</text>
+          </view>
+          <view class="activity-meta-item">
+            <image src="/assets/icons/pin.svg" mode="aspectFit"></image>
+            <text>{{item.location}}</text>
+          </view>
+          <view class="activity-meta-item text-only">
+            <text>{{item.mode}} · {{item.fee}}</text>
+          </view>
+        </view>
+        <view class="activity-status status-{{item.statusClass}}">{{item.statusText}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="launch-btn" data-name="发起活动" bindtap="showStaticTip">
+    <image src="/assets/icons/plus.svg" mode="aspectFit"></image>
+    <text>发起活动</text>
+  </view>
+
+  <view class="section-divider"></view>
+
+  <view class="section-hd service-hd">
+    <text class="section-hd-title">代办服务</text>
+    <view class="section-hd-more" data-name="全部代办服务" bindtap="showStaticTip">
+      <text>更多</text>
+      <image src="/assets/icons/chevron-right.svg" mode="aspectFit"></image>
+    </view>
+  </view>
+
+  <view class="service-list">
+    <view
+      wx:for="{{services}}"
+      wx:key="id"
+      class="service-card"
+      data-name="{{item.name}}"
+      bindtap="showStaticTip"
+    >
+      <view class="service-icon">
+        <image src="/assets/icons/service-clock.svg" mode="aspectFit"></image>
+      </view>
+      <view class="service-info">
+        <view class="service-name">{{item.name}}</view>
+        <view class="service-desc">{{item.desc}}</view>
+      </view>
+      <view class="service-price">¥{{item.price}}<text>{{item.unit}}</text></view>
+    </view>
+  </view>
+</view>

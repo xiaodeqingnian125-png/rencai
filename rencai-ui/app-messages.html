@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 · 消息</title>
+<style>
+:root {
+  --bg: #fafaf6;
+  --surface: #fffdf7;
+  --surface-warm: #fef8ef;
+  --fg: #2d2318;
+  --fg-2: #5c4a38;
+  --muted: #8c7a68;
+  --meta: #a69682;
+  --border: #e8e0d4;
+  --border-soft: #f0eae0;
+  --accent: #e8723c;
+  --accent-on: #ffffff;
+  --accent-hover: #f0804a;
+  --accent-active: #d4622c;
+
+  --font-display: "SF Pro Display", "PingFang SC", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "PingFang SC", "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 12px; --text-sm: 14px; --text-base: 16px; --text-lg: 21px;
+  --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 18px; --radius-pill: 980px;
+
+  --elev-raised: 0 12px 32px rgba(0,0,0,0.06);
+  --ease-standard: cubic-bezier(0.28, 0, 0.22, 1);
+  --motion-fast: 150ms; --motion-base: 220ms;
+
+  --price-orange: #e8590c; --community-green: #5b9a6f;
+  --map-blue: #5b8cb8; --badge-red: #e04a3a;
+  --device-bg: #d8d0c4; --phone-bezel: #0a0a0a; --phone-inner: #0a0a0a;
+
+  /* Message type accent tints */
+  --msg-activity: #e8723c;
+  --msg-borrow: #5b8cb8;
+  --msg-service: #5b9a6f;
+  --msg-comment: #b06ad8;
+  --msg-system: #8c7a68;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  display: grid; place-items: center;
+  min-height: 100vh;
+  background: var(--device-bg);
+  font-family: var(--font-body); font-size: var(--text-base); color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame { width: 390px; min-width: 390px; height: 844px; background: var(--phone-bezel); border-radius: 50px; padding: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1); flex-shrink: 0; }
+.phone-screen { width: 100%; height: 100%; background: var(--bg); border-radius: 38px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.dynamic-island { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 126px; height: 34px; background: var(--phone-inner); border-radius: 20px; z-index: 100; }
+
+.status-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px 0; height: 50px; font-size: 14px; font-weight: 600; color: var(--fg); }
+.status-time { flex: 1; }
+.status-icons { display: flex; align-items: center; gap: 6px; }
+.status-icons svg { width: 16px; height: 16px; }
+
+.mp-nav { display: flex; align-items: center; justify-content: center; height: 44px; padding: 0 16px; flex-shrink: 0; position: relative; }
+.mp-nav-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); }
+
+/* ═════════════════════════════════════════════════════════════════
+   Category Tabs
+   ═════════════════════════════════════════════════════════════════ */
+.msg-tabs {
+  display: flex; gap: 0;
+  padding: 4px 16px 0;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.msg-tab {
+  flex: 1; text-align: center;
+  padding: 10px 0;
+  font-size: 13px; font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  position: relative;
+  transition: color var(--motion-fast) var(--ease-standard);
+  user-select: none;
+}
+.msg-tab.active { color: var(--accent); font-weight: 600; }
+.msg-tab.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 25%; right: 25%;
+  height: 2px; background: var(--accent); border-radius: 1px;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   Message List
+   ═════════════════════════════════════════════════════════════════ */
+.mp-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+.msg-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+  position: relative;
+}
+.msg-item:active { background: var(--surface-warm); }
+.msg-item.unread { background: color-mix(in oklab, var(--accent) 3%, var(--bg)); }
+.msg-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.msg-icon svg { width: 22px; height: 22px; }
+.mi-activity { background: color-mix(in oklab, var(--msg-activity) 12%, transparent); color: var(--msg-activity); }
+.mi-borrow { background: color-mix(in oklab, var(--msg-borrow) 12%, transparent); color: var(--msg-borrow); }
+.mi-service { background: color-mix(in oklab, var(--msg-service) 12%, transparent); color: var(--msg-service); }
+.mi-comment { background: color-mix(in oklab, var(--msg-comment) 12%, transparent); color: var(--msg-comment); }
+.mi-system { background: color-mix(in oklab, var(--msg-system) 12%, transparent); color: var(--msg-system); }
+
+.msg-body { flex: 1; min-width: 0; }
+.msg-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.msg-preview { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-meta { font-size: 12px; color: var(--meta); margin-top: 4px; }
+.msg-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--badge-red);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+/* Empty */
+.empty-state { text-align: center; padding: 64px 20px; color: var(--muted); }
+.empty-state svg { width: 48px; height: 48px; color: var(--border); margin-bottom: 12px; }
+.empty-state p { font-size: 14px; line-height: 1.5; }
+
+/* Toast */
+.toast { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 20px; border-radius: var(--radius-pill); font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard); z-index: 200; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+/* Message detail sheet */
+.sheet-mask {
+  position: absolute; inset: 0;
+  background: rgba(45,35,24,0.32);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 160;
+}
+.sheet-mask.show { opacity: 1; pointer-events: auto; }
+.detail-sheet {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-height: 78%;
+  background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -18px 50px rgba(45,35,24,0.18);
+  transform: translateY(105%);
+  transition: transform var(--motion-base) var(--ease-standard);
+  z-index: 170;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.detail-sheet.show { transform: translateY(0); }
+.sheet-handle { width: 42px; height: 5px; border-radius: var(--radius-pill); background: var(--border); margin: 10px auto 6px; flex-shrink: 0; }
+.sheet-head { display: flex; align-items: flex-start; gap: 12px; padding: 8px 18px 14px; border-bottom: 1px solid var(--border-soft); }
+.sheet-title-wrap { flex: 1; min-width: 0; }
+.sheet-kicker { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.sheet-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: var(--fg); }
+.sheet-close { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--surface-warm); color: var(--muted); display: grid; place-items: center; cursor: pointer; }
+.sheet-close svg { width: 18px; height: 18px; }
+.sheet-body { overflow-y: auto; padding: 16px 18px 18px; -webkit-overflow-scrolling: touch; }
+.detail-card { background: var(--bg); border: 1px solid var(--border-soft); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 12px; }
+.detail-label { font-size: 12px; color: var(--meta); margin-bottom: 6px; }
+.detail-text { font-size: 15px; line-height: 1.55; color: var(--fg-2); }
+.detail-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.detail-meta { background: var(--bg); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 10px; }
+.detail-meta strong { display: block; font-size: 12px; color: var(--meta); font-weight: 500; margin-bottom: 3px; }
+.detail-meta span { font-size: 14px; color: var(--fg); font-weight: 600; }
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 2px; }
+.quick-action {
+  border: 0; border-radius: var(--radius-pill);
+  min-height: 42px; padding: 0 14px;
+  font-size: 14px; font-weight: 600;
+  background: var(--surface-warm); color: var(--fg);
+  cursor: pointer;
+}
+.quick-action.primary { background: var(--accent); color: var(--accent-on); }
+.quick-action:active { transform: scale(0.98); }
+
+.home-indicator { width: 134px; height: 5px; background: var(--fg); border-radius: 3px; margin: 8px auto; opacity: 0.2; }
+
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame { width: 100vw; height: 100vh; height: 100dvh; min-width: unset; border-radius: 0; padding: 0; box-shadow: none; }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+  .status-bar { padding: 12px 20px 0; height: 44px; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"/><rect x="3" y="5" width="2" height="6" rx="0.5"/><rect x="6" y="2" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="11" rx="0.5"/></svg>
+        <svg viewBox="0 0 18 12" fill="currentColor"><path d="M1 3.5h1.5L3.5 8h11l1-4.5H16a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1v-6a1 1 0 011-1z"/><rect x="4" y="8.5" width="10" height="1.5" rx="0.5"/></svg>
+        <svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"/><rect x="2" y="2" width="18" height="8" rx="1"/><rect x="25" y="3" width="2" height="6" rx="0.8"/></svg>
+      </div>
+    </div>
+
+    <div class="mp-nav"><span class="mp-nav-title">消息</span></div>
+
+    <!-- Category tabs -->
+    <div class="msg-tabs" data-od-id="msg-tabs" id="msgTabs">
+      <span class="msg-tab active" onclick="setType('all',this)">全部</span>
+      <span class="msg-tab" onclick="setType('activity',this)">活动</span>
+      <span class="msg-tab" onclick="setType('borrow',this)">借用</span>
+      <span class="msg-tab" onclick="setType('service',this)">服务</span>
+      <span class="msg-tab" onclick="setType('comment',this)">评论</span>
+    </div>
+
+    <!-- Message list -->
+    <div class="mp-scroll" data-od-id="msg-scroll">
+      <div id="msgList"></div>
+    </div>
+
+    <!-- TabBar -->
+    <div class="mp-tabbar" data-od-id="tabbar" style="display:flex;align-items:flex-start;padding:6px 4px 0;background:color-mix(in oklab,var(--bg) 92%,transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border-soft);flex-shrink:0;position:relative;">
+      <div class="tab-item" onclick="switchTab(this,'首页')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 8px;cursor:pointer;color:var(--meta);user-select:none;transition:color var(--motion-fast);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span style="font-size:10px;font-weight:500;">首页</span></div>
+      <div class="tab-item" onclick="switchTab(this,'服务')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 8px;cursor:pointer;color:var(--meta);user-select:none;transition:color var(--motion-fast);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span style="font-size:10px;font-weight:500;">服务</span></div>
+      <div class="tab-item" onclick="switchTab(this,'借个锤子')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 8px;cursor:pointer;color:var(--meta);user-select:none;transition:color var(--motion-fast);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M14.4 3.5l6.1 6.1-2.6 2.6-6.1-6.1 2.6-2.6z"/><path d="M11.9 6.1l-1.7 1.7"/><path d="M10.2 7.8L4 14a2.1 2.1 0 000 3l3 3a2.1 2.1 0 003 0l6.2-6.2"/><path d="M5.8 15.8l2.4 2.4"/></svg><span style="font-size:10px;font-weight:500;">借个锤子</span></div>
+      <div class="tab-item active" onclick="switchTab(this,'消息')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 8px;cursor:pointer;color:var(--accent);user-select:none;transition:color var(--motion-fast);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg><span style="font-size:10px;font-weight:500;">消息</span><span id="tabUnreadDot" style="position:absolute;top:2px;right:50%;transform:translateX(18px);min-width:8px;height:8px;background:var(--badge-red);border-radius:50%;border:2px solid var(--bg);"></span></div>
+      <div class="tab-item" onclick="switchTab(this,'我的')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 8px;cursor:pointer;color:var(--meta);user-select:none;transition:color var(--motion-fast);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22v-4a3 3 0 013-3h0a3 3 0 013 3v4"/></svg><span style="font-size:10px;font-weight:500;">我的</span></div>
+    </div>
+
+    <div class="home-indicator"></div>
+    <div class="sheet-mask" id="detailMask" onclick="closeMessageDetail()"></div>
+    <section class="detail-sheet" id="messageDetail" aria-hidden="true">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <div class="msg-icon mi-system" id="detailIcon"></div>
+        <div class="sheet-title-wrap">
+          <div class="sheet-kicker" id="detailKicker">消息详情</div>
+          <div class="sheet-title" id="detailTitle">消息标题</div>
+        </div>
+        <button class="sheet-close" type="button" onclick="closeMessageDetail()" aria-label="关闭消息详情">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <div class="detail-meta-grid">
+          <div class="detail-meta"><strong>消息类型</strong><span id="detailType">系统</span></div>
+          <div class="detail-meta"><strong>时间</strong><span id="detailTime">刚刚</span></div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-label">完整内容</div>
+          <div class="detail-text" id="detailText"></div>
+        </div>
+        <div class="quick-actions" id="quickActions"></div>
+      </div>
+    </section>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+var messages = [
+  { id:1, type:'activity', icon:'mi-activity', title:'活动提醒', preview:'你报名的「郑东公寓周末集市」将于明天14:00开始', detail:'你报名的「郑东公寓周末集市」将于明天14:00在郑东人才公寓中心花园开始。建议提前10分钟到场，现场可领取摊位指引和活动贴纸。', time:'10分钟前', unread:true, status:'待开始' },
+  { id:2, type:'borrow', icon:'mi-borrow', title:'借用申请已确认', preview:'小李已确认你借用「电钻」的申请，取件位置：3号楼502', detail:'小李已确认你借用「电钻」的申请。取件位置：3号楼502；建议今日19:00-21:00之间取件，归还前请确认电池和钻头配件齐全。', time:'1小时前', unread:true, status:'待取件' },
+  { id:3, type:'service', icon:'mi-service', title:'订单已支付', preview:'你已成功支付「代办入住手续」¥50.00，客服将在1个工作日内联系你', detail:'你已成功支付「代办入住手续」¥50.00。客服将在1个工作日内联系你确认材料清单，如需补充身份证明或租赁材料，会通过消息继续提醒。', time:'2小时前', unread:false, status:'处理中' },
+  { id:4, type:'activity', icon:'mi-activity', title:'活动取消通知', preview:'原定于7月20日的「人才公寓篮球友谊赛」因场地原因取消', detail:'原定于7月20日的「人才公寓篮球友谊赛」因场地维护取消。报名名额会自动释放，后续重启时间将在活动页同步。', time:'昨天', unread:true, status:'已取消' },
+  { id:5, type:'borrow', icon:'mi-borrow', title:'借用即将到期', preview:'你借用的「露营帐篷」还剩1天到期，请及时归还', detail:'你借用的「露营帐篷」还剩1天到期，请在明日20:00前归还至2号楼前台。若需要延长借用时间，请先联系物主确认。', time:'昨天', unread:false, status:'待归还' },
+  { id:6, type:'service', icon:'mi-service', title:'服务完成', preview:'你的「代取快递」订单已完成，请确认收货', detail:'你的「代取快递」订单已完成，快递已放置在5号楼一层临时寄存柜。请确认收货，如有遗漏可联系服务人员补充处理。', time:'7月1日', unread:false, status:'待确认' },
+  { id:7, type:'comment', icon:'mi-comment', title:'评价收到回复', preview:'郑东人才公寓管家回复了你的户型评价', detail:'郑东人才公寓管家回复了你对「精致一居室」的评价：感谢反馈，厨房收纳架本周会补充安装，欢迎入住后继续提出建议。', time:'7月1日', unread:false, status:'已回复' },
+  { id:8, type:'system', icon:'mi-system', title:'系统通知', preview:'欢迎加入晓得青年！开始探索你的理想公寓吧', detail:'欢迎加入晓得青年。你可以在首页查看人才公寓，在服务页报名活动和提交代办需求，也可以通过借个锤子共享闲置工具。', time:'7月1日', unread:false, status:'已送达' }
+];
+
+var activeType = 'all';
+var currentMessageId = null;
+
+function setType(type, el) {
+  activeType = type;
+  var tabs = document.querySelectorAll('#msgTabs .msg-tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  el.classList.add('active');
+  renderMessages();
+}
+
+function renderMessages() {
+  var container = document.getElementById('msgList');
+  var filtered = activeType === 'all' ? messages : messages.filter(function(m) { return m.type === activeType; });
+  var tabUnreadDot = document.getElementById('tabUnreadDot');
+  if (tabUnreadDot) {
+    tabUnreadDot.style.display = messages.some(function(m) { return m.unread; }) ? 'block' : 'none';
+  }
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><p>暂无消息</p></div>';
+    return;
+  }
+  var html = '';
+  filtered.forEach(function(m) {
+    html += '<div class="msg-item' + (m.unread ? ' unread' : '') + '" onclick="openMessage(' + m.id + ')">'
+      + '<div class="msg-icon ' + m.icon + '">'
+      + (m.type === 'activity' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'
+       : m.type === 'borrow' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.4 3.5l6.1 6.1-2.6 2.6-6.1-6.1 2.6-2.6z"/><path d="M11.9 6.1l-1.7 1.7"/><path d="M10.2 7.8L4 14a2.1 2.1 0 000 3l3 3a2.1 2.1 0 003 0l6.2-6.2"/></svg>'
+       : m.type === 'service' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 8h10M7 12h6"/></svg>'
+       : m.type === 'comment' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H8l-5 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M8 9h8M8 13h5"/></svg>'
+       : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8v0"/></svg>')
+      + '</div>'
+      + '<div class="msg-body">'
+      + '<div class="msg-title">' + m.title + '</div>'
+      + '<div class="msg-preview">' + m.preview + '</div>'
+      + '<div class="msg-meta">' + m.time + '</div>'
+      + '</div>'
+      + (m.unread ? '<div class="msg-dot"></div>' : '')
+      + '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function getTypeLabel(type) {
+  if (type === 'activity') return '活动';
+  if (type === 'borrow') return '借用';
+  if (type === 'service') return '服务';
+  if (type === 'comment') return '评论';
+  return '系统';
+}
+
+function getMessageIcon(type) {
+  if (type === 'activity') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+  if (type === 'borrow') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.4 3.5l6.1 6.1-2.6 2.6-6.1-6.1 2.6-2.6z"/><path d="M11.9 6.1l-1.7 1.7"/><path d="M10.2 7.8L4 14a2.1 2.1 0 000 3l3 3a2.1 2.1 0 003 0l6.2-6.2"/></svg>';
+  if (type === 'service') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 8h10M7 12h6"/></svg>';
+  if (type === 'comment') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H8l-5 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M8 9h8M8 13h5"/></svg>';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8v0"/></svg>';
+}
+
+function findMessage(id) {
+  for (var i = 0; i < messages.length; i++) {
+    if (messages[i].id === id) return messages[i];
+  }
+  return null;
+}
+
+function openMessage(id) {
+  var msg = findMessage(id);
+  if (!msg) return;
+  currentMessageId = id;
+  msg.unread = false;
+  renderMessages();
+  document.getElementById('detailIcon').className = 'msg-icon ' + msg.icon;
+  document.getElementById('detailIcon').innerHTML = getMessageIcon(msg.type);
+  document.getElementById('detailKicker').textContent = getTypeLabel(msg.type) + '消息 · ' + msg.status;
+  document.getElementById('detailTitle').textContent = msg.title;
+  document.getElementById('detailType').textContent = getTypeLabel(msg.type);
+  document.getElementById('detailTime').textContent = msg.time;
+  document.getElementById('detailText').textContent = msg.detail || msg.preview;
+  renderQuickActions(msg);
+  document.getElementById('detailMask').classList.add('show');
+  document.getElementById('messageDetail').classList.add('show');
+  document.getElementById('messageDetail').setAttribute('aria-hidden', 'false');
+}
+
+function closeMessageDetail() {
+  document.getElementById('detailMask').classList.remove('show');
+  document.getElementById('messageDetail').classList.remove('show');
+  document.getElementById('messageDetail').setAttribute('aria-hidden', 'true');
+}
+
+function renderQuickActions(msg) {
+  var actions = [];
+  if (msg.type === 'activity') {
+    actions = [
+      { label:'查看活动', primary:true, action:"goPage('app-service.html')" },
+      { label: msg.status === '已取消' ? '知道了' : '加入提醒', primary:false, action:"quickDone('已加入提醒')" }
+    ];
+  } else if (msg.type === 'borrow') {
+    actions = [
+      { label:'查看借用', primary:true, action:"goPage('app-borrow.html')" },
+      { label: msg.status === '待归还' ? '联系物主' : '联系对方', primary:false, action:"quickDone('已为你打开联系入口')" }
+    ];
+  } else if (msg.type === 'service') {
+    actions = [
+      { label:'查看订单', primary:true, action:"goPage('app-service.html')" },
+      { label: msg.status === '待确认' ? '确认完成' : '联系客服', primary:false, action: msg.status === '待确认' ? 'confirmService()' : "quickDone('已为你转接客服')" }
+    ];
+  } else if (msg.type === 'comment') {
+    actions = [
+      { label:'查看评论', primary:true, action:"goPage('app-my-comments.html')" },
+      { label:'回复管家', primary:false, action:"quickDone('已打开回复入口')" }
+    ];
+  } else {
+    actions = [
+      { label:'去首页看看', primary:true, action:"goPage('app-home.html')" },
+      { label:'删除消息', primary:false, action:'deleteCurrentMessage()' }
+    ];
+  }
+  if (msg.type !== 'system') {
+    actions.push({ label:'删除消息', primary:false, action:'deleteCurrentMessage()' });
+  }
+  var html = '';
+  actions.forEach(function(action) {
+    html += '<button class="quick-action' + (action.primary ? ' primary' : '') + '" type="button" onclick="' + action.action + '">' + action.label + '</button>';
+  });
+  document.getElementById('quickActions').innerHTML = html;
+}
+
+function goPage(url) {
+  window.location.href = url;
+}
+
+function quickDone(msg) {
+  closeMessageDetail();
+  showToast(msg);
+}
+
+function confirmService() {
+  var msg = findMessage(currentMessageId);
+  if (msg) {
+    msg.status = '已完成';
+    msg.title = '服务已确认完成';
+    msg.preview = '你已确认「代取快递」订单完成，感谢你的反馈';
+    msg.detail = '你已确认「代取快递」订单完成。若后续还有代办需求，可在服务页继续提交。';
+  }
+  closeMessageDetail();
+  renderMessages();
+  showToast('已确认完成');
+}
+
+function deleteCurrentMessage() {
+  if (!currentMessageId) return;
+  messages = messages.filter(function(m) { return m.id !== currentMessageId; });
+  currentMessageId = null;
+  closeMessageDetail();
+  renderMessages();
+  showToast('消息已删除');
+}
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800);
+}
+
+function switchTab(el, name) {
+  if (el.classList.contains('active')) return;
+  var tabs = document.querySelectorAll('.tab-item');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  el.classList.add('active');
+  if (name === '首页') { window.location.href = 'app-home.html'; return; }
+  if (name === '服务') { window.location.href = 'app-service.html'; return; }
+  if (name === '借个锤子') { window.location.href = 'app-borrow.html'; return; }
+  if (name === '我的') { window.location.href = 'app-profile.html'; return; }
+  showToast(name + ' — 即将开放');
+}
+
+renderMessages();
+</script>
+
+<script src="auth-guard.js"></script>
+<script>requireAuth(function() {});</script>
+
+</body>
+</html>

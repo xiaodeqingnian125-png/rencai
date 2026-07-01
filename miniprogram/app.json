@@ -1,0 +1,67 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/apartment-detail/index",
+    "pages/room-detail/index",
+    "pages/roommate/index",
+    "pages/community/index",
+    "pages/map/index",
+    "pages/guide/index",
+    "pages/service/index",
+    "pages/borrow/index",
+    "pages/messages/index",
+    "pages/favorites/index",
+    "pages/my-comments/index",
+    "pages/profile-edit/index",
+    "pages/admin/index",
+    "pages/profile/index"
+  ],
+  "window": {
+    "backgroundColor": "#FAFAF6",
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#FAFAF6",
+    "navigationBarTitleText": "晓得青年",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#7C8580",
+    "selectedColor": "#E8723C",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/tabbar/home.png",
+        "selectedIconPath": "assets/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/service/index",
+        "text": "服务",
+        "iconPath": "assets/tabbar/service.png",
+        "selectedIconPath": "assets/tabbar/service-active.png"
+      },
+      {
+        "pagePath": "pages/borrow/index",
+        "text": "借个锤子",
+        "iconPath": "assets/tabbar/borrow.png",
+        "selectedIconPath": "assets/tabbar/borrow-active.png"
+      },
+      {
+        "pagePath": "pages/messages/index",
+        "text": "消息",
+        "iconPath": "assets/tabbar/messages.png",
+        "selectedIconPath": "assets/tabbar/messages-active.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "assets/tabbar/profile.png",
+        "selectedIconPath": "assets/tabbar/profile-active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

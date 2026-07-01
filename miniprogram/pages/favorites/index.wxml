@@ -1,0 +1,57 @@
+<view class="favorites-page">
+  <view class="seg-tabs">
+    <button
+      wx:for="{{tabs}}"
+      wx:key="value"
+      class="seg-tab {{activeTab === item.value ? 'active' : ''}}"
+      data-value="{{item.value}}"
+      bindtap="switchTab"
+    >
+      <text class="seg-label">{{item.label}}</text>
+      <text class="seg-count">{{item.count}}</text>
+    </button>
+  </view>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" enable-back-to-top class="fav-scroll">
+    <view wx:if="{{list.length}}" class="fav-list">
+      <view
+        wx:for="{{list}}"
+        wx:key="name"
+        class="fav-card"
+        data-id="{{item.id}}"
+        data-apt-id="{{item.aptId}}"
+        bindtap="openFavorite"
+      >
+        <view class="card-img {{item.imageClass}}">
+          <view class="img-glow"></view>
+          <view class="img-block main"></view>
+          <view class="img-block side"></view>
+          <view class="img-line a"></view>
+          <view class="img-line b"></view>
+          <view class="img-line c"></view>
+          <view class="img-badge">{{item.typeLabel}}</view>
+        </view>
+        <view class="card-main">
+          <view class="card-top">
+            <view class="card-name">{{item.name}}</view>
+            <view class="card-price">{{item.price}}</view>
+          </view>
+          <view class="card-meta">{{item.detail}}</view>
+          <view class="card-tags">
+            <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+          </view>
+        </view>
+        <image class="card-arrow" src="/assets/icons/chevron-muted.svg" mode="aspectFit"></image>
+      </view>
+    </view>
+
+    <view wx:else class="empty">
+      <view class="empty-card">
+        <view class="empty-icon">♡</view>
+        <text class="empty-title">还没有收藏</text>
+        <text class="empty-copy">去首页看看感兴趣的人才公寓和户型。</text>
+        <button class="empty-btn" bindtap="goHome">去首页</button>
+      </view>
+    </view>
+  </scroll-view>
+</view>

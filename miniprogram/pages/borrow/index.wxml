@@ -1,0 +1,59 @@
+<view class="borrow-page">
+  <view class="borrow-search-area">
+    <view class="borrow-search-box">
+      <image src="/assets/icons/search.svg" mode="aspectFit"></image>
+      <input
+        value="{{searchValue}}"
+        placeholder="搜索工具名称、位置或说明"
+        placeholder-class="borrow-placeholder"
+        confirm-type="search"
+        bindinput="handleSearchInput"
+      />
+    </view>
+  </view>
+
+  <scroll-view scroll-x class="cat-scroll" show-scrollbar="{{false}}">
+    <view class="cat-row">
+      <button
+        wx:for="{{categories}}"
+        wx:key="value"
+        class="cat-chip {{activeCategory === item.value ? 'active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="selectCategory"
+      >{{item.label}}</button>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{filteredItems.length}}" class="item-list">
+    <view
+      wx:for="{{filteredItems}}"
+      wx:key="id"
+      class="item-card"
+      data-name="{{item.name}}"
+      bindtap="showStaticTip"
+    >
+      <view class="item-thumb {{item.thumbClass}}">
+        <image src="/assets/icons/item-generic.svg" mode="aspectFit"></image>
+      </view>
+      <view class="item-info">
+        <view class="item-name">{{item.name}}</view>
+        <view class="item-desc">{{item.desc}}</view>
+        <view class="item-meta">
+          <text class="item-tag">{{item.categoryLabel}}</text>
+          <text>{{item.location}}</text>
+        </view>
+      </view>
+      <text class="item-status status-{{item.statusClass}}">{{item.statusLabel}}</text>
+    </view>
+  </view>
+
+  <view wx:else class="borrow-empty">
+    <view class="empty-mark">⌕</view>
+    <text class="empty-title">没有找到匹配物品</text>
+    <text class="empty-copy">换个关键词试试</text>
+  </view>
+
+  <view class="float-pub" data-name="发布物品" bindtap="showStaticTip">
+    <image src="/assets/icons/plus.svg" mode="aspectFit"></image>
+  </view>
+</view>

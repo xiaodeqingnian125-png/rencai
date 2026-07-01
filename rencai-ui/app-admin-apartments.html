@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 · 公寓管理</title>
+<style>
+:root {
+  --bg: #fafaf6; --surface: #fffdf7; --surface-warm: #fef8ef;
+  --fg: #2d2318; --fg-2: #5c4a38; --muted: #8c7a68; --meta: #a69682;
+  --border: #e8e0d4; --border-soft: #f0eae0; --accent: #e8723c;
+  --accent-on: #ffffff; --accent-hover: #f0804a; --accent-active: #d4622c;
+  --font-display: "SF Pro Display","PingFang SC","SF Pro Icons","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --font-body: "PingFang SC","SF Pro Text","SF Pro Icons","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --text-xs: 12px; --text-sm: 14px; --text-base: 16px;
+  --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 18px; --radius-pill: 980px;
+  --ease-standard: cubic-bezier(0.28,0,0.22,1);
+  --motion-fast: 150ms; --motion-base: 220ms;
+  --price-orange: #e8590c; --community-green: #5b9a6f; --badge-red: #e04a3a;
+  --device-bg: #d8d0c4; --phone-bezel: #0a0a0a; --phone-inner: #0a0a0a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body { display: grid; place-items: center; min-height: 100vh; background: var(--device-bg); font-family: var(--font-body); font-size: var(--text-base); color: var(--fg); -webkit-font-smoothing: antialiased; }
+
+.phone-frame { width: 390px; min-width: 390px; height: 844px; background: var(--phone-bezel); border-radius: 50px; padding: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1); flex-shrink: 0; }
+.phone-screen { width: 100%; height: 100%; background: var(--bg); border-radius: 38px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.dynamic-island { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 126px; height: 34px; background: var(--phone-inner); border-radius: 20px; z-index: 100; }
+
+.status-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px 0; height: 50px; font-size: 14px; font-weight: 600; color: var(--fg); }
+.status-time { flex: 1; }
+.status-icons { display: flex; align-items: center; gap: 6px; }
+.status-icons svg { width: 16px; height: 16px; }
+
+.mp-nav { display: flex; align-items: center; height: 44px; padding: 0 12px; flex-shrink: 0; position: relative; }
+.mp-nav-back { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; cursor: pointer; transition: background var(--motion-fast); flex-shrink: 0; }
+.mp-nav-back:active { background: var(--surface); }
+.mp-nav-back svg { width: 22px; height: 22px; color: var(--fg); }
+.mp-nav-title { flex: 1; text-align: center; font-family: var(--font-display); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); margin-right: 32px; }
+
+.mp-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; padding-bottom: 8px; }
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+/* Toolbar */
+.toolbar { display: flex; gap: 8px; padding: 12px 16px; flex-shrink: 0; }
+.search-box { flex: 1; display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 12px; cursor: text; }
+.search-box svg { width: 16px; height: 16px; color: var(--meta); flex-shrink: 0; }
+.search-box input { flex: 1; border: none; background: transparent; font: inherit; font-size: 14px; color: var(--fg); outline: none; }
+.search-box input::placeholder { color: var(--meta); }
+.btn-add { padding: 8px 16px; background: var(--accent); color: var(--accent-on); border: none; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+.btn-add:active { opacity: 0.85; }
+
+/* List */
+.list { padding: 4px 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+.item { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-lg); padding: 14px 16px; }
+.item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.item-name { font-size: 16px; font-weight: 600; }
+.item-actions { display: flex; gap: 6px; }
+.btn-sm { padding: 5px 12px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--fg-2); transition: all var(--motion-fast); }
+.btn-sm:active { opacity: 0.7; }
+.btn-sm.danger { color: var(--badge-red); border-color: color-mix(in oklab, var(--badge-red) 30%, transparent); }
+.item-meta { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.item-status { display: inline-block; padding: 2px 8px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; margin-top: 6px; }
+.status-on { background: color-mix(in oklab, var(--community-green) 10%, transparent); color: var(--community-green); }
+.status-off { background: color-mix(in oklab, var(--muted) 10%, transparent); color: var(--muted); }
+
+/* Empty */
+.empty { text-align: center; padding: 64px 20px; color: var(--muted); }
+.empty svg { width: 48px; height: 48px; color: var(--border); margin-bottom: 12px; }
+.empty p { font-size: 14px; }
+
+/* Modal */
+.modal-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; display: none; align-items: center; justify-content: center; }
+.modal-mask.show { display: flex; }
+.modal-card { width: 340px; max-height: 720px; overflow-y: auto; background: var(--bg); border-radius: var(--radius-lg); padding: 20px; animation: fadeIn var(--motion-base); }
+.modal-card::-webkit-scrollbar { width: 0; }
+.modal-title { font-size: 17px; font-weight: 600; margin-bottom: 16px; text-align: center; }
+.modal-field { margin-bottom: 10px; }
+.modal-field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.modal-field input, .modal-field textarea, .modal-field select { width: 100%; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); font: inherit; font-size: 14px; color: var(--fg); }
+.modal-field textarea { height: 60px; resize: vertical; }
+.modal-field textarea.tall { height: 72px; }
+.check-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.check-chip { position: relative; display: inline-flex; align-items: center; min-height: 34px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--surface); color: var(--fg-2); font-size: 13px; font-weight: 500; line-height: 1; cursor: pointer; transition: background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard); }
+.check-chip input { position: absolute; opacity: 0; pointer-events: none; }
+.check-chip:has(input:checked) { background: color-mix(in oklab, var(--accent) 12%, var(--surface)); border-color: color-mix(in oklab, var(--accent) 48%, var(--border)); color: var(--accent-active); }
+.check-chip:active { transform: scale(0.97); }
+.field-help { margin-top: 4px; font-size: 11px; line-height: 1.4; color: var(--meta); }
+.modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+.modal-btn { flex: 1; padding: 12px 0; border-radius: var(--radius-md); font-size: 15px; font-weight: 600; cursor: pointer; border: none; text-align: center; }
+.btn-cancel { background: var(--surface); color: var(--fg); border: 1px solid var(--border); }
+.btn-confirm { background: var(--accent); color: var(--accent-on); }
+.btn-delete { background: var(--badge-red); color: #fff; }
+
+@keyframes fadeIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
+
+.toast { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 20px; border-radius: var(--radius-pill); font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity var(--motion-base); z-index: 250; white-space: nowrap; }
+.toast.show { opacity: 1; }
+.home-indicator { width: 134px; height: 5px; background: var(--fg); border-radius: 3px; margin: 8px auto; opacity: 0.2; }
+
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame { width: 100vw; height: 100vh; height: 100dvh; min-width: unset; border-radius: 0; padding: 0; box-shadow: none; }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+  .status-bar { padding: 12px 20px 0; height: 44px; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"/><rect x="3" y="5" width="2" height="6" rx="0.5"/><rect x="6" y="2" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="11" rx="0.5"/></svg>
+        <svg viewBox="0 0 18 12" fill="currentColor"><path d="M1 3.5h1.5L3.5 8h11l1-4.5H16a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1v-6a1 1 0 011-1z"/><rect x="4" y="8.5" width="10" height="1.5" rx="0.5"/></svg>
+        <svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"/><rect x="2" y="2" width="18" height="8" rx="1"/><rect x="25" y="3" width="2" height="6" rx="0.8"/></svg>
+      </div>
+    </div>
+
+    <div class="mp-nav">
+      <div class="mp-nav-back" onclick="history.back()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <span class="mp-nav-title">公寓管理</span>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" placeholder="搜索公寓名称" id="searchInput" oninput="render()">
+      </div>
+      <button class="btn-add" onclick="openForm(null)">+ 新增</button>
+    </div>
+
+    <div class="mp-scroll">
+      <div class="list" id="list"></div>
+    </div>
+
+    <!-- Form Modal -->
+    <div class="modal-mask" id="formMask" onclick="closeForm(event)">
+      <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-title" id="formTitle">新增公寓</div>
+        <div class="modal-field"><label>公寓名称</label><input id="fName" placeholder="如：郑东人才公寓"></div>
+        <div class="modal-field"><label>区域</label><input id="fDistrict" placeholder="如：郑东新区"></div>
+        <div class="modal-field"><label>地址</label><input id="fAddress" placeholder="详细地址"></div>
+        <div class="modal-field"><label>租金范围</label><input id="fRent" placeholder="如：¥1200-1800/月"></div>
+        <div class="modal-field"><label>居室类型</label><input id="fRooms" placeholder="如：1-2居"></div>
+        <div class="modal-field">
+          <label>配套设施</label>
+          <div class="check-grid" id="fFacilities"></div>
+          <div class="field-help">可多选，选项与公寓详情页“配套设施”同步。</div>
+        </div>
+        <div class="modal-field">
+          <label>公共配套</label>
+          <div class="check-grid" id="fPublicFacilities"></div>
+          <div class="field-help">可多选，选项与公寓详情页“公共设施”同步。</div>
+        </div>
+        <div class="modal-field">
+          <label>周边配套</label>
+          <div class="check-grid" id="fNearby"></div>
+          <div class="field-help">可多选，选项与公寓详情页“周边服务”同步。</div>
+        </div>
+        <div class="modal-field"><label>状态</label><select id="fStatus"><option value="active">启用</option><option value="inactive">停用</option></select></div>
+        <input type="hidden" id="fId">
+        <div class="modal-actions">
+          <button class="modal-btn btn-cancel" onclick="closeForm()">取消</button>
+          <button class="modal-btn btn-delete" id="btnDelete" style="display:none" onclick="deleteItem()">删除</button>
+          <button class="modal-btn btn-confirm" onclick="saveItem()">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete confirm -->
+    <div class="modal-mask" id="deleteMask" onclick="closeDelete(event)">
+      <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-title">确认删除</div>
+        <p style="text-align:center;font-size:14px;color:var(--muted);margin-bottom:16px;">删除后不可恢复，确定要删除这个公寓吗？</p>
+        <div class="modal-actions">
+          <button class="modal-btn btn-cancel" onclick="closeDelete()">取消</button>
+          <button class="modal-btn btn-delete" onclick="confirmDelete()">确认删除</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-indicator"></div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+var data = [
+  { id:1, name:'郑东人才公寓', district:'郑东新区', address:'金水东路与东风南路交叉口', rent:'¥1200-1800/月', rooms:'1-2居', status:'active', facilities:['洗衣机','冰箱','油烟机','暖气','空调','热水器'], publicFacilities:['健身房','快递柜','自习室','洗衣房'], nearby:['超市/便利店','快餐小吃','药店','社区医院','快递柜'] },
+  { id:2, name:'高新人才家园', district:'高新区', address:'科学大道与长椿路交叉口', rent:'¥800-1200/月', rooms:'开间/1居', status:'active', facilities:['洗衣机','冰箱','空调','热水器'], publicFacilities:['快递柜','自习室','洗衣房'], nearby:['超市/便利店','药店'] },
+  { id:3, name:'经开青年公寓', district:'经开区', address:'航海东路与经开第八大街', rent:'¥900-1400/月', rooms:'1-2居', status:'active', facilities:['冰箱','油烟机','暖气','空调','热水器'], publicFacilities:['健身房','快递柜','充电桩','自习室'], nearby:['超市/便利店','社区医院','快餐小吃'] },
+  { id:4, name:'港区人才社区', district:'航空港区', address:'华夏大道与迎宾路交叉口', rent:'¥700-1000/月', rooms:'开间/1居', status:'active', facilities:['洗衣机','空调','热水器','暖气'], publicFacilities:['快递柜','洗衣房'], nearby:['超市/便利店','药店'] },
+  { id:5, name:'二七人才公寓', district:'二七区', address:'大学路与航海路交叉口', rent:'¥1000-1500/月', rooms:'2-3居', status:'active', facilities:['洗衣机','冰箱','油烟机','空调','热水器'], publicFacilities:['健身房','自习室','快递柜'], nearby:['药店','社区医院'] },
+  { id:6, name:'中原青年社区', district:'中原区', address:'建设路与秦岭路交叉口', rent:'¥850-1300/月', rooms:'1-2居', status:'active', facilities:['冰箱','暖气','空调','热水器'], publicFacilities:['洗衣房','快递柜','自习室'], nearby:['超市/便利店','快餐小吃'] }
+];
+var nextId = 7;
+var editId = null;
+var deleteId = null;
+var optionGroups = {
+  facilities: ['洗衣机','冰箱','油烟机','暖气','空调','热水器','燃气灶'],
+  publicFacilities: ['健身房','快递柜','充电桩','自习室','洗衣房','乒乓球'],
+  nearby: ['超市/便利店','快餐小吃','药店','社区医院','快递柜']
+};
+var optionAliases = {
+  nearby: {
+    '超市': '超市/便利店',
+    '便利店': '超市/便利店'
+  }
+};
+
+function normalizeCheckValues(id, values) {
+  var options = optionGroups[id] || [];
+  var aliases = optionAliases[id] || {};
+  var normalized = [];
+  (values || []).forEach(function(item) {
+    var value = aliases[item] || item;
+    if (options.indexOf(value) !== -1 && normalized.indexOf(value) === -1) {
+      normalized.push(value);
+    }
+  });
+  return normalized;
+}
+
+function renderCheckGroup(id, values) {
+  var selected = normalizeCheckValues(id, values);
+  var options = (optionGroups[id] || []).slice();
+  document.getElementById('f' + id.charAt(0).toUpperCase() + id.slice(1)).innerHTML = options.map(function(option) {
+    var checked = selected.indexOf(option) !== -1 ? ' checked' : '';
+    return '<label class="check-chip"><input type="checkbox" value="' + option + '"' + checked + '><span>' + option + '</span></label>';
+  }).join('');
+}
+
+function setCheckValues(values) {
+  renderCheckGroup('facilities', values && values.facilities);
+  renderCheckGroup('publicFacilities', values && values.publicFacilities);
+  renderCheckGroup('nearby', values && values.nearby);
+}
+
+function getCheckValues(fieldId) {
+  var values = Array.prototype.slice.call(document.querySelectorAll('#' + fieldId + ' input:checked'))
+    .map(function(input) { return input.value; });
+  if (fieldId === 'fFacilities') return normalizeCheckValues('facilities', values);
+  if (fieldId === 'fPublicFacilities') return normalizeCheckValues('publicFacilities', values);
+  if (fieldId === 'fNearby') return normalizeCheckValues('nearby', values);
+  return values;
+}
+
+function render() {
+  var q = document.getElementById('searchInput').value.toLowerCase();
+  var filtered = data.filter(function(d) {
+    return d.name.toLowerCase().indexOf(q) !== -1 || d.district.toLowerCase().indexOf(q) !== -1;
+  });
+  var html = '';
+  filtered.forEach(function(d) {
+    html += '<div class="item">'
+      + '<div class="item-header"><span class="item-name">' + d.name + '</span>'
+      + '<div class="item-actions">'
+      + '<button class="btn-sm" onclick="openForm(' + d.id + ')">编辑</button>'
+      + '<button class="btn-sm danger" onclick="openDelete(' + d.id + ')">删除</button>'
+      + '</div></div>'
+      + '<div class="item-meta">' + d.district + ' · ' + d.address + '<br>' + d.rent + ' · ' + d.rooms + '<br>配套 ' + ((d.facilities || []).length + (d.publicFacilities || []).length + (d.nearby || []).length) + ' 项</div>'
+      + '<span class="item-status ' + (d.status === 'active' ? 'status-on' : 'status-off') + '">' + (d.status === 'active' ? '启用' : '停用') + '</span>'
+      + '</div>';
+  });
+  document.getElementById('list').innerHTML = html || '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><p>暂无公寓数据</p></div>';
+}
+
+function openForm(id) {
+  editId = id;
+  if (id) {
+    var d = data.find(function(x) { return x.id === id; });
+    document.getElementById('formTitle').textContent = '编辑公寓';
+    document.getElementById('fName').value = d.name;
+    document.getElementById('fDistrict').value = d.district;
+    document.getElementById('fAddress').value = d.address;
+    document.getElementById('fRent').value = d.rent;
+    document.getElementById('fRooms').value = d.rooms;
+    setCheckValues(d);
+    document.getElementById('fStatus').value = d.status;
+    document.getElementById('btnDelete').style.display = 'block';
+  } else {
+    document.getElementById('formTitle').textContent = '新增公寓';
+    document.getElementById('fName').value = '';
+    document.getElementById('fDistrict').value = '';
+    document.getElementById('fAddress').value = '';
+    document.getElementById('fRent').value = '';
+    document.getElementById('fRooms').value = '';
+    setCheckValues({});
+    document.getElementById('fStatus').value = 'active';
+    document.getElementById('btnDelete').style.display = 'none';
+  }
+  document.getElementById('formMask').classList.add('show');
+}
+
+function saveItem() {
+  var isEditing = !!editId;
+  var obj = {
+    name: document.getElementById('fName').value.trim(),
+    district: document.getElementById('fDistrict').value.trim(),
+    address: document.getElementById('fAddress').value.trim(),
+    rent: document.getElementById('fRent').value.trim(),
+    rooms: document.getElementById('fRooms').value.trim(),
+    facilities: getCheckValues('fFacilities'),
+    publicFacilities: getCheckValues('fPublicFacilities'),
+    nearby: getCheckValues('fNearby'),
+    status: document.getElementById('fStatus').value
+  };
+  if (!obj.name) { showToast('请输入公寓名称'); return; }
+  if (isEditing) {
+    var d = data.find(function(x) { return x.id === editId; });
+    Object.assign(d, obj);
+  } else {
+    obj.id = nextId++;
+    data.push(obj);
+  }
+  closeForm();
+  render();
+  showToast(isEditing ? '已更新' : '已新增');
+}
+
+function openDelete(id) { deleteId = id; document.getElementById('deleteMask').classList.add('show'); }
+function deleteItem() { if (!editId) return; var id = editId; closeForm(); openDelete(id); }
+function closeDelete(e) { if (e && e.target !== document.getElementById('deleteMask')) return; document.getElementById('deleteMask').classList.remove('show'); }
+function confirmDelete() {
+  data = data.filter(function(x) { return x.id !== deleteId; });
+  closeDelete();
+  render();
+  showToast('已删除');
+}
+
+function closeForm(e) { if (e && e.target !== document.getElementById('formMask')) return; document.getElementById('formMask').classList.remove('show'); editId = null; }
+
+var toastTimer;
+function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800); }
+render();
+</script>
+</body>
+</html>

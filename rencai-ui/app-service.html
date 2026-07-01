@@ -1,0 +1,1457 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 · 服务</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   Warm Community palette — shared tokens
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #fafaf6;
+  --surface: #fffdf7;
+  --surface-warm: #fef8ef;
+  --fg: #2d2318;
+  --fg-2: #5c4a38;
+  --muted: #8c7a68;
+  --meta: #a69682;
+  --border: #e8e0d4;
+  --border-soft: #f0eae0;
+  --accent: #e8723c;
+  --accent-on: #ffffff;
+  --accent-hover: #f0804a;
+  --accent-active: #d4622c;
+
+  --font-display: "SF Pro Display", "PingFang SC", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "PingFang SC", "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 21px;
+
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 980px;
+
+  --elev-raised: 0 12px 32px rgba(0,0,0,0.06);
+  --ease-standard: cubic-bezier(0.28, 0, 0.22, 1);
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+
+  /* Semantic */
+  --price-orange: #e8590c;
+  --community-green: #5b9a6f;
+  --map-blue: #5b8cb8;
+  --guide-plum: #9b7eb8;
+  --badge-red: #e04a3a;
+
+  /* Device frame */
+  --device-bg: #d8d0c4;
+  --phone-bezel: #0a0a0a;
+  --phone-inner: #0a0a0a;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Reset & Base
+   ═══════════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  display: grid; place-items: center;
+  min-height: 100vh;
+  background: var(--device-bg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Phone Frame
+   ═══════════════════════════════════════════════════════════════════════ */
+.phone-frame {
+  width: 390px; min-width: 390px;
+  height: 844px;
+  background: var(--phone-bezel);
+  border-radius: 50px;
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+.phone-screen {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  border-radius: 38px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.dynamic-island {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 34px;
+  background: var(--phone-inner); border-radius: 20px;
+  z-index: 100;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Status Bar
+   ═══════════════════════════════════════════════════════════════════════ */
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px 0;
+  height: 50px;
+  font-size: 14px; font-weight: 600;
+  color: var(--fg);
+}
+.status-time { flex: 1; }
+.status-icons { display: flex; align-items: center; gap: 6px; }
+.status-icons svg { width: 16px; height: 16px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Nav Bar
+   ═══════════════════════════════════════════════════════════════════════ */
+.mp-nav {
+  display: flex; align-items: center; justify-content: center;
+  height: 44px; padding: 0 16px;
+  position: relative;
+  flex-shrink: 0;
+}
+.mp-nav-title {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.mp-nav-dots {
+  position: absolute; right: 16px;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.mp-nav-dots:active { background: var(--surface); }
+.mp-nav-dots svg { width: 20px; height: 20px; color: var(--fg); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Scroll Area
+   ═══════════════════════════════════════════════════════════════════════ */
+.mp-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding-bottom: 8px;
+}
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Section Header
+   ═══════════════════════════════════════════════════════════════════════ */
+.section-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 16px 10px;
+}
+.section-hd-title {
+  font-family: var(--font-display);
+  font-size: 19px; font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.section-hd-more {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 14px; font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  user-select: none;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.section-hd-more:active { opacity: 0.7; }
+.section-hd-more svg { width: 14px; height: 14px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Activity Cards
+   ═══════════════════════════════════════════════════════════════════════ */
+.activity-list {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 0 16px;
+}
+.activity-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard),
+              box-shadow var(--motion-fast) var(--ease-standard);
+  user-select: none;
+}
+.activity-card:active { transform: scale(0.985); }
+.activity-cover {
+  width: 100%; aspect-ratio: 2.4 / 1;
+  position: relative;
+  overflow: hidden;
+}
+.activity-cover-bg {
+  width: 100%; height: 100%;
+}
+.activity-badge {
+  position: absolute; top: 10px; left: 10px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.badge-official { background: var(--accent); color: var(--accent-on); }
+.badge-user    { background: var(--community-green); color: #fff; }
+.activity-body { padding: 14px 16px; }
+.activity-title {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+.activity-meta {
+  display: flex; flex-wrap: wrap; gap: 6px 16px;
+}
+.activity-meta-item {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 13px; color: var(--muted);
+}
+.activity-meta-item svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--meta); }
+.activity-status {
+  margin-top: 8px;
+  font-size: 12px; font-weight: 600;
+}
+.status-open { color: var(--community-green); }
+.status-full  { color: var(--muted); }
+.status-review { color: var(--accent); }
+
+.review-queue {
+  display: none;
+  margin: 12px 16px 0;
+  padding: 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklab, var(--accent) 5%, var(--bg));
+}
+.review-queue.show { display: block; }
+.review-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.review-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--fg);
+}
+.review-count {
+  font-size: 11px; font-weight: 700;
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+  border-radius: var(--radius-pill);
+  padding: 3px 8px;
+}
+.review-item {
+  padding: 10px 0;
+  border-top: 1px solid var(--border-soft);
+}
+.review-item:first-of-type { border-top: 0; padding-top: 0; }
+.review-name {
+  font-size: 15px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.review-meta {
+  font-size: 12px; color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Activity cover gradients */
+.cover-grad-1 { background: linear-gradient(135deg, #f5e8d8 0%, #e8d4b8 40%, #dcc8a0 100%); }
+.cover-grad-2 { background: linear-gradient(135deg, #e8f0e8 0%, #d0e0d0 40%, #bcd0bc 100%); }
+.cover-grad-3 { background: linear-gradient(135deg, #f0e8f0 0%, #ddd0e0 40%, #cbc0d0 100%); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Launch Activity Button
+   ═══════════════════════════════════════════════════════════════════════ */
+.launch-btn-area {
+  padding: 12px 16px 0;
+}
+.btn-launch {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%;
+  padding: 13px 0;
+  background: transparent;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  font-size: 15px; font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-standard);
+  user-select: none;
+}
+.btn-launch:active {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 4%, transparent);
+}
+.btn-launch svg { width: 18px; height: 18px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Service (代办) Cards
+   ═══════════════════════════════════════════════════════════════════════ */
+.service-list {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 0 16px;
+}
+.service-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard),
+              box-shadow var(--motion-fast) var(--ease-standard);
+  user-select: none;
+}
+.service-card:active { transform: scale(0.985); }
+.service-icon {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+  color: var(--accent);
+}
+.service-icon svg { width: 24px; height: 24px; }
+.service-info { flex: 1; min-width: 0; }
+.service-name {
+  font-size: 16px; font-weight: 600;
+  letter-spacing: -0.005em;
+  margin-bottom: 2px;
+}
+.service-desc {
+  font-size: 13px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.service-price {
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 600;
+  color: var(--price-orange);
+  flex-shrink: 0;
+}
+.service-price .unit {
+  font-size: 12px; font-weight: 400;
+  color: var(--muted);
+}
+
+/* Full list filters */
+.list-filter-panel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.filter-group {
+  display: grid;
+  gap: 8px;
+}
+.filter-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.filter-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.filter-chips::-webkit-scrollbar { width: 0; height: 0; }
+.filter-chip {
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  color: var(--fg-2);
+  padding: 7px 12px;
+  font: 700 13px var(--font-body);
+  cursor: pointer;
+}
+.filter-chip.active {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 9%, var(--bg));
+  color: var(--accent);
+}
+.full-list {
+  display: grid;
+  gap: 10px;
+}
+.full-list-item {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  padding: 13px;
+  cursor: pointer;
+}
+.full-list-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+.full-list-title {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.full-list-tag {
+  flex: 0 0 auto;
+  border-radius: var(--radius-pill);
+  background: var(--surface-warm);
+  color: var(--fg-2);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.full-list-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.full-list-desc {
+  margin-top: 8px;
+  color: var(--fg-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Empty State
+   ═══════════════════════════════════════════════════════════════════════ */
+.empty-state {
+  text-align: center; padding: 36px 20px 28px;
+  color: var(--muted);
+}
+.empty-state svg { width: 44px; height: 44px; color: var(--border); margin-bottom: 12px; }
+.empty-state p { font-size: 14px; line-height: 1.5; }
+
+/* Divider between sections */
+.section-divider {
+  height: 6px;
+  background: var(--surface);
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  margin: 20px 0 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TabBar
+   ═══════════════════════════════════════════════════════════════════════ */
+.mp-tabbar {
+  display: flex; align-items: flex-start;
+  padding: 6px 4px 0;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-soft);
+  flex-shrink: 0;
+  position: relative;
+}
+.tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 6px 0 8px;
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-standard);
+  user-select: none;
+  color: var(--meta);
+}
+.tab-item.active { color: var(--accent); }
+.tab-item svg { width: 24px; height: 24px; }
+.tab-label { font-size: 10px; font-weight: 500; letter-spacing: 0.01em; }
+.tab-badge {
+  position: absolute; top: 2px; right: 50%; transform: translateX(18px);
+  min-width: 8px; height: 8px;
+  background: var(--badge-red); border-radius: 50%;
+  border: 2px solid var(--bg);
+}
+
+/* Home indicator */
+.home-indicator {
+  width: 134px; height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  margin: 8px auto;
+  opacity: 0.2;
+}
+
+/* Toast */
+.toast {
+  position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+  background: var(--fg); color: var(--bg);
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 14px; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 200;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* Modal sheets */
+.modal-mask {
+  position: absolute; inset: 0;
+  background: rgba(45,35,24,0.28);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 160;
+}
+.modal-mask.show { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-height: 84%; overflow-y: auto;
+  background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  padding: 18px 18px 24px;
+  transform: translateY(100%);
+  transition: transform var(--motion-base) var(--ease-standard);
+  box-shadow: 0 -12px 32px rgba(45,35,24,0.16);
+  z-index: 170;
+}
+.sheet.show { transform: translateY(0); }
+.sheet-hd { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.sheet-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.sheet-close { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--surface-warm); color: var(--fg); display: grid; place-items: center; cursor: pointer; }
+.sheet-close svg { width: 18px; height: 18px; }
+.detail-panel { border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--bg); padding: 14px; margin-bottom: 12px; }
+.detail-panel h3 { font-size: 18px; margin-bottom: 8px; }
+.detail-panel p { font-size: 14px; color: var(--muted); line-height: 1.55; }
+.detail-list { display: grid; gap: 8px; margin-top: 10px; }
+.detail-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--border-soft); font-size: 14px; }
+.detail-row span:first-child { color: var(--muted); }
+.detail-row span:last-child { color: var(--fg); text-align: right; }
+.form-grid { display: grid; gap: 10px; }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 13px; font-weight: 600; color: var(--fg-2); }
+.field input, .field select, .field textarea {
+  width: 100%; border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--bg); color: var(--fg); font: 14px var(--font-body);
+  padding: 11px 12px; outline: 0;
+}
+.field textarea { min-height: 72px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 86%); }
+.check-card {
+  display: flex; align-items: flex-start; gap: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  padding: 11px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--fg-2);
+}
+.check-card input {
+  width: 18px; height: 18px; margin-top: 1px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.hint-card {
+  display: flex; gap: 10px;
+  border: 1px solid color-mix(in oklab, var(--accent) 18%, var(--border-soft));
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--accent) 6%, var(--bg));
+  padding: 11px 12px;
+  color: var(--fg-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.hint-card svg { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.segmented label,
+.cover-option {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  font-size: 13px; font-weight: 700;
+  color: var(--fg);
+  cursor: pointer;
+}
+.segmented input,
+.cover-option input { accent-color: var(--accent); }
+.cover-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.cover-option {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 7px;
+  min-height: auto;
+}
+.cover-swatch {
+  height: 34px;
+  border-radius: var(--radius-sm);
+}
+.payment-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.payment-option input { accent-color: var(--accent); }
+.payment-option small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.order-success {
+  text-align: center;
+  padding: 6px 2px 2px;
+}
+.order-success svg {
+  width: 48px;
+  height: 48px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.order-success h3 {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+.order-success p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.order-status-card {
+  margin-top: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--surface-warm);
+  padding: 12px;
+}
+.order-status-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.order-status-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--fg);
+}
+.order-status-note {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.order-badge {
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.order-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.order-step {
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  padding: 8px 6px;
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--muted);
+  text-align: center;
+  font-weight: 700;
+}
+.order-step.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-on);
+}
+.order-step.done {
+  color: var(--fg);
+  border-color: color-mix(in oklab, var(--accent) 22%, var(--border));
+}
+.action-row { display: flex; gap: 10px; margin-top: 14px; }
+.btn { flex: 1; border: 0; border-radius: var(--radius-pill); padding: 12px 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.btn-primary { background: var(--accent); color: var(--accent-on); }
+.btn-secondary { background: var(--surface-warm); color: var(--fg); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame {
+    width: 100vw; height: 100vh; height: 100dvh;
+    min-width: unset;
+    border-radius: 0; padding: 0;
+    box-shadow: none;
+  }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+  .status-bar { padding: 12px 20px 0; height: 44px; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"/><rect x="3" y="5" width="2" height="6" rx="0.5"/><rect x="6" y="2" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="11" rx="0.5"/></svg>
+        <svg viewBox="0 0 18 12" fill="currentColor"><path d="M1 3.5h1.5L3.5 8h11l1-4.5H16a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1v-6a1 1 0 011-1z"/><rect x="4" y="8.5" width="10" height="1.5" rx="0.5"/></svg>
+        <svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"/><rect x="2" y="2" width="18" height="8" rx="1"/><rect x="25" y="3" width="2" height="6" rx="0.8"/></svg>
+      </div>
+    </div>
+
+    <div class="mp-nav">
+      <span class="mp-nav-title">晓得青年</span>
+      <div class="mp-nav-dots" onclick="showToast('菜单')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+      </div>
+    </div>
+
+    <div class="mp-scroll" data-od-id="service-scroll">
+
+      <!-- ═════════════════════════════════════════════════════════════════
+           Section 1: 日常活动
+           ═════════════════════════════════════════════════════════════════ -->
+      <div class="section-hd" data-od-id="activity-header">
+        <span class="section-hd-title">日常活动</span>
+        <span class="section-hd-more" onclick="openFullList('activity')">
+          更多 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </span>
+      </div>
+
+      <div class="activity-list" id="activityList" data-od-id="activity-list">
+      </div>
+
+      <div class="review-queue" id="activityReviewQueue" data-od-id="activity-review-queue"></div>
+
+      <div class="launch-btn-area">
+        <button class="btn-launch" onclick="openLaunchSheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          发起活动
+        </button>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- ═════════════════════════════════════════════════════════════════
+           Section 2: 代办服务
+           ═════════════════════════════════════════════════════════════════ -->
+      <div class="section-hd" data-od-id="service-header">
+        <span class="section-hd-title">代办服务</span>
+        <span class="section-hd-more" onclick="openFullList('service')">
+          更多 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </span>
+      </div>
+
+      <div class="service-list" id="serviceList" data-od-id="service-list">
+      </div>
+
+    </div><!-- /.mp-scroll -->
+
+    <!-- ═════════════════════════════════════════════════════════════════
+         TabBar
+         ═════════════════════════════════════════════════════════════════ -->
+    <div class="mp-tabbar" data-od-id="tabbar">
+      <div class="tab-item" onclick="switchTab(this, '首页')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab-item active" onclick="switchTab(this, '服务')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span class="tab-label">服务</span>
+      </div>
+      <div class="tab-item" onclick="switchTab(this, '借个锤子')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 3.5l6.1 6.1-2.6 2.6-6.1-6.1 2.6-2.6z"/><path d="M11.9 6.1l-1.7 1.7"/><path d="M10.2 7.8L4 14a2.1 2.1 0 000 3l3 3a2.1 2.1 0 003 0l6.2-6.2"/><path d="M5.8 15.8l2.4 2.4"/></svg>
+        <span class="tab-label">借个锤子</span>
+      </div>
+      <div class="tab-item" onclick="switchTab(this, '消息')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+        <span class="tab-label">消息</span>
+        <span class="tab-badge" style="top:2px;right:50%;transform:translateX(18px);"></span>
+      </div>
+      <div class="tab-item" onclick="switchTab(this, '我的')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22v-4a3 3 0 013-3h0a3 3 0 013 3v4"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+
+    <div class="modal-mask" id="modalMask" onclick="closeSheets()"></div>
+    <div class="sheet" id="detailSheet" aria-hidden="true"></div>
+    <div class="sheet" id="launchSheet" aria-hidden="true">
+      <div class="sheet-hd">
+        <div class="sheet-title">发起活动</div>
+        <button class="sheet-close" onclick="closeSheets()" aria-label="关闭">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label for="actTitle">活动名称</label><input id="actTitle" placeholder="例如：周五羽毛球搭子局"></div>
+        <div class="field">
+          <label>封面风格</label>
+          <div class="cover-grid">
+            <label class="cover-option"><span class="cover-swatch cover-grad-1"></span><span><input type="radio" name="actCover" value="cover-grad-1" checked> 集市</span></label>
+            <label class="cover-option"><span class="cover-swatch cover-grad-2"></span><span><input type="radio" name="actCover" value="cover-grad-2"> 社群</span></label>
+            <label class="cover-option"><span class="cover-swatch cover-grad-3"></span><span><input type="radio" name="actCover" value="cover-grad-3"> 运动</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label>活动形式</label>
+          <div class="segmented">
+            <label><input type="radio" name="actMode" value="线下" checked> 线下</label>
+            <label><input type="radio" name="actMode" value="线上"> 线上</label>
+          </div>
+        </div>
+        <div class="field"><label for="actDate">时间</label><input id="actDate" placeholder="例如：7月12日（周六）19:00"></div>
+        <div class="field"><label for="actLocation">地点 / 线上入口</label><input id="actLocation" placeholder="例如：高新人才家园·活动室 / 腾讯会议待通知"></div>
+        <div class="field"><label for="actFee">费用说明</label><input id="actFee" placeholder="例如：免费 / AA 20 元 / 需自备场地费"></div>
+        <div class="field"><label for="actMax">人数上限</label><input id="actMax" type="number" inputmode="numeric" placeholder="例如：12"></div>
+        <div class="field"><label for="actDesc">活动说明</label><textarea id="actDesc" placeholder="报名对象、活动安排、需要自带什么"></textarea></div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-secondary" onclick="closeSheets()">取消</button>
+        <button class="btn btn-primary" onclick="submitActivity()">提交审核</button>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+  </div>
+</div>
+
+<script>
+// ─── Activity Data ──────────────────────────────────────────────────
+const activities = [
+  {
+    id: 1, title: '郑东公寓周末集市',
+    type: 'official', typeLabel: '官方活动',
+    date: '7月5日（周六）14:00',
+    location: '郑东人才公寓·共享大厅',
+    mode: '线下',
+    fee: '免费',
+    status: 'open',
+    participants: 18, maxParticipants: 30,
+    registrations: [],
+    coverClass: 'cover-grad-1',
+    desc: '二手闲置、手作小物、家乡特产都可以摆摊，现场提供长桌和基础电源。'
+  },
+  {
+    id: 2, title: '高新区桌游夜',
+    type: 'user', typeLabel: '用户活动',
+    date: '7月11日（周五）19:00',
+    location: '高新人才家园·活动室',
+    mode: '线下',
+    fee: 'AA 15 元',
+    status: 'open',
+    participants: 8, maxParticipants: 12,
+    registrations: [{ name: '陈小雨', phone: '13800138000', subscribe: true }],
+    coverClass: 'cover-grad-2',
+    desc: '狼人杀、卡坦岛、UNO 都有人带，新手可加入，报名后进活动群确认桌次。'
+  },
+  {
+    id: 3, title: '人才公寓篮球友谊赛',
+    type: 'official', typeLabel: '官方活动',
+    date: '7月19日（周六）16:00',
+    location: '二七人才公寓·篮球场',
+    mode: '线下',
+    fee: '免费',
+    status: 'full',
+    participants: 20, maxParticipants: 20,
+    registrations: [],
+    coverClass: 'cover-grad-3',
+    desc: '社区友谊赛，分组现场抽签。已满员，可先候补，若有人取消会按顺序通知。'
+  }
+];
+const activityReviewQueue = [];
+const currentUserPhone = '13800138000';
+
+// ─── Service Data ──────────────────────────────────────────────────
+const services = [
+  {
+    id: 1, name: '代取快递',
+    desc: '帮你代取公寓周边快递柜包裹',
+    price: 5,
+    priceUnit: '元/次',
+    category: 'life',
+    categoryLabel: '生活代办',
+    fields: '快递柜位置、取件码、送达门牌'
+  },
+  {
+    id: 2, name: '代办入住手续',
+    desc: '协助办理人才公寓入住登记全流程',
+    price: 50,
+    priceUnit: '元/次',
+    category: 'process',
+    categoryLabel: '手续代办',
+    fields: '预约时间、材料清单、办理地点'
+  },
+  {
+    id: 3, name: '代排队取号',
+    desc: '住建局窗口排队取号，省去你的等待时间',
+    price: 30,
+    priceUnit: '元/次',
+    category: 'queue',
+    categoryLabel: '排队取号',
+    fields: '办事大厅、窗口类型、期望时间'
+  },
+  {
+    id: 4, name: '材料打印跑腿',
+    desc: '打印复印材料并送到公寓门岗',
+    price: 12,
+    priceUnit: '元/次',
+    category: 'life',
+    categoryLabel: '生活代办',
+    fields: '材料文件、打印份数、送达位置'
+  }
+];
+let nextActivityId = 4;
+let nextServiceOrderNo = 2026070101;
+let pendingServiceOrder = null;
+let currentServiceOrder = null;
+let activeListType = 'activity';
+const listFilters = {
+  activity: { status: 'all', type: 'all', mode: 'all' },
+  service: { category: 'all', price: 'all' }
+};
+
+function esc(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+    return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch];
+  });
+}
+
+// ─── Render ────────────────────────────────────────────────────────
+
+function renderActivities() {
+  var container = document.getElementById('activityList');
+  if (activities.length === 0) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 9v4M12 16v0"/></svg><p>暂无活动，敬请期待</p></div>';
+    return;
+  }
+  var html = '';
+  activities.forEach(function(a) {
+    var statusHtml = '';
+    if (a.status === 'open') {
+      statusHtml = '<span class="activity-status status-open">报名中 · ' + a.participants + '/' + a.maxParticipants + '人</span>';
+    } else {
+      statusHtml = '<span class="activity-status status-full">已满员 · ' + a.participants + '/' + a.maxParticipants + '人</span>';
+    }
+    html += '<div class="activity-card" onclick="openActivityDetail(' + a.id + ')">' +
+      '<div class="activity-cover"><div class="activity-cover-bg ' + a.coverClass + '"></div>' +
+      '<span class="activity-badge ' + (a.type === 'official' ? 'badge-official' : 'badge-user') + '">' + a.typeLabel + '</span></div>' +
+      '<div class="activity-body">' +
+      '<div class="activity-title">' + esc(a.title) + '</div>' +
+      '<div class="activity-meta">' +
+      '<span class="activity-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' + esc(a.date) + '</span>' +
+      '<span class="activity-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>' + esc(a.location) + '</span>' +
+      '<span class="activity-meta-item">' + esc(a.mode || '线下') + ' · ' + esc(a.fee || '免费') + '</span>' +
+      '</div>' + statusHtml +
+      '</div></div>';
+  });
+  container.innerHTML = html;
+}
+
+function renderActivityReviewQueue() {
+  var container = document.getElementById('activityReviewQueue');
+  if (!container) return;
+  if (activityReviewQueue.length === 0) {
+    container.classList.remove('show');
+    container.innerHTML = '';
+    return;
+  }
+  var html = '<div class="review-head"><span class="review-title">我的审核中活动</span><span class="review-count">' + activityReviewQueue.length + ' 条</span></div>';
+  activityReviewQueue.forEach(function(a) {
+    html += '<div class="review-item">' +
+      '<div class="review-name">' + esc(a.title) + '</div>' +
+      '<div class="review-meta">' + esc(a.mode) + ' · ' + esc(a.date) + ' · ' + esc(a.fee) + '</div>' +
+      '<div class="review-meta">' + esc(a.location) + ' · 平台将在 1 个工作日内完成审核</div>' +
+      '</div>';
+  });
+  container.innerHTML = html;
+  container.classList.add('show');
+}
+
+function renderServices() {
+  var container = document.getElementById('serviceList');
+  if (services.length === 0) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 10h10M7 14h4"/></svg><p>暂无代办服务</p></div>';
+    return;
+  }
+  var html = '';
+  services.forEach(function(s) {
+    html += '<div class="service-card" onclick="openServiceDetail(' + s.id + ')">' +
+      '<div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>' +
+      '<div class="service-info"><div class="service-name">' + esc(s.name) + '</div><div class="service-desc">' + esc(s.desc) + '</div></div>' +
+      '<div class="service-price">¥' + s.price + '<span class="unit">' + s.priceUnit + '</span></div>' +
+      '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function openFullList(type) {
+  activeListType = type;
+  var title = type === 'activity' ? '全部活动' : '全部代办';
+  document.getElementById('detailSheet').innerHTML =
+    '<div class="sheet-hd"><div class="sheet-title">' + title + '</div><button class="sheet-close" onclick="closeSheets()" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>' +
+    '<div id="fullListFilters" class="list-filter-panel"></div>' +
+    '<div id="fullListResults" class="full-list"></div>';
+  showMask();
+  document.getElementById('detailSheet').classList.add('show');
+  renderFullList();
+}
+
+function setListFilter(group, value) {
+  listFilters[activeListType][group] = value;
+  renderFullList();
+}
+
+function renderFullList() {
+  if (activeListType === 'activity') {
+    renderActivityFullList();
+  } else {
+    renderServiceFullList();
+  }
+}
+
+function renderActivityFullList() {
+  var filters = listFilters.activity;
+  var filtered = activities.filter(function(a) {
+    var statusMatch = filters.status === 'all' || a.status === filters.status;
+    var typeMatch = filters.type === 'all' || a.type === filters.type;
+    var modeMatch = filters.mode === 'all' || a.mode === filters.mode;
+    return statusMatch && typeMatch && modeMatch;
+  });
+  document.getElementById('fullListFilters').innerHTML =
+    buildFilterGroup('状态', 'status', [
+      ['all', '全部'], ['open', '报名中'], ['full', '已满员']
+    ], filters.status) +
+    buildFilterGroup('来源', 'type', [
+      ['all', '全部'], ['official', '官方'], ['user', '邻里发起']
+    ], filters.type) +
+    buildFilterGroup('形式', 'mode', [
+      ['all', '全部'], ['线下', '线下'], ['线上', '线上']
+    ], filters.mode);
+  document.getElementById('fullListResults').innerHTML = filtered.length
+    ? filtered.map(function(a) {
+      return '<div class="full-list-item" onclick="openActivityDetail(' + a.id + ')">' +
+        '<div class="full-list-top"><div class="full-list-title">' + esc(a.title) + '</div><span class="full-list-tag">' + esc(a.status === 'open' ? '报名中' : '已满员') + '</span></div>' +
+        '<div class="full-list-meta"><span>' + esc(a.typeLabel) + '</span><span>' + esc(a.mode || '线下') + '</span><span>' + esc(a.date) + '</span><span>' + a.participants + '/' + a.maxParticipants + '人</span></div>' +
+        '<div class="full-list-desc">' + esc(a.location) + ' · ' + esc(a.fee || '免费') + '</div>' +
+        '</div>';
+    }).join('')
+    : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><p>没有符合条件的活动</p></div>';
+}
+
+function renderServiceFullList() {
+  var filters = listFilters.service;
+  var filtered = services.filter(function(s) {
+    var categoryMatch = filters.category === 'all' || s.category === filters.category;
+    var priceMatch = filters.price === 'all'
+      || (filters.price === 'low' && s.price <= 15)
+      || (filters.price === 'mid' && s.price > 15);
+    return categoryMatch && priceMatch;
+  });
+  document.getElementById('fullListFilters').innerHTML =
+    buildFilterGroup('类型', 'category', [
+      ['all', '全部'], ['life', '生活代办'], ['process', '手续代办'], ['queue', '排队取号']
+    ], filters.category) +
+    buildFilterGroup('价格', 'price', [
+      ['all', '全部'], ['low', '15元内'], ['mid', '15元以上']
+    ], filters.price);
+  document.getElementById('fullListResults').innerHTML = filtered.length
+    ? filtered.map(function(s) {
+      return '<div class="full-list-item" onclick="openServiceDetail(' + s.id + ')">' +
+        '<div class="full-list-top"><div class="full-list-title">' + esc(s.name) + '</div><span class="full-list-tag">¥' + s.price + '</span></div>' +
+        '<div class="full-list-meta"><span>' + esc(s.categoryLabel) + '</span><span>' + esc(s.priceUnit) + '</span><span>' + esc(s.fields) + '</span></div>' +
+        '<div class="full-list-desc">' + esc(s.desc) + '</div>' +
+        '</div>';
+    }).join('')
+    : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><p>没有符合条件的代办</p></div>';
+}
+
+function buildFilterGroup(title, group, options, current) {
+  var html = '<div class="filter-group"><div class="filter-title">' + title + '</div><div class="filter-chips">';
+  options.forEach(function(opt) {
+    html += '<button class="filter-chip' + (opt[0] === current ? ' active' : '') + '" onclick="setListFilter(\'' + group + '\', \'' + opt[0] + '\')">' + opt[1] + '</button>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function showMask() {
+  document.getElementById('modalMask').classList.add('show');
+}
+
+function closeSheets() {
+  document.getElementById('modalMask').classList.remove('show');
+  document.getElementById('detailSheet').classList.remove('show');
+  document.getElementById('launchSheet').classList.remove('show');
+}
+
+function openLaunchSheet() {
+  if (!requireAuth(function() { openLaunchSheet(); })) return;
+  showMask();
+  document.getElementById('launchSheet').classList.add('show');
+}
+
+function submitActivity() {
+  if (!requireAuth(function() { submitActivity(); })) return;
+  var title = document.getElementById('actTitle').value.trim();
+  var coverInput = document.querySelector('input[name="actCover"]:checked');
+  var modeInput = document.querySelector('input[name="actMode"]:checked');
+  var coverClass = coverInput ? coverInput.value : 'cover-grad-2';
+  var mode = modeInput ? modeInput.value : '线下';
+  var date = document.getElementById('actDate').value.trim();
+  var location = document.getElementById('actLocation').value.trim();
+  var fee = document.getElementById('actFee').value.trim();
+  var max = parseInt(document.getElementById('actMax').value, 10);
+  var desc = document.getElementById('actDesc').value.trim();
+  if (!title || !date || !location || !fee || !max || !desc) {
+    showToast('请补全活动信息');
+    return;
+  }
+  activityReviewQueue.unshift({
+    id: nextActivityId++,
+    title: title,
+    type: 'user',
+    typeLabel: '用户活动',
+    date: date,
+    location: location,
+    mode: mode,
+    fee: fee,
+    status: 'review',
+    participants: 0,
+    maxParticipants: max,
+    coverClass: coverClass,
+    registrations: [],
+    desc: desc
+  });
+  ['actTitle','actDate','actLocation','actFee','actMax','actDesc'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.querySelector('input[name="actCover"][value="cover-grad-1"]').checked = true;
+  document.querySelector('input[name="actMode"][value="线下"]').checked = true;
+  closeSheets();
+  renderActivityReviewQueue();
+  showToast('已提交审核，审核通过后公开展示');
+}
+
+function openActivityDetail(id) {
+  if (!requireAuth(function() { openActivityDetail(id); })) return;
+  var a = activities.find(function(item) { return item.id === id; });
+  if (!a) return;
+  var isOpen = a.status === 'open' && a.participants < a.maxParticipants;
+  var hasJoined = hasJoinedActivity(a);
+  var primary = isOpen
+    ? '<button class="btn btn-primary" onclick="openActivitySignup(' + a.id + ')">' + (hasJoined ? '查看报名' : '立即报名') + '</button>'
+    : '<button class="btn btn-primary" onclick="showToast(\'已加入候补提醒\')">候补提醒</button>';
+  document.getElementById('detailSheet').innerHTML =
+    '<div class="sheet-hd"><div class="sheet-title">活动详情</div><button class="sheet-close" onclick="closeSheets()" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>'
+    + '<div class="detail-panel"><h3>' + esc(a.title) + '</h3><p>' + esc(a.desc) + '</p><div class="detail-list"><div class="detail-row"><span>类型</span><span>' + esc(a.typeLabel) + '</span></div><div class="detail-row"><span>形式</span><span>' + esc(a.mode || '线下') + '</span></div><div class="detail-row"><span>费用</span><span>' + esc(a.fee || '免费') + '</span></div><div class="detail-row"><span>时间</span><span>' + esc(a.date) + '</span></div><div class="detail-row"><span>地点</span><span>' + esc(a.location) + '</span></div><div class="detail-row"><span>人数</span><span>' + a.participants + '/' + a.maxParticipants + '人</span></div></div></div>'
+    + '<div class="action-row"><button class="btn btn-secondary" onclick="closeSheets()">关闭</button>' + primary + '</div>';
+  showMask();
+  document.getElementById('detailSheet').classList.add('show');
+}
+
+function openActivitySignup(id) {
+  if (!requireAuth(function() { openActivitySignup(id); })) return;
+  var a = activities.find(function(item) { return item.id === id; });
+  if (!a) return;
+  if (a.participants >= a.maxParticipants) {
+    a.status = 'full';
+    showToast('活动已满员');
+    return;
+  }
+  var existing = getCurrentRegistration(a);
+  var duplicateHint = existing
+    ? '<div class="hint-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><div>你已报名此活动，报名人：' + esc(existing.name) + '，手机号：' + esc(maskPhone(existing.phone)) + '。</div></div>'
+    : '<div class="hint-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div>报名成功后可接收活动开始提醒、地点变更和候补通知。</div></div>';
+  document.getElementById('detailSheet').innerHTML =
+    '<div class="sheet-hd"><div class="sheet-title">报名确认</div><button class="sheet-close" onclick="openActivityDetail(' + a.id + ')" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button></div>'
+    + '<div class="detail-panel"><h3>' + esc(a.title) + '</h3><p>' + esc(a.date) + ' · ' + esc(a.location) + '</p><div class="detail-list"><div class="detail-row"><span>费用</span><span>' + esc(a.fee || '免费') + '</span></div><div class="detail-row"><span>名额</span><span>' + a.participants + '/' + a.maxParticipants + '人</span></div></div></div>'
+    + duplicateHint
+    + '<div class="form-grid" style="margin-top:10px;"><div class="field"><label for="signupName">姓名</label><input id="signupName" placeholder="请输入真实姓名" value="' + esc(existing ? existing.name : '') + '"' + (existing ? ' disabled' : '') + '></div>'
+    + '<div class="field"><label for="signupPhone">手机号</label><input id="signupPhone" inputmode="tel" maxlength="11" placeholder="用于活动通知和重复报名校验" value="' + esc(existing ? existing.phone : '') + '"' + (existing ? ' disabled' : '') + '></div>'
+    + '<label class="check-card"><input type="checkbox" id="signupSubscribe" checked' + (existing ? ' disabled' : '') + '><span>接收活动订阅消息，包含开始前提醒、地点变更和候补通知。</span></label></div>'
+    + '<div class="action-row"><button class="btn btn-secondary" onclick="openActivityDetail(' + a.id + ')">返回</button><button class="btn btn-primary" onclick="submitActivitySignup(' + a.id + ')"' + (existing ? ' disabled' : '') + '>' + (existing ? '已报名' : '确认报名') + '</button></div>';
+}
+
+function submitActivitySignup(id) {
+  if (!requireAuth(function() { submitActivitySignup(id); })) return;
+  var a = activities.find(function(item) { return item.id === id; });
+  if (!a) return;
+  if (a.participants >= a.maxParticipants) {
+    a.status = 'full';
+    showToast('活动已满员');
+    openActivityDetail(id);
+    renderActivities();
+    return;
+  }
+  var name = document.getElementById('signupName').value.trim();
+  var phone = document.getElementById('signupPhone').value.trim();
+  var subscribe = document.getElementById('signupSubscribe').checked;
+  if (!name) {
+    showToast('请填写姓名');
+    return;
+  }
+  if (!/^1[3-9]\d{9}$/.test(phone)) {
+    showToast('请填写正确手机号');
+    return;
+  }
+  a.registrations = a.registrations || [];
+  var duplicate = a.registrations.some(function(item) { return item.phone === phone; });
+  if (duplicate) {
+    showToast('你已报名过该活动');
+    openActivitySignup(id);
+    return;
+  }
+  a.registrations.push({ name: name, phone: phone, subscribe: subscribe });
+  a.participants += 1;
+  if (a.participants >= a.maxParticipants) a.status = 'full';
+  renderActivities();
+  openActivitySignup(id);
+  showToast(subscribe ? '报名成功，已开启活动提醒' : '报名成功');
+}
+
+function maskPhone(phone) {
+  return String(phone || '').replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
+}
+
+function getCurrentRegistration(activity) {
+  var list = activity.registrations || [];
+  return list.find(function(item) { return item.phone === currentUserPhone; });
+}
+
+function hasJoinedActivity(activity) {
+  return Boolean(getCurrentRegistration(activity));
+}
+
+function openServiceDetail(id) {
+  if (!requireAuth(function() { openServiceDetail(id); })) return;
+  var s = services.find(function(item) { return item.id === id; });
+  if (!s) return;
+  document.getElementById('detailSheet').innerHTML =
+    '<div class="sheet-hd"><div class="sheet-title">代办详情</div><button class="sheet-close" onclick="closeSheets()" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>'
+    + '<div class="detail-panel"><h3>' + esc(s.name) + '</h3><p>' + esc(s.desc) + '</p><div class="detail-list"><div class="detail-row"><span>服务价格</span><span>¥' + s.price + s.priceUnit + '</span></div><div class="detail-row"><span>需要信息</span><span>' + esc(s.fields) + '</span></div><div class="detail-row"><span>订单流程</span><span>待支付 → 已支付 → 处理中 → 完成/取消/超时</span></div></div></div>'
+    + '<div class="form-grid"><div class="field"><label for="orderAddress">服务地址</label><input id="orderAddress" placeholder="例如：郑东人才公寓 3号楼 1206"></div><div class="field"><label for="orderNote">代办说明</label><textarea id="orderNote" placeholder="取件码、材料、期望时间等必要信息"></textarea></div></div>'
+    + '<div class="action-row"><button class="btn btn-secondary" onclick="closeSheets()">取消</button><button class="btn btn-primary" onclick="confirmServiceOrder(' + s.id + ')">确认订单</button></div>';
+  showMask();
+  document.getElementById('detailSheet').classList.add('show');
+}
+
+function confirmServiceOrder(id) {
+  if (!requireAuth(function() { confirmServiceOrder(id); })) return;
+  var s = services.find(function(item) { return item.id === id; });
+  if (!s) return;
+  var address = document.getElementById('orderAddress').value.trim();
+  var note = document.getElementById('orderNote').value.trim();
+  if (!address || !note) {
+    showToast('请填写地址和说明');
+    return;
+  }
+  pendingServiceOrder = {
+    orderNo: 'XD' + nextServiceOrderNo++,
+    serviceId: s.id,
+    serviceName: s.name,
+    address: address,
+    note: note,
+    amount: s.price,
+    priceUnit: s.priceUnit,
+    status: 'pending_payment',
+    payMethod: '',
+    createdAt: '刚刚'
+  };
+  currentServiceOrder = pendingServiceOrder;
+  renderServiceOrderSheet('确认支付');
+}
+
+function payServiceOrder() {
+  if (!requireAuth(function() { payServiceOrder(); })) return;
+  if (!currentServiceOrder || currentServiceOrder.status !== 'pending_payment') {
+    showToast('请先确认订单');
+    return;
+  }
+  var methodInput = document.querySelector('input[name="payMethod"]:checked');
+  var method = methodInput ? methodInput.value : '微信支付';
+  currentServiceOrder.payMethod = method;
+  currentServiceOrder.status = 'paid';
+  pendingServiceOrder = null;
+  renderServiceOrderSheet('支付成功');
+  showToast('支付成功，订单已生成');
+}
+
+function updateServiceOrderStatus(status) {
+  if (!currentServiceOrder) {
+    showToast('暂无订单');
+    return;
+  }
+  currentServiceOrder.status = status;
+  var messages = {
+    processing: '服务人员已开始处理',
+    completed: '订单已完成',
+    canceled: '订单已取消',
+    timeout: '订单已超时'
+  };
+  renderServiceOrderSheet(getOrderStatusLabel(status));
+  showToast(messages[status] || '订单状态已更新');
+}
+
+function getOrderStatusLabel(status) {
+  var map = {
+    pending_payment: '待支付',
+    paid: '已支付',
+    processing: '处理中',
+    completed: '已完成',
+    canceled: '已取消',
+    timeout: '已超时'
+  };
+  return map[status] || '订单状态';
+}
+
+function getOrderStatusNote(status) {
+  var map = {
+    pending_payment: '请在订单超时前完成支付，支付后平台会安排服务人员。',
+    paid: '订单已支付，等待服务人员开始处理。',
+    processing: '服务人员正在处理，请留意消息通知。',
+    completed: '服务已完成，订单流程结束。',
+    canceled: '订单已取消，不再安排服务。',
+    timeout: '订单已超时关闭，如仍需服务请重新下单。'
+  };
+  return map[status] || '';
+}
+
+function buildOrderSteps(status) {
+  var finalMap = { completed: '已完成', canceled: '已取消', timeout: '已超时' };
+  var steps = [
+    ['pending_payment', '待支付'],
+    ['paid', '已支付'],
+    ['processing', '处理中'],
+    ['final', finalMap[status] || '完成/取消']
+  ];
+  var indexMap = {
+    pending_payment: 0,
+    paid: 1,
+    processing: 2,
+    completed: 3,
+    canceled: 3,
+    timeout: 3
+  };
+  var activeIndex = indexMap[status] == null ? 0 : indexMap[status];
+  return '<div class="order-steps">' + steps.map(function(step, index) {
+    var cls = index < activeIndex ? ' done' : (index === activeIndex ? ' active' : '');
+    return '<div class="order-step' + cls + '">' + esc(step[1]) + '</div>';
+  }).join('') + '</div>';
+}
+
+function buildServiceOrderActions(order) {
+  if (order.status === 'pending_payment') {
+    return '<div class="payment-grid"><label class="payment-option"><input type="radio" name="payMethod" value="微信支付" checked><span>微信支付<small>推荐，支付后即时生成订单</small></span></label><label class="payment-option"><input type="radio" name="payMethod" value="余额支付"><span>余额支付<small>使用账户余额抵扣本次服务费</small></span></label></div>'
+      + '<div class="action-row"><button class="btn btn-secondary" onclick="updateServiceOrderStatus(\'canceled\')">取消订单</button><button class="btn btn-primary" onclick="payServiceOrder()">立即支付 ¥' + order.amount + '</button></div>'
+      + '<div class="action-row"><button class="btn btn-secondary" onclick="updateServiceOrderStatus(\'timeout\')">超时关闭</button></div>';
+  }
+  if (order.status === 'paid') {
+    return '<div class="action-row"><button class="btn btn-secondary" onclick="updateServiceOrderStatus(\'canceled\')">取消订单</button><button class="btn btn-primary" onclick="updateServiceOrderStatus(\'processing\')">开始处理</button></div>';
+  }
+  if (order.status === 'processing') {
+    return '<div class="action-row"><button class="btn btn-secondary" onclick="showToast(\'已提醒服务人员同步进度\')">催办进度</button><button class="btn btn-primary" onclick="updateServiceOrderStatus(\'completed\')">确认完成</button></div>';
+  }
+  return '<div class="action-row"><button class="btn btn-secondary" onclick="closeSheets()">完成</button><button class="btn btn-primary" onclick="showToast(\'可在我的订单查看历史记录\')">查看订单</button></div>';
+}
+
+function renderServiceOrderSheet(title) {
+  var order = currentServiceOrder;
+  if (!order) return;
+  document.getElementById('detailSheet').innerHTML =
+    '<div class="sheet-hd"><div class="sheet-title">' + esc(title || '订单详情') + '</div><button class="sheet-close" onclick="closeSheets()" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>'
+    + '<div class="order-success"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.6 2.6L16.5 9"/></svg><h3>' + esc(getOrderStatusLabel(order.status)) + '</h3><p>订单号 ' + esc(order.orderNo) + ' · ' + esc(getOrderStatusNote(order.status)) + '</p></div>'
+    + '<div class="detail-panel"><div class="detail-list"><div class="detail-row"><span>服务项目</span><span>' + esc(order.serviceName) + '</span></div><div class="detail-row"><span>服务地址</span><span>' + esc(order.address) + '</span></div><div class="detail-row"><span>代办说明</span><span>' + esc(order.note) + '</span></div><div class="detail-row"><span>支付方式</span><span>' + esc(order.payMethod || '未支付') + '</span></div><div class="detail-row"><span>支付金额</span><span>¥' + order.amount + '</span></div></div></div>'
+    + '<div class="order-status-card"><div class="order-status-top"><div><div class="order-status-title">订单状态流</div><div class="order-status-note">' + esc(getOrderStatusNote(order.status)) + '</div></div><span class="order-badge">' + esc(getOrderStatusLabel(order.status)) + '</span></div>' + buildOrderSteps(order.status) + '</div>'
+    + buildServiceOrderActions(order);
+}
+
+// ─── Toast ─────────────────────────────────────────────────────────
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800);
+}
+
+// ─── Tab ───────────────────────────────────────────────────────────
+function switchTab(el, name) {
+  if (el.classList.contains('active')) return;
+  var tabs = document.querySelectorAll('.tab-item');
+  for (var i = 0; i < tabs.length; i++) { tabs[i].classList.remove('active'); }
+  el.classList.add('active');
+  if (name === '首页') { window.location.href = 'app-home.html'; return; }
+  if (name === '我的') { window.location.href = 'app-profile.html'; return; }
+  if (name === '借个锤子') { window.location.href = 'app-borrow.html'; return; }
+  if (name === '消息') { window.location.href = 'app-messages.html'; return; }
+  showToast(name + ' — 即将开放');
+}
+
+// ─── Init ──────────────────────────────────────────────────────────
+renderActivities();
+renderActivityReviewQueue();
+renderServices();
+</script>
+
+<script src="auth-guard.js"></script>
+
+</body>
+</html>

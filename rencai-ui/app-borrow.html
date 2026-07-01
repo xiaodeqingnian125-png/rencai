@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 · 借个锤子</title>
+<style>
+:root {
+  --bg: #fafaf6;
+  --surface: #fffdf7;
+  --surface-warm: #fef8ef;
+  --fg: #2d2318;
+  --fg-2: #5c4a38;
+  --muted: #8c7a68;
+  --meta: #a69682;
+  --border: #e8e0d4;
+  --border-soft: #f0eae0;
+  --accent: #e8723c;
+  --accent-on: #ffffff;
+  --accent-hover: #f0804a;
+  --accent-active: #d4622c;
+
+  --font-display: "SF Pro Display", "PingFang SC", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "PingFang SC", "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 12px; --text-sm: 14px; --text-base: 16px; --text-lg: 21px;
+  --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 18px; --radius-pill: 980px;
+
+  --elev-raised: 0 12px 32px rgba(0,0,0,0.06);
+  --ease-standard: cubic-bezier(0.28, 0, 0.22, 1);
+  --motion-fast: 150ms; --motion-base: 220ms;
+
+  --price-orange: #e8590c; --community-green: #5b9a6f;
+  --map-blue: #5b8cb8; --guide-plum: #9b7eb8; --badge-red: #e04a3a;
+  --device-bg: #d8d0c4; --phone-bezel: #0a0a0a; --phone-inner: #0a0a0a;
+
+  /* Thumbnail gradient stops */
+  --bt1-a: #efe8d8; --bt1-b: #e0d4b8;
+  --bt2-a: #e8efe8; --bt2-b: #d0e0d0;
+  --bt3-a: #efe8f0; --bt3-b: #ddd0e0;
+  --bt4-a: #f0ece2; --bt4-b: #e0d8c8;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  display: grid; place-items: center;
+  min-height: 100vh;
+  background: var(--device-bg);
+  font-family: var(--font-body); font-size: var(--text-base); color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame { width: 390px; min-width: 390px; height: 844px; background: var(--phone-bezel); border-radius: 50px; padding: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1); flex-shrink: 0; }
+.phone-screen { width: 100%; height: 100%; background: var(--bg); border-radius: 38px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.dynamic-island { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 126px; height: 34px; background: var(--phone-inner); border-radius: 20px; z-index: 100; }
+
+.status-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px 0; height: 50px; font-size: 14px; font-weight: 600; color: var(--fg); }
+.status-time { flex: 1; }
+.status-icons { display: flex; align-items: center; gap: 6px; }
+.status-icons svg { width: 16px; height: 16px; }
+
+.mp-nav { display: flex; align-items: center; justify-content: center; height: 44px; padding: 0 16px; flex-shrink: 0; position: relative; }
+.mp-nav-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); }
+
+/* ═════════════════════════════════════════════════════════════════
+   Search
+   ═════════════════════════════════════════════════════════════════ */
+.search-area { padding: 8px 16px; flex-shrink: 0; }
+.search-box { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; cursor: pointer; transition: border-color var(--motion-fast) var(--ease-standard); }
+.search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 82%); }
+.search-box svg { width: 18px; height: 18px; color: var(--meta); flex-shrink: 0; }
+.search-box span { font-size: 15px; color: var(--meta); flex: 1; }
+.search-box input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--fg); font: 15px var(--font-body); }
+.search-box input::placeholder { color: var(--meta); }
+
+/* ═════════════════════════════════════════════════════════════════
+   Category Chips
+   ═════════════════════════════════════════════════════════════════ */
+.cat-row { display: flex; gap: 6px; padding: 8px 16px; flex-shrink: 0; overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; }
+.cat-row::-webkit-scrollbar { display: none; }
+.cat-chip { padding: 6px 14px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--fg); white-space: nowrap; cursor: pointer; transition: all var(--motion-fast) var(--ease-standard); user-select: none; flex-shrink: 0; }
+.cat-chip:active { transform: scale(0.96); }
+.cat-chip.active { background: var(--accent); color: var(--accent-on); border-color: var(--accent); }
+
+/* ═════════════════════════════════════════════════════════════════
+   Scroll + Items
+   ═════════════════════════════════════════════════════════════════ */
+.mp-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; padding-bottom: 8px; }
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+.item-list { display: flex; flex-direction: column; gap: 10px; padding: 4px 16px 20px; }
+.item-card { display: flex; gap: 12px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-lg); padding: 12px; cursor: pointer; transition: transform var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard); user-select: none; }
+.item-card:active { transform: scale(0.985); }
+.item-thumb { width: 72px; height: 72px; border-radius: var(--radius-sm); flex-shrink: 0; display: grid; place-items: center; font-size: 28px; color: rgba(0,0,0,0.2); }
+.thumb-tool { background: linear-gradient(135deg, var(--bt1-a), var(--bt1-b)); }
+.thumb-outdoor { background: linear-gradient(135deg, var(--bt2-a), var(--bt2-b)); }
+.thumb-appliance { background: linear-gradient(135deg, var(--bt3-a), var(--bt3-b)); }
+.thumb-other { background: linear-gradient(135deg, var(--bt4-a), var(--bt4-b)); }
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.item-desc { font-size: 13px; color: var(--muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.item-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; color: var(--meta); flex-wrap: wrap; }
+.item-tag { padding: 2px 8px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 500; border: 1px solid var(--border-soft); color: var(--muted); }
+.item-status { font-size: 11px; font-weight: 600; }
+.status-available { color: var(--community-green); }
+.status-pending { color: var(--price-orange); }
+.status-borrowed { color: var(--muted); }
+.status-returned { color: var(--map-blue); }
+.flow-card { display: grid; gap: 8px; margin: 12px 0; padding: 12px; border-radius: var(--radius-lg); background: var(--surface-warm); border: 1px solid var(--border-soft); }
+.flow-title { font-size: 13px; font-weight: 700; color: var(--fg-2); }
+.flow-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.flow-step { display: grid; gap: 4px; justify-items: center; text-align: center; color: var(--meta); font-size: 10px; line-height: 1.25; }
+.flow-dot { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg); display: grid; place-items: center; color: var(--meta); font-size: 10px; font-weight: 700; }
+.flow-step.done { color: var(--community-green); }
+.flow-step.done .flow-dot { background: var(--community-green); border-color: var(--community-green); color: var(--accent-on); }
+.flow-step.current { color: var(--price-orange); font-weight: 700; }
+.flow-step.current .flow-dot { background: var(--price-orange); border-color: var(--price-orange); color: var(--accent-on); }
+.borrow-note { margin-top: 8px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--bg); color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+/* Float pub */
+.float-pub { position: absolute; bottom: 100px; right: 16px; width: 48px; height: 48px; border-radius: 50%; background: var(--accent); color: var(--accent-on); display: grid; place-items: center; box-shadow: 0 6px 20px rgba(232,114,60,0.35); cursor: pointer; transition: transform var(--motion-fast) var(--ease-standard); z-index: 50; }
+.float-pub:active { transform: scale(0.92); }
+.float-pub svg { width: 24px; height: 24px; }
+
+/* Empty */
+.empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
+.empty-state svg { width: 48px; height: 48px; color: var(--border); margin-bottom: 12px; }
+.empty-state p { font-size: 14px; line-height: 1.5; }
+
+/* Toast */
+.toast { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 20px; border-radius: var(--radius-pill); font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard); z-index: 200; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+/* Modal sheets */
+.modal-mask { position: absolute; inset: 0; background: rgba(45,35,24,0.28); opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard); z-index: 160; }
+.modal-mask.show { opacity: 1; pointer-events: auto; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 82%; overflow-y: auto; background: var(--surface); border-radius: 24px 24px 0 0; padding: 18px 18px 24px; transform: translateY(100%); transition: transform var(--motion-base) var(--ease-standard); box-shadow: 0 -12px 32px rgba(45,35,24,0.16); z-index: 170; }
+.sheet.show { transform: translateY(0); }
+.sheet-hd { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.sheet-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.sheet-close { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--surface-warm); color: var(--fg); display: grid; place-items: center; cursor: pointer; }
+.sheet-close svg { width: 18px; height: 18px; }
+.detail-hero { display: flex; gap: 12px; padding: 12px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--bg); margin-bottom: 14px; }
+.detail-copy { flex: 1; min-width: 0; }
+.detail-copy h3 { font-size: 17px; margin-bottom: 5px; }
+.detail-copy p { font-size: 13px; line-height: 1.5; color: var(--muted); }
+.detail-meta { display: grid; gap: 8px; margin: 12px 0; }
+.detail-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-soft); font-size: 14px; }
+.detail-row span:first-child { color: var(--muted); }
+.detail-row span:last-child { color: var(--fg); text-align: right; }
+.form-grid { display: grid; gap: 10px; }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 13px; font-weight: 600; color: var(--fg-2); }
+.field input, .field select, .field textarea { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); color: var(--fg); font: 14px var(--font-body); padding: 11px 12px; outline: 0; }
+.field textarea { min-height: 72px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 86%); }
+.action-row { display: flex; gap: 10px; margin-top: 14px; }
+.btn { flex: 1; border: 0; border-radius: var(--radius-pill); padding: 12px 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.btn-primary { background: var(--accent); color: var(--accent-on); }
+.btn-secondary { background: var(--surface-warm); color: var(--fg); }
+
+.home-indicator { width: 134px; height: 5px; background: var(--fg); border-radius: 3px; margin: 8px auto; opacity: 0.2; }
+
+@keyframes cardIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame { width: 100vw; height: 100vh; height: 100dvh; min-width: unset; border-radius: 0; padding: 0; box-shadow: none; }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+  .status-bar { padding: 12px 20px 0; height: 44px; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"/><rect x="3" y="5" width="2" height="6" rx="0.5"/><rect x="6" y="2" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="11" rx="0.5"/></svg>
+        <svg viewBox="0 0 18 12" fill="currentColor"><path d="M1 3.5h1.5L3.5 8h11l1-4.5H16a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1v-6a1 1 0 011-1z"/><rect x="4" y="8.5" width="10" height="1.5" rx="0.5"/></svg>
+        <svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"/><rect x="2" y="2" width="18" height="8" rx="1"/><rect x="25" y="3" width="2" height="6" rx="0.8"/></svg>
+      </div>
+    </div>
+
+    <div class="mp-nav"><span class="mp-nav-title">借个锤子</span></div>
+
+    <!-- Search -->
+    <div class="search-area">
+      <label class="search-box" for="borrowSearch">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="borrowSearch" type="search" placeholder="搜索工具名称、位置或说明" oninput="setSearch(this.value)">
+      </label>
+    </div>
+
+    <!-- Categories -->
+    <div class="cat-row" data-od-id="borrow-cats" id="catRow">
+      <span class="cat-chip active" onclick="setCat('all',this)">全部</span>
+      <span class="cat-chip" onclick="setCat('tool',this)">工具</span>
+      <span class="cat-chip" onclick="setCat('outdoor',this)">户外</span>
+      <span class="cat-chip" onclick="setCat('appliance',this)">小家电</span>
+      <span class="cat-chip" onclick="setCat('other',this)">其他</span>
+    </div>
+
+    <!-- List -->
+    <div class="mp-scroll" data-od-id="borrow-scroll">
+      <div class="item-list" id="itemList"></div>
+    </div>
+
+    <!-- Float -->
+    <div class="float-pub" onclick="openPublishSheet()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    </div>
+
+    <!-- TabBar -->
+    <div class="mp-tabbar" data-od-id="tabbar" style="display:flex;align-items:flex-start;padding:6px 4px 0;background:color-mix(in oklab,var(--bg) 92%,transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border-soft);flex-shrink:0;position:relative;">
+      <div class="tab-item" onclick="switchTab(this,'首页')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 8px;cursor:pointer;color:var(--meta);user-select:none;transition:color var(--motion-fast);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span style="font-size:10px;font-weight:500;">首页</span></div>
+      <div class="tab-item" onclick="switchTab(this,'服务')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 8px;cursor:pointer;color:var(--meta);user-select:none;transition:color var(--motion-fast);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span style="font-size:10px;font-weight:500;">服务</span></div>
+      <div class="tab-item active" onclick="switchTab(this,'借个锤子')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 8px;cursor:pointer;color:var(--accent);user-select:none;transition:color var(--motion-fast);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M14.4 3.5l6.1 6.1-2.6 2.6-6.1-6.1 2.6-2.6z"/><path d="M11.9 6.1l-1.7 1.7"/><path d="M10.2 7.8L4 14a2.1 2.1 0 000 3l3 3a2.1 2.1 0 003 0l6.2-6.2"/><path d="M5.8 15.8l2.4 2.4"/></svg><span style="font-size:10px;font-weight:500;">借个锤子</span></div>
+      <div class="tab-item" onclick="switchTab(this,'消息')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 8px;cursor:pointer;color:var(--meta);user-select:none;transition:color var(--motion-fast);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg><span style="font-size:10px;font-weight:500;">消息</span><span style="position:absolute;top:2px;right:50%;transform:translateX(18px);min-width:8px;height:8px;background:var(--badge-red);border-radius:50%;border:2px solid var(--bg);"></span></div>
+      <div class="tab-item" onclick="switchTab(this,'我的')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 8px;cursor:pointer;color:var(--meta);user-select:none;transition:color var(--motion-fast);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22v-4a3 3 0 013-3h0a3 3 0 013 3v4"/></svg><span style="font-size:10px;font-weight:500;">我的</span></div>
+    </div>
+
+    <div class="home-indicator"></div>
+    <div class="modal-mask" id="modalMask" onclick="closeSheets()"></div>
+    <div class="sheet" id="detailSheet" aria-hidden="true"></div>
+    <div class="sheet" id="publishSheet" aria-hidden="true">
+      <div class="sheet-hd">
+        <div class="sheet-title">发布可借物品</div>
+        <button class="sheet-close" onclick="closeSheets()" aria-label="关闭">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label for="pubName">物品名称</label><input id="pubName" placeholder="例如：冲击电钻"></div>
+        <div class="field"><label for="pubCat">分类</label><select id="pubCat"><option value="tool">工具</option><option value="outdoor">户外</option><option value="appliance">小家电</option><option value="other">其他</option></select></div>
+        <div class="field"><label for="pubDesc">物品说明</label><textarea id="pubDesc" placeholder="型号、成色、适合什么场景"></textarea></div>
+        <div class="field"><label for="pubRules">借用规则</label><input id="pubRules" placeholder="例如：借用2天内归还 · 需自取"></div>
+        <div class="field"><label for="pubLocation">所在位置</label><input id="pubLocation" placeholder="例如：郑东人才公寓·3号楼"></div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-secondary" onclick="closeSheets()">取消</button>
+        <button class="btn btn-primary" onclick="submitPublish()">发布</button>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+var items = [
+  { id:1, name:'锤子', cat:'tool', thumbClass:'thumb-tool', desc:'家用手锤，木柄铁头，适合钉钉子、组装家具', rules:'借用2天内归还 · 需自取', location:'郑东人才公寓·3号楼', status:'available' },
+  { id:2, name:'螺丝刀套装', cat:'tool', thumbClass:'thumb-tool', desc:'多功能螺丝刀，一字+十字+六角，带磁吸头', rules:'借用3天内归还', location:'高新人才家园·1号楼', status:'available' },
+  { id:3, name:'露营帐篷', cat:'outdoor', thumbClass:'thumb-outdoor', desc:'双人帐篷，防风防雨，适合周边郊游', rules:'周五借下周一还 · 押金¥100', location:'郑东人才公寓·5号楼', status:'borrowed' },
+  { id:4, name:'电钻', cat:'tool', thumbClass:'thumb-tool', desc:'冲击电钻，带6/8/10mm钻头，适合墙面打孔', rules:'借用1天内归还 · 需自取', location:'经开青年公寓·2号楼', status:'available' },
+  { id:5, name:'电磁炉', cat:'appliance', thumbClass:'thumb-appliance', desc:'美的电磁炉，9档火力，适合火锅/炒菜', rules:'借用1天内归还 · 需自取', location:'二七人才公寓·4号楼', status:'borrowed' },
+  { id:6, name:'折叠椅', cat:'outdoor', thumbClass:'thumb-outdoor', desc:'铝合金折叠椅2把，轻便好拿', rules:'借用3天内归还', location:'中原青年社区·1号楼', status:'available' }
+];
+
+var activeCat = 'all';
+var searchQuery = '';
+var nextItemId = 7;
+
+function esc(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+    return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch];
+  });
+}
+
+function catLabel(cat) {
+  return cat === 'tool' ? '工具' : cat === 'outdoor' ? '户外' : cat === 'appliance' ? '小家电' : '其他';
+}
+
+function catThumb(cat) {
+  return cat === 'tool' ? 'thumb-tool' : cat === 'outdoor' ? 'thumb-outdoor' : cat === 'appliance' ? 'thumb-appliance' : 'thumb-other';
+}
+
+function statusLabel(status) {
+  var map = {
+    available: '可借用',
+    pending: '申请中',
+    borrowed: '借用中',
+    returned: '已归还'
+  };
+  return map[status] || '可借用';
+}
+
+function statusClass(status) {
+  var map = {
+    available: 'status-available',
+    pending: 'status-pending',
+    borrowed: 'status-borrowed',
+    returned: 'status-returned'
+  };
+  return map[status] || 'status-available';
+}
+
+function flowIndex(status) {
+  if (status === 'pending') return 0;
+  if (status === 'borrowed') return 2;
+  if (status === 'returned') return 3;
+  return -1;
+}
+
+function renderFlow(status) {
+  var current = flowIndex(status);
+  var steps = ['申请中', '物主确认', '借用中', '归还'];
+  var html = '<div class="flow-card"><div class="flow-title">借用状态流</div><div class="flow-steps">';
+  for (var i = 0; i < steps.length; i++) {
+    var state = i < current ? ' done' : i === current ? ' current' : '';
+    html += '<div class="flow-step' + state + '"><span class="flow-dot">' + (i + 1) + '</span><span>' + steps[i] + '</span></div>';
+  }
+  return html + '</div></div>';
+}
+
+function setSearch(value) {
+  searchQuery = value.trim().toLowerCase();
+  renderItems();
+}
+
+function setCat(cat, el) {
+  activeCat = cat;
+  var chips = document.querySelectorAll('#catRow .cat-chip');
+  for (var i = 0; i < chips.length; i++) chips[i].classList.remove('active');
+  el.classList.add('active');
+  renderItems();
+}
+
+function renderItems() {
+  var container = document.getElementById('itemList');
+  var filtered = items.filter(function(i) {
+    var matchCat = activeCat === 'all' || i.cat === activeCat;
+    var haystack = (i.name + ' ' + i.desc + ' ' + i.location + ' ' + i.rules).toLowerCase();
+    return matchCat && (!searchQuery || haystack.indexOf(searchQuery) !== -1);
+  });
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><p>没有找到匹配物品<br>换个关键词试试</p></div>';
+    return;
+  }
+  var html = '';
+  filtered.forEach(function(it, idx) {
+    var stateTag = '<span class="item-status ' + statusClass(it.status) + '">' + statusLabel(it.status) + '</span>';
+    html += '<div class="item-card" onclick="openItemDetail(' + it.id + ')" style="animation: cardIn 220ms ease-out '+(idx*0.05)+'s both;">'
+      + '<div class="item-thumb ' + it.thumbClass + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><path d="M8.5 15.5L15.5 8.5"/></svg></div>'
+      + '<div class="item-info">'
+      + '<div class="item-name">' + esc(it.name) + '</div>'
+      + '<div class="item-desc">' + esc(it.desc) + '</div>'
+      + '<div class="item-meta"><span class="item-tag">' + catLabel(it.cat) + '</span>' + esc(it.location) + '</div>'
+      + '</div>'
+      + '<div style="flex-shrink:0;align-self:center;">' + stateTag + '</div>'
+      + '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function showMask() {
+  document.getElementById('modalMask').classList.add('show');
+}
+
+function closeSheets() {
+  document.getElementById('modalMask').classList.remove('show');
+  document.getElementById('detailSheet').classList.remove('show');
+  document.getElementById('publishSheet').classList.remove('show');
+}
+
+function openPublishSheet() {
+  if (!requireAuth(function() { openPublishSheet(); })) return;
+  showMask();
+  document.getElementById('publishSheet').classList.add('show');
+}
+
+function submitPublish() {
+  if (!requireAuth(function() { submitPublish(); })) return;
+  var name = document.getElementById('pubName').value.trim();
+  var cat = document.getElementById('pubCat').value;
+  var desc = document.getElementById('pubDesc').value.trim();
+  var rules = document.getElementById('pubRules').value.trim();
+  var location = document.getElementById('pubLocation').value.trim();
+  if (!name || !desc || !rules || !location) {
+    showToast('请补全物品信息');
+    return;
+  }
+  items.unshift({ id: nextItemId++, name: name, cat: cat, thumbClass: catThumb(cat), desc: desc, rules: rules, location: location, status: 'available' });
+  document.getElementById('pubName').value = '';
+  document.getElementById('pubDesc').value = '';
+  document.getElementById('pubRules').value = '';
+  document.getElementById('pubLocation').value = '';
+  activeCat = 'all';
+  var chips = document.querySelectorAll('#catRow .cat-chip');
+  for (var i = 0; i < chips.length; i++) chips[i].classList.toggle('active', i === 0);
+  closeSheets();
+  renderItems();
+  showToast('物品已发布');
+}
+
+function openItemDetail(id) {
+  if (!requireAuth(function() { openItemDetail(id); })) return;
+  var it = items.find(function(item) { return item.id === id; });
+  if (!it) return;
+  var canBorrow = it.status === 'available';
+  var action = '';
+  if (canBorrow) {
+    action = '<div class="form-grid"><div class="field"><label for="borrowRange">借用时间</label><input id="borrowRange" placeholder="例如：7月6日 18:00 - 7月8日 18:00"></div><div class="field"><label for="borrowMsg">留言</label><textarea id="borrowMsg" placeholder="说明用途和取还时间，方便对方确认"></textarea></div></div><div class="action-row"><button class="btn btn-secondary" onclick="closeSheets()">再看看</button><button class="btn btn-primary" onclick="submitBorrow(' + it.id + ')">申请借用</button></div>';
+  } else if (it.status === 'pending') {
+    action = '<div class="borrow-note">申请已提交，等待物主确认。物主确认后会进入借用中；如不方便借出，可拒绝申请并恢复可借。</div><div class="action-row"><button class="btn btn-secondary" onclick="rejectBorrow(' + it.id + ')">拒绝申请</button><button class="btn btn-primary" onclick="confirmBorrow(' + it.id + ')">确认借出</button></div>';
+  } else if (it.status === 'borrowed') {
+    action = '<div class="borrow-note">物主已确认，物品处于借用中。归还后点击确认归还，状态会进入已归还。</div><div class="action-row"><button class="btn btn-secondary" onclick="showToast(\'已提醒借用人按时归还\')">提醒归还</button><button class="btn btn-primary" onclick="returnBorrow(' + it.id + ')">确认归还</button></div>';
+  } else if (it.status === 'returned') {
+    action = '<div class="borrow-note">本次借用已完成归还。重新上架后，其他住户可以再次申请借用。</div><div class="action-row"><button class="btn btn-secondary" onclick="closeSheets()">关闭</button><button class="btn btn-primary" onclick="relistItem(' + it.id + ')">重新上架</button></div>';
+  } else {
+    action = '<div class="action-row"><button class="btn btn-secondary" onclick="closeSheets()">关闭</button><button class="btn btn-primary" onclick="showToast(\'已提醒归还后通知你\')">到货提醒</button></div>';
+  }
+  var borrowInfo = it.borrowRange || it.borrowMsg
+    ? '<div class="detail-row"><span>申请时间</span><span>' + esc(it.borrowRange || '—') + '</span></div><div class="detail-row"><span>申请留言</span><span>' + esc(it.borrowMsg || '—') + '</span></div>'
+    : '';
+  document.getElementById('detailSheet').innerHTML =
+    '<div class="sheet-hd"><div class="sheet-title">物品详情</div><button class="sheet-close" onclick="closeSheets()" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>'
+    + '<div class="detail-hero"><div class="item-thumb ' + it.thumbClass + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><path d="M8.5 15.5L15.5 8.5"/></svg></div><div class="detail-copy"><h3>' + esc(it.name) + '</h3><p>' + esc(it.desc) + '</p></div></div>'
+    + '<div class="detail-meta"><div class="detail-row"><span>分类</span><span>' + catLabel(it.cat) + '</span></div><div class="detail-row"><span>位置</span><span>' + esc(it.location) + '</span></div><div class="detail-row"><span>规则</span><span>' + esc(it.rules) + '</span></div><div class="detail-row"><span>状态</span><span>' + statusLabel(it.status) + '</span></div>' + borrowInfo + '</div>'
+    + renderFlow(it.status)
+    + action;
+  showMask();
+  document.getElementById('detailSheet').classList.add('show');
+}
+
+function submitBorrow(id) {
+  if (!requireAuth(function() { submitBorrow(id); })) return;
+  var range = document.getElementById('borrowRange').value.trim();
+  var msg = document.getElementById('borrowMsg').value.trim();
+  if (!range || !msg) {
+    showToast('请填写借用时间和留言');
+    return;
+  }
+  var it = items.find(function(item) { return item.id === id; });
+  if (it) {
+    it.status = 'pending';
+    it.borrowRange = range;
+    it.borrowMsg = msg;
+  }
+  closeSheets();
+  renderItems();
+  showToast('申请已提交，等待物主确认');
+}
+
+function confirmBorrow(id) {
+  if (!requireAuth(function() { confirmBorrow(id); })) return;
+  var it = items.find(function(item) { return item.id === id; });
+  if (!it || it.status !== 'pending') return;
+  it.status = 'borrowed';
+  closeSheets();
+  renderItems();
+  showToast('物主已确认，进入借用中');
+}
+
+function rejectBorrow(id) {
+  if (!requireAuth(function() { rejectBorrow(id); })) return;
+  var it = items.find(function(item) { return item.id === id; });
+  if (!it || it.status !== 'pending') return;
+  it.status = 'available';
+  it.borrowRange = '';
+  it.borrowMsg = '';
+  closeSheets();
+  renderItems();
+  showToast('已拒绝申请，物品恢复可借');
+}
+
+function returnBorrow(id) {
+  if (!requireAuth(function() { returnBorrow(id); })) return;
+  var it = items.find(function(item) { return item.id === id; });
+  if (!it || it.status !== 'borrowed') return;
+  it.status = 'returned';
+  closeSheets();
+  renderItems();
+  showToast('已确认归还');
+}
+
+function relistItem(id) {
+  if (!requireAuth(function() { relistItem(id); })) return;
+  var it = items.find(function(item) { return item.id === id; });
+  if (!it || it.status !== 'returned') return;
+  it.status = 'available';
+  it.borrowRange = '';
+  it.borrowMsg = '';
+  closeSheets();
+  renderItems();
+  showToast('已重新上架，可再次借用');
+}
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800);
+}
+
+function switchTab(el, name) {
+  if (el.classList.contains('active')) return;
+  var tabs = document.querySelectorAll('.tab-item');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  el.classList.add('active');
+  if (name === '首页') { window.location.href = 'app-home.html'; return; }
+  if (name === '服务') { window.location.href = 'app-service.html'; return; }
+  if (name === '消息') { window.location.href = 'app-messages.html'; return; }
+  if (name === '我的') { window.location.href = 'app-profile.html'; return; }
+  showToast(name + ' — 即将开放');
+}
+
+renderItems();
+</script>
+
+<script src="auth-guard.js"></script>
+
+</body>
+</html>

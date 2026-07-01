@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>晓得青年 · 物品管理</title><link rel="stylesheet" href="admin-shared.css"></head>
+<body><div class="phone-frame"><div class="phone-screen">
+  <div class="dynamic-island"></div><div class="status-bar"><span>9:41</span><div class="status-icons"><svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"/><rect x="3" y="5" width="2" height="6" rx="0.5"/><rect x="6" y="2" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="11" rx="0.5"/></svg><svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"/><rect x="2" y="2" width="18" height="8" rx="1"/></svg></div></div>
+  <div class="mp-nav"><div class="mp-nav-back" onclick="history.back()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></div><span class="mp-nav-title">物品管理</span></div>
+  <div class="toolbar"><div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><input id="searchInput" placeholder="搜索物品/发布人" oninput="render()"></div><button class="btn-add" onclick="openForm(null)">+ 新增</button></div>
+  <div class="filter-row"><button class="filter-chip active" onclick="setFilter('all', this)">全部</button><button class="filter-chip" onclick="setFilter('pending', this)">待审核</button><button class="filter-chip" onclick="setFilter('active', this)">可借</button><button class="filter-chip" onclick="setFilter('processing', this)">借出中</button><button class="filter-chip" onclick="setFilter('hidden', this)">下架</button></div>
+  <div class="summary-grid" id="summary"></div><div class="mp-scroll"><div class="list" id="list"></div></div>
+  <div class="modal-mask" id="formMask" onclick="closeForm(event)"><div class="modal-card" onclick="event.stopPropagation()"><div class="modal-title" id="formTitle">新增物品</div><div id="fieldBox"></div><div class="modal-actions"><button class="modal-btn btn-cancel" onclick="closeForm()">取消</button><button class="modal-btn btn-delete" id="btnDelete" style="display:none" onclick="deleteItem()">删除</button><button class="modal-btn btn-confirm" onclick="saveItem()">保存</button></div></div></div>
+  <div class="modal-mask" id="deleteMask" onclick="closeDelete(event)"><div class="modal-card" onclick="event.stopPropagation()"><div class="modal-title">确认删除</div><p style="text-align:center;font-size:14px;color:var(--muted);margin-bottom:16px;">确定删除这个物品吗？</p><div class="modal-actions"><button class="modal-btn btn-cancel" onclick="closeDelete()">取消</button><button class="modal-btn btn-delete" onclick="confirmDelete()">确认删除</button></div></div></div>
+  <div class="home-indicator"></div><div class="toast" id="toast"></div>
+</div></div>
+<script>
+var pageConfig={addTitle:'新增物品',editTitle:'编辑物品',requiredKey:'name',requiredLabel:'物品名称',defaultStatus:'pending',fields:[
+  {key:'name',label:'物品名称',placeholder:'如：冲击钻'},
+  {key:'category',label:'分类',placeholder:'工具 / 家电 / 生活用品'},
+  {key:'owner',label:'发布人',placeholder:'如：王同学'},
+  {key:'location',label:'所在位置',placeholder:'如：郑东人才公寓 5 栋'},
+  {key:'rule',label:'借用规则',placeholder:'如：限 2 天内归还'},
+  {key:'desc',label:'物品说明',placeholder:'成色、配件、押金要求',type:'textarea'}
+]};
+var data=[
+  {id:1,name:'冲击钻',category:'工具',owner:'王同学',location:'郑东人才公寓 5 栋',rule:'限 2 天内归还',desc:'含钻头套装，适合安装置物架。',status:'active'},
+  {id:2,name:'折叠梯',category:'工具',owner:'社区前台',location:'高新人才家园前台',rule:'当天归还',desc:'1.8 米折叠梯，需登记手机号。',status:'processing'},
+  {id:3,name:'电饭煲',category:'家电',owner:'李同学',location:'经开青年公寓 2 栋',rule:'限 3 天内归还',desc:'功能正常，内胆轻微使用痕迹。',status:'pending'}
+];
+var nextId=4;
+function renderItem(item){var s=statusInfo(item.status);return '<div class="item"><div class="item-header"><div><div class="item-name">'+escapeHtml(item.name)+'</div><div class="item-meta">'+escapeHtml(item.category)+' · '+escapeHtml(item.owner)+' · '+escapeHtml(item.location)+'</div></div><span class="status '+s[1]+'">'+s[0]+'</span></div><div class="item-desc">'+escapeHtml(item.rule)+'<br>'+escapeHtml(item.desc)+'</div><div class="item-actions"><button class="btn-sm primary" onclick="openForm('+item.id+')">编辑</button><button class="btn-sm" onclick="updateStatus('+item.id+',&quot;active&quot;,&quot;物品已上架&quot;)">上架</button><button class="btn-sm" onclick="updateStatus('+item.id+',&quot;hidden&quot;,&quot;物品已下架&quot;)">下架</button><button class="btn-sm danger" onclick="removeItem('+item.id+')">删除</button></div></div>';}
+</script><script src="admin-shared.js"></script></body></html>

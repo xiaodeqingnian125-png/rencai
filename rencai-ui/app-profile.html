@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 · 我的</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   Warm Community palette — shared tokens
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #fafaf6;
+  --surface: #fffdf7;
+  --surface-warm: #fef8ef;
+  --fg: #2d2318;
+  --fg-2: #5c4a38;
+  --muted: #8c7a68;
+  --meta: #a69682;
+  --border: #e8e0d4;
+  --border-soft: #f0eae0;
+  --accent: #e8723c;
+  --accent-on: #ffffff;
+  --accent-hover: #f0804a;
+  --accent-active: #d4622c;
+
+  --font-display: "SF Pro Display", "PingFang SC", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "PingFang SC", "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 21px;
+
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 980px;
+
+  --elev-raised: 0 12px 32px rgba(0,0,0,0.06);
+  --ease-standard: cubic-bezier(0.28, 0, 0.22, 1);
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+
+  /* Semantic */
+  --price-orange: #e8590c;
+  --community-green: #5b9a6f;
+  --map-blue: #5b8cb8;
+  --guide-plum: #9b7eb8;
+  --badge-red: #e04a3a;
+
+  /* Device frame */
+  --device-bg: #d8d0c4;
+  --phone-bezel: #0a0a0a;
+  --phone-inner: #0a0a0a;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Reset & Base
+   ═══════════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  display: grid; place-items: center;
+  min-height: 100vh;
+  background: var(--device-bg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Phone Frame
+   ═══════════════════════════════════════════════════════════════════════ */
+.phone-frame {
+  width: 390px; min-width: 390px;
+  height: 844px;
+  background: var(--phone-bezel);
+  border-radius: 50px;
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+.phone-screen {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  border-radius: 38px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.dynamic-island {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 34px;
+  background: var(--phone-inner); border-radius: 20px;
+  z-index: 100;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Status Bar
+   ═══════════════════════════════════════════════════════════════════════ */
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px 0;
+  height: 50px;
+  font-size: 14px; font-weight: 600;
+  color: var(--fg);
+}
+.status-time { flex: 1; }
+.status-icons { display: flex; align-items: center; gap: 6px; }
+.status-icons svg { width: 16px; height: 16px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Nav Bar
+   ═══════════════════════════════════════════════════════════════════════ */
+.mp-nav {
+  display: flex; align-items: center; justify-content: center;
+  height: 44px; padding: 0 16px;
+  position: relative;
+  flex-shrink: 0;
+}
+.mp-nav-title {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Scroll Area
+   ═══════════════════════════════════════════════════════════════════════ */
+.mp-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding-bottom: 8px;
+}
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   User Header Card
+   ═══════════════════════════════════════════════════════════════════════ */
+.user-header {
+  padding: 12px 16px 20px;
+}
+.user-card {
+  background: var(--surface-warm);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex; align-items: center; gap: 16px;
+}
+.user-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent) 0%, color-mix(in oklab, var(--accent) 70%, var(--price-orange)) 100%);
+  display: grid; place-items: center;
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 600;
+  color: var(--accent-on);
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-name {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.user-status-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--muted);
+}
+.user-status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--community-green);
+}
+.user-arrow {
+  color: var(--meta);
+  flex-shrink: 0;
+}
+.user-arrow svg { width: 18px; height: 18px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Menu Section
+   ═══════════════════════════════════════════════════════════════════════ */
+.menu-section {
+  padding: 0 16px 16px;
+}
+.menu-group {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.menu-group + .menu-group { margin-top: 12px; }
+.menu-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+  user-select: none;
+  border-bottom: 1px solid var(--border-soft);
+}
+.menu-item:last-child { border-bottom: none; }
+.menu-item:active { background: var(--surface-warm); }
+
+.menu-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.menu-icon svg { width: 20px; height: 20px; }
+.menu-label { flex: 1; font-size: 16px; font-weight: 500; }
+.menu-badge {
+  min-width: 20px; height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--badge-red);
+  color: #fff;
+  font-size: 11px; font-weight: 600;
+  display: grid; place-items: center;
+  line-height: 1;
+}
+.menu-arrow { color: var(--meta); }
+.menu-arrow svg { width: 16px; height: 16px; }
+
+/* Icon accent tints */
+.icon-activity { background: color-mix(in oklab, var(--accent) 10%, transparent); color: var(--accent); }
+.icon-post     { background: color-mix(in oklab, var(--map-blue) 10%, transparent); color: var(--map-blue); }
+.icon-lend      { background: color-mix(in oklab, var(--community-green) 10%, transparent); color: var(--community-green); }
+.icon-borrow    { background: color-mix(in oklab, var(--guide-plum) 10%, transparent); color: var(--guide-plum); }
+.icon-order     { background: color-mix(in oklab, var(--price-orange) 10%, transparent); color: var(--price-orange); }
+.icon-fav        { background: color-mix(in oklab, var(--badge-red) 10%, transparent); color: var(--badge-red); }
+.icon-comment    { background: color-mix(in oklab, var(--muted) 10%, transparent); color: var(--fg-2); }
+.icon-settings   { background: color-mix(in oklab, var(--muted) 10%, transparent); color: var(--fg-2); }
+.icon-admin      { background: color-mix(in oklab, var(--fg-2) 10%, transparent); color: var(--fg-2); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Admin Section
+   ═══════════════════════════════════════════════════════════════════════ */
+.admin-label {
+  padding: 4px 16px 8px;
+  font-size: 12px; font-weight: 600;
+  color: var(--meta);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TabBar
+   ═══════════════════════════════════════════════════════════════════════ */
+.mp-tabbar {
+  display: flex; align-items: flex-start;
+  padding: 6px 4px 0;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-soft);
+  flex-shrink: 0;
+  position: relative;
+}
+.tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 6px 0 8px;
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-standard);
+  user-select: none;
+  color: var(--meta);
+}
+.tab-item.active { color: var(--accent); }
+.tab-item svg { width: 24px; height: 24px; }
+.tab-label { font-size: 10px; font-weight: 500; letter-spacing: 0.01em; }
+.tab-badge {
+  position: absolute; top: 2px; right: 50%; transform: translateX(18px);
+  min-width: 8px; height: 8px;
+  background: var(--badge-red); border-radius: 50%;
+  border: 2px solid var(--bg);
+}
+
+/* Home indicator */
+.home-indicator {
+  width: 134px; height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  margin: 8px auto;
+  opacity: 0.2;
+}
+
+/* Toast */
+.toast {
+  position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+  background: var(--fg); color: var(--bg);
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 14px; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 200;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Collapse animation
+   ═══════════════════════════════════════════════════════════════════════ */
+.admin-toggle-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%;
+  padding: 10px 0;
+  background: transparent;
+  border: none;
+  font-size: 13px; font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.admin-toggle-btn:active { color: var(--accent); }
+.admin-toggle-btn svg { width: 14px; height: 14px; transition: transform var(--motion-base) var(--ease-standard); }
+.admin-toggle-btn.open svg { transform: rotate(180deg); }
+.admin-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--motion-base) var(--ease-standard);
+}
+.admin-panel.show { max-height: 640px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Business Drawer
+   ═══════════════════════════════════════════════════════════════════════ */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(45, 35, 24, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 120;
+}
+.overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 74%;
+  background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -18px 48px rgba(45, 35, 24, 0.18);
+  transform: translateY(104%);
+  transition: transform var(--motion-base) var(--ease-standard);
+  z-index: 130;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sheet.show { transform: translateY(0); }
+.sheet-handle {
+  width: 38px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--border);
+  margin: 10px auto 4px;
+  flex-shrink: 0;
+}
+.sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 18px 14px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.sheet-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.sheet-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.sheet-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface-warm);
+  color: var(--fg-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sheet-close svg { width: 18px; height: 18px; }
+.sheet-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 16px 20px;
+}
+.sheet-body::-webkit-scrollbar { width: 0; }
+.record-list {
+  display: grid;
+  gap: 12px;
+}
+.record-card {
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+}
+.record-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.record-title {
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--fg);
+  line-height: 1.35;
+}
+.record-status {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in oklab, var(--community-green) 13%, transparent);
+  color: var(--community-green);
+  font-size: 11px;
+  font-weight: 650;
+}
+.record-status.warn {
+  background: color-mix(in oklab, var(--price-orange) 12%, transparent);
+  color: var(--price-orange);
+}
+.record-status.muted {
+  background: color-mix(in oklab, var(--muted) 12%, transparent);
+  color: var(--fg-2);
+}
+.record-meta {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.record-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.record-btn {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-2);
+  border-radius: var(--radius-pill);
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.record-btn.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-on);
+}
+.empty-state {
+  padding: 28px 18px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame {
+    width: 100vw; height: 100vh; height: 100dvh;
+    min-width: unset;
+    border-radius: 0; padding: 0;
+    box-shadow: none;
+  }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+  .status-bar { padding: 12px 20px 0; height: 44px; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"/><rect x="3" y="5" width="2" height="6" rx="0.5"/><rect x="6" y="2" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="11" rx="0.5"/></svg>
+        <svg viewBox="0 0 18 12" fill="currentColor"><path d="M1 3.5h1.5L3.5 8h11l1-4.5H16a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1v-6a1 1 0 011-1z"/><rect x="4" y="8.5" width="10" height="1.5" rx="0.5"/></svg>
+        <svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"/><rect x="2" y="2" width="18" height="8" rx="1"/><rect x="25" y="3" width="2" height="6" rx="0.8"/></svg>
+      </div>
+    </div>
+
+    <div class="mp-nav">
+      <span class="mp-nav-title">我的</span>
+    </div>
+
+    <div class="mp-scroll" data-od-id="profile-scroll">
+
+      <!-- ═════════════════════════════════════════════════════════════
+           User Header
+           ═════════════════════════════════════════════════════════════ -->
+      <div class="user-header" data-od-id="user-header">
+        <div class="user-card" onclick="window.location.href='app-profile-edit.html'">
+          <div class="user-avatar">小</div>
+          <div class="user-info">
+            <div class="user-name">晓得青年</div>
+            <div class="user-status-row">
+              <span class="user-status-dot"></span>
+              <span>已入住 · 郑东人才公寓</span>
+            </div>
+          </div>
+          <div class="user-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════
+           Menu Group 1 — 核心功能
+           ═════════════════════════════════════════════════════════════ -->
+      <div class="menu-section" data-od-id="menu-core">
+        <div class="menu-group">
+          <div class="menu-item" onclick="openBusiness('activities')">
+            <div class="menu-icon icon-activity">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </div>
+            <span class="menu-label">我的活动</span>
+            <span class="menu-badge">2</span>
+            <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+          <div class="menu-item" onclick="openBusiness('posts')">
+            <div class="menu-icon icon-post">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+            <span class="menu-label">我的帖子</span>
+            <span class="menu-badge">1</span>
+            <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+          <div class="menu-item" onclick="openBusiness('lend')">
+            <div class="menu-icon icon-lend">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+            </div>
+            <span class="menu-label">我借出的</span>
+            <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+          <div class="menu-item" onclick="openBusiness('borrow')">
+            <div class="menu-icon icon-borrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16v0"/></svg>
+            </div>
+            <span class="menu-label">我借入的</span>
+            <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════
+           Menu Group 2 — 其他
+           ═════════════════════════════════════════════════════════════ -->
+      <div class="menu-section" data-od-id="menu-other">
+        <div class="menu-group">
+          <div class="menu-item" onclick="openBusiness('orders')">
+            <div class="menu-icon icon-order">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 8h10M7 12h6"/></svg>
+            </div>
+            <span class="menu-label">我的订单</span>
+            <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+          <div class="menu-item" onclick="window.location.href='app-favorites.html'">
+            <div class="menu-icon icon-fav">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </div>
+            <span class="menu-label">我的收藏</span>
+            <span class="menu-badge">3</span>
+            <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+          <div class="menu-item" onclick="window.location.href='app-my-comments.html'">
+            <div class="menu-icon icon-comment">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <span class="menu-label">我的评论</span>
+            <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════
+           Menu Group 3 — 设置
+           ═════════════════════════════════════════════════════════════ -->
+      <div class="menu-section" data-od-id="menu-settings">
+        <div class="menu-group">
+          <div class="menu-item" onclick="showToast('设置 — 即将开放')">
+            <div class="menu-icon icon-settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </div>
+            <span class="menu-label">设置</span>
+            <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════
+           Admin Panel
+           ═════════════════════════════════════════════════════════════ -->
+      <div class="menu-section" data-od-id="admin-section">
+        <button class="admin-toggle-btn" id="adminToggle" onclick="toggleAdmin()">
+          管理员 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l3 3 3-3"/></svg>
+        </button>
+        <div class="admin-panel" id="adminPanel">
+          <div class="admin-label">内容管理</div>
+          <div class="menu-group">
+            <div class="menu-item" onclick="window.location.href='app-admin-apartments.html'">
+              <div class="menu-icon icon-admin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+              </div>
+              <span class="menu-label">公寓管理</span>
+              <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+            </div>
+            <div class="menu-item" onclick="window.location.href='app-admin-rooms.html'">
+              <div class="menu-icon icon-admin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              </div>
+              <span class="menu-label">户型管理</span>
+              <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+            </div>
+            <div class="menu-item" onclick="window.location.href='app-admin-activities.html'">
+              <div class="menu-icon icon-admin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              </div>
+              <span class="menu-label">活动管理</span>
+              <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+            </div>
+            <div class="menu-item" onclick="window.location.href='app-admin-services.html'">
+              <div class="menu-icon icon-admin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+              </div>
+              <span class="menu-label">服务管理</span>
+              <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+            </div>
+            <div class="menu-item" onclick="window.location.href='app-admin-items.html'">
+              <div class="menu-icon icon-admin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="8" height="8" rx="1.5"/><path d="M10 12l4-4"/></svg>
+              </div>
+              <span class="menu-label">物品管理</span>
+              <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+            </div>
+            <div class="menu-item" onclick="window.location.href='app-admin-comments.html'">
+              <div class="menu-icon icon-admin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              </div>
+              <span class="menu-label">评论管理</span>
+              <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+            </div>
+            <div class="menu-item" onclick="window.location.href='app-admin-users.html'">
+              <div class="menu-icon icon-admin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+              </div>
+              <span class="menu-label">用户管理</span>
+              <span class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.mp-scroll -->
+
+    <!-- ═════════════════════════════════════════════════════════════
+         TabBar
+         ═════════════════════════════════════════════════════════════ -->
+    <div class="mp-tabbar" data-od-id="tabbar">
+      <div class="tab-item" onclick="switchTab(this, '首页')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab-item" onclick="switchTab(this, '服务')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span class="tab-label">服务</span>
+      </div>
+      <div class="tab-item" onclick="switchTab(this, '借个锤子')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 3.5l6.1 6.1-2.6 2.6-6.1-6.1 2.6-2.6z"/><path d="M11.9 6.1l-1.7 1.7"/><path d="M10.2 7.8L4 14a2.1 2.1 0 000 3l3 3a2.1 2.1 0 003 0l6.2-6.2"/><path d="M5.8 15.8l2.4 2.4"/></svg>
+        <span class="tab-label">借个锤子</span>
+      </div>
+      <div class="tab-item" onclick="switchTab(this, '消息')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+        <span class="tab-label">消息</span>
+        <span class="tab-badge" style="top:2px;right:50%;transform:translateX(18px);"></span>
+      </div>
+      <div class="tab-item active" onclick="switchTab(this, '我的')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22v-4a3 3 0 013-3h0a3 3 0 013 3v4"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+
+    <div class="overlay" id="businessOverlay" onclick="closeBusiness()"></div>
+    <div class="sheet" id="businessSheet" aria-hidden="true">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <div>
+          <div class="sheet-title" id="businessTitle">我的记录</div>
+          <div class="sheet-subtitle" id="businessSubtitle">查看近期业务进展</div>
+        </div>
+        <button class="sheet-close" type="button" onclick="closeBusiness()" aria-label="关闭">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="sheet-body" id="businessBody"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+  </div>
+</div>
+
+<script>
+// ─── Admin Toggle ───────────────────────────────────────────────────
+function toggleAdmin() {
+  var panel = document.getElementById('adminPanel');
+  var btn = document.getElementById('adminToggle');
+  var open = panel.classList.toggle('show');
+  btn.classList.toggle('open', open);
+}
+
+// ─── Toast ─────────────────────────────────────────────────────────
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800);
+}
+
+// ─── Business Records ───────────────────────────────────────────────
+var businessConfig = {
+  activities: {
+    title: '我的活动',
+    subtitle: '报名、发起和候补活动的最新进展',
+    empty: '暂无活动记录，去服务页看看最近的青年活动。',
+    items: [
+      {
+        title: '周末桌游局',
+        status: '已报名',
+        tone: 'ok',
+        meta: ['时间：周六 19:30', '地点：郑东人才公寓共享客厅', '报名码：HD-2606-02'],
+        actions: [
+          { label: '查看活动', action: 'service' },
+          { label: '取消报名', action: 'cancelActivity' }
+        ]
+      },
+      {
+        title: '夏日夜跑搭子',
+        status: '候补中',
+        tone: 'warn',
+        meta: ['时间：周日 20:00', '集合：北门广场', '当前候补：第 3 位'],
+        actions: [
+          { label: '查看活动', action: 'service' },
+          { label: '提醒我', action: 'remind' }
+        ]
+      }
+    ]
+  },
+  posts: {
+    title: '我的帖子',
+    subtitle: '找室友发布记录和联系状态',
+    empty: '还没有发布找室友帖子。',
+    items: [
+      {
+        title: '郑东人才公寓 · 主卧找室友',
+        status: '展示中',
+        tone: 'ok',
+        meta: ['类型：有房找室友', '预算：1200-1500 元/月', '最近联系：2 人咨询'],
+        actions: [
+          { label: '查看帖子', action: 'roommate' },
+          { label: '下架帖子', action: 'closePost' }
+        ]
+      }
+    ]
+  },
+  lend: {
+    title: '我借出的',
+    subtitle: '别人向你借用的物品与归还状态',
+    empty: '暂无借出记录。',
+    items: [
+      {
+        title: '电钻工具箱',
+        status: '借出中',
+        tone: 'warn',
+        meta: ['借用人：林同学', '借用时间：今天 18:00-20:00', '归还点：3 号楼大厅'],
+        actions: [
+          { label: '联系借用人', action: 'contact' },
+          { label: '确认归还', action: 'finishLend' }
+        ]
+      },
+      {
+        title: '折叠梯',
+        status: '待确认',
+        tone: 'muted',
+        meta: ['申请人：陈同学', '申请时间：明天 10:00-11:30', '留言：装窗帘用一下'],
+        actions: [
+          { label: '同意借出', action: 'approveLend' },
+          { label: '拒绝', action: 'reject' }
+        ]
+      }
+    ]
+  },
+  borrow: {
+    title: '我借入的',
+    subtitle: '你的借用申请、领取和归还记录',
+    empty: '暂无借入记录，去借个锤子看看可借物品。',
+    items: [
+      {
+        title: '手持熨斗',
+        status: '待领取',
+        tone: 'warn',
+        meta: ['物主：阿泽', '预约：今天 21:00', '领取点：2 号楼前台'],
+        actions: [
+          { label: '查看物品', action: 'borrowPage' },
+          { label: '联系物主', action: 'contact' }
+        ]
+      }
+    ]
+  },
+  orders: {
+    title: '我的订单',
+    subtitle: '代办服务订单和处理进度',
+    empty: '暂无服务订单。',
+    items: [
+      {
+        title: '快递代取 · 中通 3 件',
+        status: '处理中',
+        tone: 'warn',
+        meta: ['订单号：DD-260630-018', '取件点：菜鸟驿站东门店', '预计送达：30 分钟内'],
+        actions: [
+          { label: '查看订单', action: 'service' },
+          { label: '联系客服', action: 'contact' }
+        ]
+      },
+      {
+        title: '维修预约 · 水龙头漏水',
+        status: '已完成',
+        tone: 'muted',
+        meta: ['订单号：DD-260629-006', '处理人：物业维修王师傅', '完成时间：昨天 16:20'],
+        actions: [
+          { label: '再次下单', action: 'service' },
+          { label: '评价服务', action: 'comment' }
+        ]
+      }
+    ]
+  }
+};
+
+function openBusiness(type) {
+  var cfg = businessConfig[type];
+  if (!cfg) return;
+  document.getElementById('businessTitle').textContent = cfg.title;
+  document.getElementById('businessSubtitle').textContent = cfg.subtitle;
+  document.getElementById('businessBody').innerHTML = renderBusinessItems(cfg);
+  document.getElementById('businessOverlay').classList.add('show');
+  var sheet = document.getElementById('businessSheet');
+  sheet.classList.add('show');
+  sheet.setAttribute('aria-hidden', 'false');
+}
+
+function closeBusiness() {
+  document.getElementById('businessOverlay').classList.remove('show');
+  var sheet = document.getElementById('businessSheet');
+  sheet.classList.remove('show');
+  sheet.setAttribute('aria-hidden', 'true');
+}
+
+function renderBusinessItems(cfg) {
+  if (!cfg.items || cfg.items.length === 0) {
+    return '<div class="empty-state">' + cfg.empty + '</div>';
+  }
+  return '<div class="record-list">' + cfg.items.map(function(item) {
+    var statusClass = item.tone === 'warn' ? 'warn' : item.tone === 'muted' ? 'muted' : '';
+    var meta = item.meta.map(function(line) {
+      return '<div>' + line + '</div>';
+    }).join('');
+    var actions = item.actions.map(function(action) {
+      var primary = action.action.indexOf('cancel') === -1 && action.action.indexOf('reject') === -1 ? ' primary' : '';
+      return '<button class="record-btn' + primary + '" type="button" onclick="handleBusinessAction(&quot;' + action.action + '&quot;)">' + action.label + '</button>';
+    }).join('');
+    return '<article class="record-card">' +
+      '<div class="record-top">' +
+        '<div class="record-title">' + item.title + '</div>' +
+        '<span class="record-status ' + statusClass + '">' + item.status + '</span>' +
+      '</div>' +
+      '<div class="record-meta">' + meta + '</div>' +
+      '<div class="record-actions">' + actions + '</div>' +
+    '</article>';
+  }).join('') + '</div>';
+}
+
+function handleBusinessAction(action) {
+  var routeMap = {
+    service: 'app-service.html',
+    roommate: 'app-roommate.html',
+    borrowPage: 'app-borrow.html',
+    comment: 'app-my-comments.html'
+  };
+  if (routeMap[action]) {
+    window.location.href = routeMap[action];
+    return;
+  }
+  var messageMap = {
+    cancelActivity: '已提交取消报名',
+    remind: '已开启候补提醒',
+    closePost: '帖子已下架',
+    contact: '已为你打开联系入口',
+    finishLend: '已确认归还',
+    approveLend: '已同意借出',
+    reject: '已拒绝申请'
+  };
+  showToast(messageMap[action] || '操作已提交');
+}
+
+// ─── Tab ───────────────────────────────────────────────────────────
+function switchTab(el, name) {
+  if (el.classList.contains('active')) return;
+  var tabs = document.querySelectorAll('.tab-item');
+  for (var i = 0; i < tabs.length; i++) { tabs[i].classList.remove('active'); }
+  el.classList.add('active');
+  if (name === '首页') { window.location.href = 'app-home.html'; return; }
+  if (name === '服务') { window.location.href = 'app-service.html'; return; }
+  if (name === '借个锤子') { window.location.href = 'app-borrow.html'; return; }
+  if (name === '消息') { window.location.href = 'app-messages.html'; return; }
+  showToast(name + ' — 即将开放');
+}
+</script>
+
+<script src="auth-guard.js"></script>
+<script>requireAuth(function() {});</script>
+
+</body>
+</html>

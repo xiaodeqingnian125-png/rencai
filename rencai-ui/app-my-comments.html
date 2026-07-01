@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 · 我的评论</title>
+<style>
+:root {
+  --bg: #fafaf6; --surface: #fffdf7; --surface-warm: #fef8ef;
+  --fg: #2d2318; --fg-2: #5c4a38; --muted: #8c7a68; --meta: #a69682;
+  --border: #e8e0d4; --border-soft: #f0eae0; --accent: #e8723c;
+  --accent-on: #ffffff; --accent-hover: #f0804a; --accent-active: #d4622c;
+  --font-display: "SF Pro Display","PingFang SC","SF Pro Icons","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --font-body: "PingFang SC","SF Pro Text","SF Pro Icons","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --text-xs: 12px; --text-sm: 14px; --text-base: 16px;
+  --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 18px; --radius-pill: 980px;
+  --ease-standard: cubic-bezier(0.28,0,0.22,1);
+  --motion-fast: 150ms; --motion-base: 220ms;
+  --price-orange: #e8590c; --badge-red: #e04a3a; --community-green: #5b9a6f;
+  --device-bg: #d8d0c4; --phone-bezel: #0a0a0a; --phone-inner: #0a0a0a;
+
+  /* Avatar gradient stops */
+  --ca1-a: #e8a0b0; --ca1-b: #d08090;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body { display: grid; place-items: center; min-height: 100vh; background: var(--device-bg); font-family: var(--font-body); font-size: var(--text-base); color: var(--fg); -webkit-font-smoothing: antialiased; }
+
+.phone-frame { width: 390px; min-width: 390px; height: 844px; background: var(--phone-bezel); border-radius: 50px; padding: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1); flex-shrink: 0; }
+.phone-screen { width: 100%; height: 100%; background: var(--bg); border-radius: 38px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.dynamic-island { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 126px; height: 34px; background: var(--phone-inner); border-radius: 20px; z-index: 100; }
+
+.status-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px 0; height: 50px; font-size: 14px; font-weight: 600; color: var(--fg); }
+.status-time { flex: 1; }
+.status-icons { display: flex; align-items: center; gap: 6px; }
+.status-icons svg { width: 16px; height: 16px; }
+
+.mp-nav { display: flex; align-items: center; height: 44px; padding: 0 12px; flex-shrink: 0; position: relative; }
+.mp-nav-back { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; cursor: pointer; transition: background var(--motion-fast) var(--ease-standard); flex-shrink: 0; }
+.mp-nav-back:active { background: var(--surface); }
+.mp-nav-back svg { width: 22px; height: 22px; color: var(--fg); }
+.mp-nav-title { flex: 1; text-align: center; font-family: var(--font-display); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); margin-right: 32px; }
+
+.mp-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; padding-bottom: 8px; }
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+/* Comment card */
+.cmt-list { padding: 4px 16px 20px; display: flex; flex-direction: column; gap: 0; }
+.cmt-item { padding: 16px 0; border-bottom: 1px solid var(--border-soft); }
+.cmt-item:last-child { border-bottom: none; }
+.cmt-target { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--accent); margin-bottom: 8px; }
+.cmt-target svg { width: 14px; height: 14px; }
+.cmt-user { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.cmt-avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--accent-on); flex-shrink: 0; background: linear-gradient(135deg, var(--ca1-a), var(--ca1-b)); }
+.cmt-name { font-size: 14px; font-weight: 600; }
+.cmt-time { font-size: 12px; color: var(--muted); margin-left: auto; }
+.cmt-body { font-size: 14px; color: var(--fg-2); line-height: 1.5; margin-bottom: 6px; }
+.cmt-actions { display: flex; gap: 16px; font-size: 12px; color: var(--muted); }
+.cmt-like { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.cmt-like svg { width: 14px; height: 14px; }
+.cmt-delete { display: flex; align-items: center; gap: 4px; cursor: pointer; color: var(--muted); margin-left: auto; }
+.cmt-delete svg { width: 14px; height: 14px; }
+
+/* Empty */
+.empty { text-align: center; padding: 64px 20px; color: var(--muted); }
+.empty svg { width: 48px; height: 48px; color: var(--border); margin-bottom: 12px; }
+.empty p { font-size: 14px; line-height: 1.5; }
+
+.toast { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 20px; border-radius: var(--radius-pill); font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity var(--motion-base); z-index: 200; white-space: nowrap; }
+.toast.show { opacity: 1; }
+.home-indicator { width: 134px; height: 5px; background: var(--fg); border-radius: 3px; margin: 8px auto; opacity: 0.2; }
+
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame { width: 100vw; height: 100vh; height: 100dvh; min-width: unset; border-radius: 0; padding: 0; box-shadow: none; }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+  .status-bar { padding: 12px 20px 0; height: 44px; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"/><rect x="3" y="5" width="2" height="6" rx="0.5"/><rect x="6" y="2" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="11" rx="0.5"/></svg>
+        <svg viewBox="0 0 18 12" fill="currentColor"><path d="M1 3.5h1.5L3.5 8h11l1-4.5H16a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1v-6a1 1 0 011-1z"/><rect x="4" y="8.5" width="10" height="1.5" rx="0.5"/></svg>
+        <svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"/><rect x="2" y="2" width="18" height="8" rx="1"/><rect x="25" y="3" width="2" height="6" rx="0.8"/></svg>
+      </div>
+    </div>
+
+    <div class="mp-nav">
+      <div class="mp-nav-back" onclick="history.back()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <span class="mp-nav-title">我的评论</span>
+    </div>
+
+    <div class="mp-scroll" data-od-id="comment-scroll">
+      <div class="cmt-list" id="cmtList"></div>
+    </div>
+
+    <div class="home-indicator"></div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+var comments = [
+  { target:'🏠 郑东人才公寓', body:'住了快一年了，物业态度超好，楼下快递柜很方便。离地铁走路5分钟，通勤非常友好。', time:'2026年6月', likes:12 },
+  { target:'📐 精致一居室（郑东人才公寓）', body:'这个户型最大的优点是采光！朝南带阳台，冬天晒太阳超舒服。一个人住刚刚好。', time:'2026年5月', likes:8 },
+  { target:'🏠 二七人才公寓', body:'交通便利，楼下就是公交站。性价比很高，推荐给刚毕业的年轻人。', time:'2026年4月', likes:5 },
+  { target:'📐 舒适两居室（郑东人才公寓）', body:'两居室空间很大，跟室友合租很划算。物业响应快，报修基本当天就处理。', time:'2026年3月', likes:3 }
+];
+
+function render() {
+  var html = '';
+  if (comments.length === 0) {
+    document.getElementById('cmtList').innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><p>还没有发表过评论</p></div>';
+    return;
+  }
+  comments.forEach(function(c) {
+    html += '<div class="cmt-item">'
+      + '<div class="cmt-target"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>' + c.target + '</div>'
+      + '<div class="cmt-body">' + c.body + '</div>'
+      + '<div class="cmt-actions">'
+      + '<span class="cmt-like"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg> ' + c.likes + '</span>'
+      + '<span class="cmt-delete" onclick="deleteComment(\'' + c.target + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> 删除</span>'
+      + '</div>'
+      + '<div class="cmt-user" style="margin-top:6px;margin-bottom:0;"><div class="cmt-avatar">我</div><span class="cmt-name">我</span><span class="cmt-time">' + c.time + '</span></div>'
+      + '</div>';
+  });
+  document.getElementById('cmtList').innerHTML = html;
+}
+
+function deleteComment(target) {
+  comments = comments.filter(function(c) { return c.target !== target; });
+  render();
+  showToast('已删除');
+}
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800);
+}
+render();
+</script>
+</body>
+</html>

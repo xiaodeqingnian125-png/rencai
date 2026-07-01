@@ -1,0 +1,46 @@
+<view class="community-page">
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" enable-back-to-top class="community-scroll">
+    <view class="qr-section">
+      <view class="qr-card">
+        <view class="qr-code">
+          <view class="qr-bg-mark"></view>
+          <view class="qr-finder qr-ftl"></view>
+          <view class="qr-finder qr-ftr"></view>
+          <view class="qr-finder qr-fbl"></view>
+          <view class="qr-pattern">
+            <view wx:for="{{qrDots}}" wx:key="id" class="qr-dot {{item.on ? '' : 'empty'}}"></view>
+          </view>
+          <view class="qr-icon">小</view>
+        </view>
+        <view class="qr-title">扫码添加晓得助理</view>
+        <view class="qr-sub">长按识别二维码，添加助理微信</view>
+        <view class="qr-sub">拉你进对应公寓社群</view>
+        <view class="qr-hint">添加时请备注：所在公寓名，方便拉你进对应社群</view>
+        <view class="wechat-chip">
+          <text>微信号</text>
+          <view>{{wechatId}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="actions">
+      <button class="btn-save" bindtap="saveQr">
+        <text class="btn-symbol">↓</text>
+        <text>保存二维码图片</text>
+      </button>
+      <button class="btn-outline" bindtap="copyWechat">
+        <text class="btn-symbol">复制</text>
+        <text>复制微信号</text>
+      </button>
+    </view>
+
+    <view class="benefits">
+      <view class="benefits-title">加入社群你可以</view>
+      <view wx:for="{{benefits}}" wx:key="text" class="benefit-row {{index === benefits.length - 1 ? 'last' : ''}}">
+        <view class="benefit-check">✓</view>
+        <text class="benefit-text">{{item.text}}</text>
+        <text class="benefit-tag">{{item.tag}}</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

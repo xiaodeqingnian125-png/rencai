@@ -1,0 +1,69 @@
+<view class="map-page">
+  <view class="map-area">
+    <map
+      id="apartmentMap"
+      class="tencent-map"
+      longitude="{{mapCenter.longitude}}"
+      latitude="{{mapCenter.latitude}}"
+      scale="{{mapCenter.scale}}"
+      markers="{{mapMarkers}}"
+      show-location="{{showUserLocation}}"
+      enable-scroll
+      enable-zoom
+      show-compass
+      bindmarkertap="selectMarkerFromMap"
+    >
+      <cover-view class="map-topbar">
+        <cover-view class="map-title-group">
+          <cover-view class="map-kicker">{{locationLabel}}</cover-view>
+          <cover-view class="map-title">地图选房</cover-view>
+        </cover-view>
+        <cover-view class="map-count">{{markers.length}} 处房源</cover-view>
+      </cover-view>
+
+      <cover-view class="locate-btn {{locating ? 'locating' : ''}}" bindtap="locate" aria-label="定位到当前位置">
+        <cover-view class="locate-icon">
+          <cover-view class="locate-core"></cover-view>
+        </cover-view>
+      </cover-view>
+
+      <cover-view wx:if="{{activeApartment}}" class="map-info-card">
+        <cover-view class="map-info-badge">{{activeApartment.districtShort}}</cover-view>
+        <cover-view class="map-info-body">
+          <cover-view class="map-info-head">
+            <cover-view class="map-info-name">{{activeApartment.name}}</cover-view>
+            <cover-view class="map-info-price">{{activeApartment.priceText}}/月</cover-view>
+          </cover-view>
+          <cover-view class="map-info-location">{{activeApartment.location}}</cover-view>
+          <cover-view class="map-info-meta">{{activeApartment.locationMeta}}</cover-view>
+        </cover-view>
+        <cover-view class="map-info-actions">
+          <cover-view class="map-info-route" data-id="{{activeApartment.id}}" catchtap="openLocation">导航</cover-view>
+          <cover-view class="map-info-detail" data-id="{{activeApartment.id}}" catchtap="goDetail">详情</cover-view>
+        </cover-view>
+      </cover-view>
+    </map>
+  </view>
+
+  <scroll-view class="apt-strip" scroll-y enhanced show-scrollbar="{{false}}">
+    <view
+      wx:for="{{markers}}"
+      wx:key="id"
+      class="apt-strip-item {{activeId === item.id ? 'active' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="selectApartment"
+      hover-class="apt-strip-item-hover"
+      hover-stay-time="80"
+    >
+      <view class="apt-strip-dot {{activeId === item.id ? 'active' : ''}}"></view>
+      <view class="apt-strip-info">
+        <view class="apt-strip-name">{{item.name}}</view>
+        <view class="apt-strip-detail">{{item.locShort}}</view>
+      </view>
+      <view class="apt-strip-side">
+        <view class="apt-strip-price">{{item.priceText}}/月</view>
+        <button class="apt-strip-detail-btn" data-id="{{item.id}}" catchtap="goDetail">详情</button>
+      </view>
+    </view>
+  </scroll-view>
+</view>

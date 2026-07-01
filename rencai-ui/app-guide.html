@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 · 政策攻略</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   Warm Community palette
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #fafaf6;
+  --surface: #fffdf7;
+  --surface-warm: #fef8ef;
+  --fg: #2d2318;
+  --fg-2: #5c4a38;
+  --muted: #8c7a68;
+  --meta: #a69682;
+  --border: #e8e0d4;
+  --border-soft: #f0eae0;
+  --accent: #e8723c;
+  --accent-on: #ffffff;
+  --accent-hover: #f0804a;
+  --accent-active: #d4622c;
+
+  --font-display: "SF Pro Display", "PingFang SC", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "PingFang SC", "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 21px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 980px;
+
+  --elev-raised: 0 12px 32px rgba(0,0,0,0.06);
+  --ease-standard: cubic-bezier(0.28, 0, 0.22, 1);
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+
+  --price-orange: #e8590c;
+  --community-green: #5b9a6f;
+  --guide-plum: #9b7eb8;
+  --badge-red: #e04a3a;
+
+  --device-bg: #d8d0c4;
+  --phone-bezel: #0a0a0a;
+  --phone-inner: #0a0a0a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  display: grid; place-items: center;
+  min-height: 100vh;
+  background: var(--device-bg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame {
+  width: 390px; min-width: 390px;
+  height: 844px;
+  background: var(--phone-bezel);
+  border-radius: 50px;
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+.phone-screen {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  border-radius: 38px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.dynamic-island {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 34px;
+  background: var(--phone-inner); border-radius: 20px;
+  z-index: 100;
+}
+
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px 0;
+  height: 50px;
+  font-size: 14px; font-weight: 600;
+  color: var(--fg);
+}
+.status-time { flex: 1; }
+.status-icons { display: flex; align-items: center; gap: 6px; }
+.status-icons svg { width: 16px; height: 16px; }
+
+.mp-nav {
+  display: flex; align-items: center;
+  height: 44px; padding: 0 12px;
+  flex-shrink: 0;
+  position: relative;
+}
+.mp-nav-back {
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+  flex-shrink: 0;
+}
+.mp-nav-back:active { background: var(--surface); }
+.mp-nav-back svg { width: 22px; height: 22px; color: var(--fg); }
+.mp-nav-title {
+  flex: 1; text-align: center;
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  margin-right: 32px;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   Tab Bar
+   ═════════════════════════════════════════════════════════════════ */
+.guide-tabs {
+  display: flex;
+  padding: 8px 16px;
+  gap: 0;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.guide-tab {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 14px; font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-standard);
+  position: relative;
+  user-select: none;
+}
+.guide-tab.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+.guide-tab.active::after {
+  content: '';
+  position: absolute; bottom: -9px; left: 25%; right: 25%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   Content Panel
+   ═════════════════════════════════════════════════════════════════ */
+.mp-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding-bottom: 8px;
+}
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+.guide-panel { display: none; padding: 16px; }
+.guide-panel.active { display: block; animation: fadeIn var(--motion-base) var(--ease-standard) both; }
+
+.guide-step {
+  display: flex; gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.guide-step:last-child { border-bottom: none; }
+.guide-step-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-on);
+  display: grid; place-items: center;
+  font-size: 14px; font-weight: 700;
+  flex-shrink: 0;
+}
+.guide-step-body { flex: 1; }
+.guide-step-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.guide-step-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+.guide-checklist { }
+.guide-check-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.guide-check-item:last-child { border-bottom: none; }
+.guide-check-icon {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.guide-check-icon svg { width: 14px; height: 14px; color: var(--community-green); }
+.guide-check-text { flex: 1; font-size: 15px; line-height: 1.4; }
+
+.guide-qa { }
+.guide-qa-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.guide-qa-item:last-child { border-bottom: none; }
+.guide-qa-q {
+  font-size: 16px; font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 6px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+}
+.guide-qa-q::before { content: 'Q'; font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+.guide-qa-a {
+  font-size: 14px; color: var(--muted);
+  line-height: 1.5;
+  padding-left: 32px;
+}
+.guide-qa-a::before { content: 'A  '; font-weight: 600; color: var(--fg); }
+
+.guide-note {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: var(--surface-warm);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  font-size: 13px; color: var(--muted);
+  line-height: 1.5;
+}
+.guide-note strong { color: var(--accent); }
+
+.home-indicator {
+  width: 134px; height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  margin: 8px auto;
+  opacity: 0.2;
+}
+
+.toast {
+  position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+  background: var(--fg); color: var(--bg);
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 14px; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 200;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame { width: 100vw; height: 100vh; height: 100dvh; min-width: unset; border-radius: 0; padding: 0; box-shadow: none; }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+  .status-bar { padding: 12px 20px 0; height: 44px; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"/><rect x="3" y="5" width="2" height="6" rx="0.5"/><rect x="6" y="2" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="11" rx="0.5"/></svg>
+        <svg viewBox="0 0 18 12" fill="currentColor"><path d="M1 3.5h1.5L3.5 8h11l1-4.5H16a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1v-6a1 1 0 011-1z"/><rect x="4" y="8.5" width="10" height="1.5" rx="0.5"/></svg>
+        <svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"/><rect x="2" y="2" width="18" height="8" rx="1"/><rect x="25" y="3" width="2" height="6" rx="0.8"/></svg>
+      </div>
+    </div>
+
+    <div class="mp-nav">
+      <div class="mp-nav-back" onclick="history.back()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <span class="mp-nav-title">政策攻略</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="guide-tabs" data-od-id="guide-tabs">
+      <span class="guide-tab active" onclick="switchGuide('eligibility', this)">申请条件</span>
+      <span class="guide-tab" onclick="switchGuide('process', this)">申请流程</span>
+      <span class="guide-tab" onclick="switchGuide('materials', this)">材料清单</span>
+      <span class="guide-tab" onclick="switchGuide('faq', this)">常见Q&A</span>
+    </div>
+
+    <div class="mp-scroll" data-od-id="guide-scroll" id="guideScroll">
+
+      <!-- 申请条件 -->
+      <div class="guide-panel active" id="panel-eligibility" data-od-id="guide-eligibility">
+        <div class="guide-checklist">
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">全日制本科及以上学历（含应届毕业生）</span>
+          </div>
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">毕业5年内（以毕业证书日期为准）</span>
+          </div>
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">在郑州市区无自有住房</span>
+          </div>
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">在郑州缴纳社保（部分项目放宽至承诺制）</span>
+          </div>
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">未享受过郑州市其他保障性住房政策</span>
+          </div>
+        </div>
+        <div class="guide-note">
+          <strong>注意：</strong>各项目具体要求略有差异，以住建局最新公告为准。部分项目面向硕士/博士有优先配租政策。
+        </div>
+      </div>
+
+      <!-- 申请流程 -->
+      <div class="guide-panel" id="panel-process" data-od-id="guide-process">
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">资格自审</div>
+            <div class="guide-step-desc">确认自己符合学历、年龄、住房等基本条件，避免白跑一趟。</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">准备材料</div>
+            <div class="guide-step-desc">按材料清单准备身份证、毕业证、学位证、社保记录等原件及复印件。</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">线上提交</div>
+            <div class="guide-step-desc">登录「郑好办」App 或郑州市住建局官网，填写申请表并上传材料扫描件。</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">资格审核</div>
+            <div class="guide-step-desc">住建部门在 15 个工作日内完成审核，审核结果短信通知。</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">5</div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">选房签约</div>
+            <div class="guide-step-desc">审核通过后参与轮候选房，选定房源后签订租赁合同，缴纳押金及首月租金。</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">6</div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">办理入住</div>
+            <div class="guide-step-desc">凭合同到公寓物业管理处办理入住手续，领取钥匙。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 材料清单 -->
+      <div class="guide-panel" id="panel-materials" data-od-id="guide-materials">
+        <div class="guide-checklist">
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">身份证原件及复印件（2份）</span>
+          </div>
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">毕业证书、学位证书原件及复印件</span>
+          </div>
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">学信网学历认证报告（在线验证报告）</span>
+          </div>
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">社保缴纳证明（近6个月，部分项目要求）</span>
+          </div>
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">无房证明（不动产登记中心开具）</span>
+          </div>
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">劳动合同或在职证明（加盖公章）</span>
+          </div>
+          <div class="guide-check-item">
+            <div class="guide-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="guide-check-text">一寸免冠照片（2张）</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 常见Q&A -->
+      <div class="guide-panel" id="panel-faq" data-od-id="guide-faq">
+        <div class="guide-qa">
+          <div class="guide-qa-item">
+            <div class="guide-qa-q">人才公寓可以住多久？</div>
+            <div class="guide-qa-a">一般租期为1-3年，到期后可申请续租。累计租赁年限一般不超过5年，具体以各项目规定为准。</div>
+          </div>
+          <div class="guide-qa-item">
+            <div class="guide-qa-q">需要中介费吗？</div>
+            <div class="guide-qa-a">不需要。人才公寓由政府主导配租，不收取任何中介费。如遇要求缴纳"中介费"或"加价费"，请警惕诈骗。</div>
+          </div>
+          <div class="guide-qa-item">
+            <div class="guide-qa-q">可以合租或转租吗？</div>
+            <div class="guide-qa-a">可以合租（需共同申请或承租人同意），但严禁转租牟利。违规转租一经查实将被清退并纳入信用记录。</div>
+          </div>
+          <div class="guide-qa-item">
+            <div class="guide-qa-q">租金怎么算？包含水电吗？</div>
+            <div class="guide-qa-a">租金低于同地段市场价的70%。租金不含水电气及物业费，这些费用需另行缴纳。</div>
+          </div>
+          <div class="guide-qa-item">
+            <div class="guide-qa-q">非郑州户口可以申请吗？</div>
+            <div class="guide-qa-a">可以。人才公寓不限户籍，只要满足学历、年龄、住房和社保条件即可申请。</div>
+          </div>
+        </div>
+        <div class="guide-note">
+          <strong>更多问题：</strong>关注「晓得青年」公众号或加入对应公寓社群，获取最新政策答疑。
+        </div>
+      </div>
+
+    </div>
+
+    <div class="home-indicator"></div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+function switchGuide(panelId, el) {
+  var tabs = document.querySelectorAll('.guide-tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  el.classList.add('active');
+
+  var panels = document.querySelectorAll('.guide-panel');
+  for (var j = 0; j < panels.length; j++) panels[j].classList.remove('active');
+  document.getElementById('panel-' + panelId).classList.add('active');
+
+  document.getElementById('guideScroll').scrollTop = 0;
+}
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800);
+}
+</script>
+
+</body>
+</html>

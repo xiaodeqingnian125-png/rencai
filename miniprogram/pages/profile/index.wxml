@@ -1,0 +1,105 @@
+<view class="profile-page">
+  <view class="user-header">
+    <view class="user-card" bindtap="openProfileEdit">
+      <view class="user-avatar">{{user.avatarText}}</view>
+      <view class="user-info">
+        <view class="user-name">{{user.name}}</view>
+        <view class="user-status-row">
+          <view class="user-status-dot"></view>
+          <text>{{user.status}}</text>
+        </view>
+      </view>
+      <image class="row-arrow" src="/assets/icons/chevron-muted.svg" mode="aspectFit"></image>
+    </view>
+  </view>
+
+  <view
+    wx:for="{{menuGroups}}"
+    wx:key="id"
+    wx:for-item="group"
+    class="menu-section"
+  >
+    <view class="menu-group">
+      <view
+        wx:for="{{group.items}}"
+        wx:key="title"
+        wx:for-item="item"
+        class="menu-item"
+        data-action="{{item.action}}"
+        bindtap="openMenu"
+      >
+        <view class="menu-icon {{item.toneClass}}">
+          <image src="{{item.icon}}" mode="aspectFit"></image>
+        </view>
+        <text class="menu-label">{{item.title}}</text>
+        <text wx:if="{{item.badge}}" class="menu-badge">{{item.badge}}</text>
+        <image class="menu-arrow" src="/assets/icons/chevron-muted.svg" mode="aspectFit"></image>
+      </view>
+    </view>
+  </view>
+
+  <view class="menu-section admin-section">
+    <button class="admin-toggle {{adminOpen ? 'open' : ''}}" bindtap="toggleAdmin">
+      <text>管理员</text>
+      <image src="/assets/icons/chevron-down-muted.svg" mode="aspectFit"></image>
+    </button>
+    <view class="admin-panel {{adminOpen ? 'show' : ''}}">
+      <view class="admin-label">内容管理</view>
+      <view class="menu-group">
+        <view
+          wx:for="{{adminMenus}}"
+          wx:key="title"
+          class="menu-item admin-item"
+          data-name="{{item.title}}"
+          data-type="{{item.type}}"
+          bindtap="openAdmin"
+        >
+          <view class="menu-icon icon-admin">
+            <image src="{{item.icon}}" mode="aspectFit"></image>
+          </view>
+          <text class="menu-label">{{item.title}}</text>
+          <image class="menu-arrow" src="/assets/icons/chevron-muted.svg" mode="aspectFit"></image>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{sheetOpen}}" class="profile-overlay" bindtap="closeBusiness"></view>
+  <view wx:if="{{sheetOpen}}" class="business-sheet">
+    <view class="sheet-handle"></view>
+    <view class="sheet-head">
+      <view class="sheet-title-wrap">
+        <view class="sheet-title">{{sheetTitle}}</view>
+        <view class="sheet-subtitle">{{sheetSubtitle}}</view>
+      </view>
+      <button class="sheet-close" bindtap="closeBusiness">
+        <image src="/assets/icons/close-muted.svg" mode="aspectFit"></image>
+      </button>
+    </view>
+
+    <view class="sheet-body">
+      <view wx:if="{{records.length}}" class="record-list">
+        <view wx:for="{{records}}" wx:key="title" class="record-card">
+          <view class="record-top">
+            <view class="record-title">{{item.title}}</view>
+            <text class="record-status {{item.toneClass}}">{{item.status}}</text>
+          </view>
+          <view class="record-meta">
+            <text wx:for="{{item.meta}}" wx:key="*this">{{item}}</text>
+          </view>
+          <view class="record-actions">
+            <button
+              wx:for="{{item.actions}}"
+              wx:key="label"
+              wx:for-item="action"
+              class="record-btn {{action.primary ? 'primary' : ''}}"
+              data-action="{{action.action}}"
+              bindtap="handleRecordAction"
+            >{{action.label}}</button>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="record-empty">{{sheetEmpty}}</view>
+    </view>
+  </view>
+</view>

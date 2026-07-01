@@ -1,0 +1,96 @@
+<view class="guide-page">
+  <view class="guide-summary">
+    <view class="summary-main">
+      <view class="summary-kicker">人才公寓政策</view>
+      <view class="summary-title">{{activeMeta.title}}</view>
+      <view class="summary-desc">{{activeMeta.desc}}</view>
+    </view>
+    <view class="summary-badge">
+      <text class="summary-count">{{activeMeta.count}}</text>
+      <text class="summary-unit">{{activeMeta.unit}}</text>
+    </view>
+  </view>
+
+  <view class="guide-tabs">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="value"
+      class="guide-tab {{activeTab === item.value ? 'active' : ''}}"
+      data-value="{{item.value}}"
+      bindtap="switchTab"
+      hover-class="guide-tab-hover"
+      hover-stay-time="80"
+    >
+      <text>{{item.label}}</text>
+      <view class="guide-tab-line"></view>
+    </view>
+  </view>
+
+  <scroll-view scroll-y class="guide-scroll">
+    <view wx:if="{{activeTab === 'eligibility'}}" class="guide-panel">
+      <view class="guide-list">
+        <view wx:for="{{eligibility}}" wx:key="title" class="check-item {{item.required ? 'required' : ''}}">
+          <view class="check-icon"></view>
+          <view class="check-body">
+            <view class="check-title">{{item.title}}</view>
+            <view class="check-desc">{{item.desc}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="guide-note">
+        <text>注意：</text>各项目具体要求略有差异，以住建局最新公告为准。部分项目面向硕士/博士有优先配租政策。
+      </view>
+    </view>
+
+    <view wx:elif="{{activeTab === 'process'}}" class="guide-panel">
+      <view class="process-list">
+        <view wx:for="{{process}}" wx:key="title" class="guide-step {{item.tail ? 'with-tail' : ''}}">
+          <view class="step-rail">
+            <view class="step-num">{{index + 1}}</view>
+          </view>
+          <view class="step-body">
+            <view class="step-top">
+              <view class="step-title">{{item.title}}</view>
+              <view class="step-tag">{{item.tag}}</view>
+            </view>
+            <view class="step-desc">{{item.desc}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:elif="{{activeTab === 'materials'}}" class="guide-panel">
+      <view class="guide-list">
+        <view wx:for="{{materials}}" wx:key="title" class="check-item material">
+          <view class="material-icon">{{item.short}}</view>
+          <view class="check-body">
+            <view class="check-title">{{item.title}}</view>
+            <view class="check-desc">{{item.desc}}</view>
+          </view>
+          <view class="material-copy">{{item.copies}}</view>
+        </view>
+      </view>
+      <view class="guide-note">
+        <text>提示：</text>材料建议提前准备电子版扫描件，上传前确认姓名、证件号和公章区域清晰可见。
+      </view>
+    </view>
+
+    <view wx:else class="guide-panel">
+      <view class="qa-list">
+        <view wx:for="{{faq}}" wx:key="q" class="qa-item">
+          <view class="qa-q">
+            <view class="qa-mark">Q</view>
+            <text>{{item.q}}</text>
+          </view>
+          <view class="qa-a">
+            <view class="qa-mark answer">A</view>
+            <text>{{item.a}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="guide-note">
+        <text>更多问题：</text>关注「晓得青年」公众号或加入对应公寓社群，获取最新政策答疑。
+      </view>
+    </view>
+  </scroll-view>
+</view>

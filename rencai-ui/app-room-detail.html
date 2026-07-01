@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 · 户型详情</title>
+<style>
+:root {
+  --bg: #fafaf6;
+  --surface: #fffdf7;
+  --surface-warm: #fef8ef;
+  --fg: #2d2318;
+  --fg-2: #5c4a38;
+  --muted: #8c7a68;
+  --meta: #a69682;
+  --border: #e8e0d4;
+  --border-soft: #f0eae0;
+  --accent: #e8723c;
+  --accent-on: #ffffff;
+  --accent-hover: #f0804a;
+  --accent-active: #d4622c;
+
+  --font-display: "SF Pro Display", "PingFang SC", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "PingFang SC", "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 21px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 980px;
+
+  --elev-raised: 0 12px 32px rgba(0,0,0,0.06);
+  --ease-standard: cubic-bezier(0.28, 0, 0.22, 1);
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+
+  --price-orange: #e8590c;
+  --community-green: #5b9a6f;
+  --map-blue: #5b8cb8;
+  --guide-plum: #9b7eb8;
+  --badge-red: #e04a3a;
+
+  --device-bg: #d8d0c4;
+  --phone-bezel: #0a0a0a;
+  --phone-inner: #0a0a0a;
+
+  /* Comment avatar tones */
+  --ca1-a: #e8a0b0; --ca1-b: #d08090;
+  --ca2-a: #8cb0c8; --ca2-b: #6c90a8;
+  --ca3-a: #a0c8a0; --ca3-b: #80b080;
+
+  /* Gallery background stops */
+  --gi1-a: #f5efe0; --gi1-b: #e8dcc8; --gi1-c: #dcd0ba;
+  --gi2-a: #f3efe8; --gi2-b: #e5dac8; --gi2-c: #d6ccbc;
+  --gi3-a: #f2efeb; --gi3-b: #e3dbce; --gi3-c: #d4cdc0;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  display: grid; place-items: center;
+  min-height: 100vh;
+  background: var(--device-bg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame {
+  width: 390px; min-width: 390px;
+  height: 844px;
+  background: var(--phone-bezel);
+  border-radius: 50px;
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+.phone-screen {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  border-radius: 38px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.dynamic-island {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 34px;
+  background: var(--phone-inner); border-radius: 20px;
+  z-index: 100;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   Photo Gallery (horizontal scroll)
+   ═════════════════════════════════════════════════════════════════ */
+.gallery {
+  position: relative;
+  width: 100%; height: 240px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
+}
+.gallery::-webkit-scrollbar { display: none; }
+.gallery-img {
+  min-width: 100%; height: 100%;
+  scroll-snap-align: start;
+  display: flex; align-items: flex-end;
+  position: relative;
+}
+.gi-1 { background: linear-gradient(150deg, var(--gi1-a) 0%, var(--gi1-b) 50%, var(--gi1-c) 100%); }
+.gi-2 { background: linear-gradient(150deg, var(--gi2-a) 0%, var(--gi2-b) 50%, var(--gi2-c) 100%); }
+.gi-3 { background: linear-gradient(150deg, var(--gi3-a) 0%, var(--gi3-b) 50%, var(--gi3-c) 100%); }
+
+/* Image counter */
+.gallery-counter {
+  position: absolute; bottom: 14px; right: 14px;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Gallery nav */
+.gallery-nav {
+  position: absolute; top: 14px; left: 12px; right: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 10;
+}
+.gnav-back, .gnav-fav {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(6px);
+  display: grid; place-items: center;
+  cursor: pointer;
+  color: #fff;
+}
+.gnav-fav.faved { color: var(--badge-red); }
+.gnav-back svg, .gnav-fav svg { width: 20px; height: 20px; }
+
+/* ═════════════════════════════════════════════════════════════════
+   Scroll Content
+   ═════════════════════════════════════════════════════════════════ */
+.mp-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding-bottom: 60px;
+}
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+/* ═════════════════════════════════════════════════════════════════
+   Room Header
+   ═════════════════════════════════════════════════════════════════ */
+.room-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.room-header-top {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.room-name {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.room-price {
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 700;
+  color: var(--price-orange);
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+.room-price .unit { font-size: 14px; font-weight: 400; color: var(--muted); }
+.room-meta-row {
+  display: flex; gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px; color: var(--fg-2);
+}
+.room-meta-row span {
+  display: flex; align-items: center; gap: 4px;
+}
+.room-meta-row svg { width: 14px; height: 14px; color: var(--meta); }
+
+/* ═════════════════════════════════════════════════════════════════
+   Info Blocks
+   ═════════════════════════════════════════════════════════════════ */
+.info-block {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.info-block-title {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.005em;
+  margin-bottom: 10px;
+}
+.info-text {
+  font-size: 14px; color: var(--fg-2);
+  line-height: 1.6;
+}
+
+/* Facility icon grid */
+.facility-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 8px;
+  text-align: center;
+}
+.facility-cell {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-size: 13px;
+  color: var(--fg-2);
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.facility-cell svg { width: 28px; height: 28px; }
+.facility-cell.active  { color: var(--fg); }
+.facility-cell.active svg { color: var(--accent); }
+.facility-cell.inactive { color: var(--meta); }
+.facility-cell.inactive svg { color: var(--border); }
+
+/* Cost info grid */
+.cost-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 8px;
+}
+.cost-cell {
+  text-align: center;
+  font-size: 13px;
+  padding: 12px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+}
+.cost-cell.active { color: var(--fg); }
+.cost-cell.inactive { color: var(--meta); background: transparent; border-color: var(--border-soft); }
+.cost-cell-label { font-size: 12px; margin-bottom: 4px; color: var(--muted); }
+.cost-cell-value { font-weight: 600; font-size: 14px; }
+
+/* Detail table */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.info-table tr { border-bottom: 1px solid var(--border-soft); }
+.info-table tr:last-child { border-bottom: none; }
+.info-table td {
+  padding: 10px 0;
+  color: var(--fg-2);
+}
+.info-table td:first-child {
+  color: var(--muted);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   Comments
+   ═════════════════════════════════════════════════════════════════ */
+.comment-section {
+  padding: 16px;
+}
+.comment-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.comment-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.comment-item:last-child { border-bottom: none; }
+.comment-user {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 6px;
+}
+.c-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 12px; font-weight: 700;
+  color: var(--accent-on);
+  flex-shrink: 0;
+}
+.cav-1 { background: linear-gradient(135deg, var(--ca1-a), var(--ca1-b)); }
+.cav-2 { background: linear-gradient(135deg, var(--ca2-a), var(--ca2-b)); }
+.cav-3 { background: linear-gradient(135deg, var(--ca3-a), var(--ca3-b)); }
+
+.c-name { font-size: 14px; font-weight: 600; }
+.c-time { font-size: 12px; color: var(--muted); margin-left: auto; }
+.c-body { font-size: 14px; color: var(--fg-2); line-height: 1.5; margin-bottom: 6px; }
+.c-actions { display: flex; gap: 16px; font-size: 12px; color: var(--muted); }
+.c-like {
+  display: flex; align-items: center; gap: 4px;
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.c-like:active { color: var(--accent); }
+.c-like svg { width: 14px; height: 14px; }
+
+.btn-write {
+  padding: 8px 18px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.btn-write:active { background: color-mix(in oklab, var(--accent) 8%, transparent); }
+
+.sheet-mask {
+  position: absolute; inset: 0;
+  background: rgba(0, 0, 0, 0.32);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 120;
+}
+.sheet-mask.show { opacity: 1; pointer-events: auto; }
+.comment-sheet {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: var(--bg);
+  border-radius: 24px 24px 0 0;
+  padding: 10px 18px 26px;
+  box-shadow: 0 -18px 44px rgba(0, 0, 0, 0.18);
+  transform: translateY(105%);
+  transition: transform var(--motion-base) var(--ease-standard);
+  z-index: 130;
+}
+.comment-sheet.show { transform: translateY(0); }
+.sheet-grabber {
+  width: 42px; height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  margin: 0 auto 14px;
+}
+.sheet-title {
+  font-size: 18px; font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 4px;
+}
+.sheet-subtitle {
+  font-size: 13px; color: var(--muted);
+  margin-bottom: 16px;
+}
+.form-field { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-size: 13px; font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 8px;
+}
+.comment-textarea {
+  width: 100%;
+  min-height: 96px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg);
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+}
+.comment-textarea:focus { border-color: var(--accent); box-shadow: var(--focus-ring); }
+.comment-rule {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.sheet-actions {
+  display: flex; gap: 10px;
+  margin-top: 16px;
+}
+.btn-cancel,
+.btn-submit {
+  flex: 1;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 13px 0;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-cancel { background: var(--surface); color: var(--fg-2); }
+.btn-submit { background: var(--accent); color: var(--accent-on); }
+
+/* ═════════════════════════════════════════════════════════════════
+   Bottom Bar
+   ═════════════════════════════════════════════════════════════════ */
+.bottom-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px 14px;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-soft);
+  z-index: 50;
+}
+.bottom-fav {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  display: grid; place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--motion-fast) var(--ease-standard);
+  color: var(--meta);
+  background: var(--surface);
+}
+.bottom-fav.faved { color: var(--badge-red); border-color: var(--badge-red); background: color-mix(in oklab, var(--badge-red) 6%, transparent); }
+.bottom-fav svg { width: 22px; height: 22px; }
+.btn-share {
+  flex: 1;
+  padding: 14px 0;
+  background: var(--accent);
+  color: var(--accent-on);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px; font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.btn-share:active { opacity: 0.85; }
+
+.home-indicator {
+  position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 134px; height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  opacity: 0.2;
+  z-index: 55;
+}
+
+.toast {
+  position: absolute; bottom: 140px; left: 50%; transform: translateX(-50%);
+  background: var(--fg); color: var(--bg);
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 14px; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 200;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame { width: 100vw; height: 100vh; height: 100dvh; min-width: unset; border-radius: 0; padding: 0; box-shadow: none; }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <div class="dynamic-island"></div>
+
+    <!-- Gallery -->
+    <div class="gallery" data-od-id="gallery" id="gallery">
+      <div class="gallery-img gi-1"></div>
+      <div class="gallery-img gi-2"></div>
+      <div class="gallery-img gi-3"></div>
+      <div class="gallery-counter" id="galleryCounter">1 / 3</div>
+      <div class="gallery-nav">
+        <div class="gnav-back" onclick="history.back()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="mp-scroll" data-od-id="room-detail-scroll">
+
+      <!-- Room Header -->
+      <div class="room-header" data-od-id="room-header">
+        <div class="room-header-top">
+          <div class="room-name" id="roomName">精致一居室</div>
+          <div class="room-price"><span id="roomPrice">¥1200</span><span class="unit">/月起</span></div>
+        </div>
+        <div class="room-meta-row">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> <span id="roomArea">35㎡</span></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <span id="roomOrient">朝南</span></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg> <span id="roomLayout">1室1厅1卫</span></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> <span id="roomFloor">8层</span></span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="info-block" data-od-id="room-desc">
+        <div class="info-block-title">户型介绍</div>
+        <div class="info-text" id="roomDesc">独立一居室户型，玄关入户，动静分区明确。客厅连接景观阳台，通风采光俱佳。卧室带飘窗，可俯瞰社区花园。精装修交付，拎包即可入住。</div>
+      </div>
+
+      <!-- Cost Info -->
+      <div class="info-block" data-od-id="cost-info">
+        <div class="info-block-title">费用信息</div>
+        <div class="cost-grid">
+          <div class="cost-cell active">
+            <div class="cost-cell-label">水费</div>
+            <div class="cost-cell-value">¥4.5/t</div>
+          </div>
+          <div class="cost-cell active">
+            <div class="cost-cell-label">电费</div>
+            <div class="cost-cell-value">¥0.56/度</div>
+          </div>
+          <div class="cost-cell active">
+            <div class="cost-cell-label">燃气费</div>
+            <div class="cost-cell-value">¥2.5/m³</div>
+          </div>
+          <div class="cost-cell active">
+            <div class="cost-cell-label">物业费</div>
+            <div class="cost-cell-value">¥2.5/㎡</div>
+          </div>
+          <div class="cost-cell active">
+            <div class="cost-cell-label">暖气费</div>
+            <div class="cost-cell-value">¥22/㎡</div>
+          </div>
+          <div class="cost-cell inactive">
+            <div class="cost-cell-label">停车费</div>
+            <div class="cost-cell-value">暂无</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appliances -->
+      <div class="info-block" data-od-id="room-appliances">
+        <div class="info-block-title">配套设施</div>
+        <div class="facility-grid">
+          <div class="facility-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 18v2M17 18v2"/><circle cx="8" cy="11" r="2"/><circle cx="16" cy="11" r="2"/><path d="M10 15h4"/></svg>
+            <span>洗衣机</span>
+          </div>
+          <div class="facility-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12v2M16 12v2"/><path d="M7 4v2M17 4v2"/></svg>
+            <span>冰箱</span>
+          </div>
+          <div class="facility-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/><path d="M18 6l-2 2M6 6l2 2"/></svg>
+            <span>油烟机</span>
+          </div>
+          <div class="facility-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v4a8 8 0 01-16 0V4z"/><path d="M8 20h8v-4H8z"/><circle cx="12" cy="18" r="1"/><path d="M12 8v4"/></svg>
+            <span>暖气</span>
+          </div>
+          <div class="facility-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 7h10M7 12h10M7 17h6"/><circle cx="18" cy="7" r="1"/></svg>
+            <span>空调</span>
+          </div>
+          <div class="facility-cell active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M4 10h16"/><path d="M8 14v2M16 14v2"/><path d="M8 4v2"/></svg>
+            <span>热水器</span>
+          </div>
+          <div class="facility-cell inactive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><circle cx="12" cy="8" r="2"/><circle cx="4" cy="17" r="1"/><circle cx="20" cy="17" r="1"/></svg>
+            <span>燃气灶</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail table -->
+      <div class="info-block" data-od-id="room-details">
+        <div class="info-block-title">详细参数</div>
+        <table class="info-table">
+          <tr><td>所属公寓</td><td id="detailAptName">郑东人才公寓</td></tr>
+          <tr><td>户型</td><td id="detailLayout">1室1厅1卫</td></tr>
+          <tr><td>面积</td><td id="detailArea">35㎡</td></tr>
+          <tr><td>朝向</td><td id="detailOrient">南向</td></tr>
+          <tr><td>楼层</td><td id="detailFloor">3层 / 总8层</td></tr>
+          <tr><td>租金</td><td><span id="detailRent" style="color:var(--price-orange);font-weight:600;">¥1200</span> 元/月</td></tr>
+          <tr><td>押金</td><td>押一付三</td></tr>
+          <tr><td>水电</td><td>独立水表电表，按市政标准缴纳</td></tr>
+          <tr><td>物业</td><td>¥2.5/㎡/月（含公区保洁）</td></tr>
+          <tr><td>供暖</td><td>集中供暖（冬季5个月）</td></tr>
+          <tr><td>入住时间</td><td>随时，审核通过即可签约</td></tr>
+        </table>
+      </div>
+
+      <!-- Comments -->
+      <div class="comment-section" data-od-id="room-comments">
+        <div class="comment-header">
+          <span class="info-block-title" style="margin-bottom:0">住户评价</span>
+          <button class="btn-write" onclick="openCommentSheet()">写评价</button>
+        </div>
+        <div id="roomCommentList">
+        <div class="comment-item">
+          <div class="comment-user">
+            <div class="c-avatar cav-1">小</div>
+            <span class="c-name">小玲</span>
+            <span class="c-time">2026年6月</span>
+          </div>
+          <div class="c-body">这个户型最大的优点是采光！朝南带阳台，冬天晒太阳超舒服。一个人住刚刚好，不会太空旷。</div>
+          <div class="c-actions">
+            <span class="c-like" onclick="showToast('已点赞')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg> 12</span>
+            <span class="c-like" onclick="showToast('已回复')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 回复</span>
+          </div>
+        </div>
+        <div class="comment-item">
+          <div class="comment-user">
+            <div class="c-avatar cav-2">大</div>
+            <span class="c-name">大鹏</span>
+            <span class="c-time">2026年5月</span>
+          </div>
+          <div class="c-body">精装修交付的质量不错，没什么味道。厨房虽然不大但够用，推荐给刚到郑州的年轻人。</div>
+          <div class="c-actions">
+            <span class="c-like" onclick="showToast('已点赞')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg> 8</span>
+            <span class="c-like" onclick="showToast('已回复')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 回复</span>
+          </div>
+        </div>
+        <div class="comment-item">
+          <div class="comment-user">
+            <div class="c-avatar cav-3">阿</div>
+            <span class="c-name">阿杰</span>
+            <span class="c-time">2026年4月</span>
+          </div>
+          <div class="c-body">卫生间有窗户通风，这点比很多老房子强。唯一的建议是窗帘如果能配遮光帘就更好了。</div>
+          <div class="c-actions">
+            <span class="c-like" onclick="showToast('已点赞')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg> 5</span>
+            <span class="c-like" onclick="showToast('已回复')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 回复</span>
+          </div>
+        </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="bottom-bar" data-od-id="bottom-bar">
+      <button class="btn-share" onclick="openShareSheet()">分享给朋友</button>
+      <button class="bottom-fav" id="roomFavBtn" type="button" aria-label="收藏户型" onclick="toggleRoomFavorite()">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      </button>
+    </div>
+    <div class="home-indicator"></div>
+
+    <div class="toast" id="toast"></div>
+    <div class="sheet-mask" id="commentMask" onclick="closeCommentSheet()"></div>
+    <div class="comment-sheet" id="commentSheet" role="dialog" aria-modal="true" aria-labelledby="commentSheetTitle">
+      <div class="sheet-grabber"></div>
+      <div class="sheet-title" id="commentSheetTitle">写户型评价</div>
+      <div class="sheet-subtitle">仅支持纯文字评价，200 字以内；5 分钟内不可重复提交。</div>
+      <div class="form-field">
+        <label class="form-label" for="commentText">评价内容</label>
+        <textarea class="comment-textarea" id="commentText" maxlength="200" placeholder="例如：这个户型住起来最满意和最需要注意的地方是什么？"></textarea>
+        <div class="comment-rule">
+          <span>纯文字评价</span>
+          <span id="commentCount">0/200</span>
+        </div>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn-cancel" type="button" onclick="closeCommentSheet()">取消</button>
+        <button class="btn-submit" type="button" onclick="submitComment()">发布评价</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var roomApartments = {
+  '1': {
+    name: '郑东人才公寓',
+    rooms: [
+      { id: '1', name: '精致一居室', area: '35㎡', orient: '南向', layout: '1室1卫', floor: '3层 / 总8层', price: '¥1200', desc: '独立一居室户型，玄关入户，动静分区明确。客厅连接景观阳台，通风采光俱佳。卧室带飘窗，可俯瞰社区花园。精装修交付，拎包即可入住。' },
+      { id: '2', name: '舒适两居室', area: '55㎡', orient: '东南向', layout: '2室1厅1卫', floor: '5层 / 总8层', price: '¥1500', desc: '两居室适合合租或小家庭入住，客餐厅连通，主卧采光稳定，次卧可作为书房或室友房。厨房独立，日常做饭和收纳都更从容。' },
+      { id: '3', name: '阳光大单间', area: '28㎡', orient: '南向', layout: '开间', floor: '2层 / 总8层', price: '¥1000', desc: '开间户型紧凑高效，睡眠区、书桌区和简餐区集中布置。适合预算敏感、通勤优先的年轻住户，南向窗保证基础采光。' }
+    ]
+  },
+  '2': {
+    name: '高新人才家园',
+    rooms: [
+      { id: '1', name: '高新阳光单间', area: '29㎡', orient: '南向', layout: '开间', floor: '4层 / 总10层', price: '¥800', desc: '面向高新区通勤人群的经济单间，空间紧凑但采光直接。床、书桌、衣柜沿墙排布，适合刚入职或短通勤独居。' },
+      { id: '2', name: '高新舒适一居', area: '36㎡', orient: '东南向', layout: '1室1卫', floor: '6层 / 总10层', price: '¥1000', desc: '独立一居室，卧室和生活区分区更清楚。东南向采光温和，适合需要长期稳定居住和居家办公的年轻住户。' },
+      { id: '3', name: '青年独立一居', area: '42㎡', orient: '南向', layout: '1室1厅1卫', floor: '8层 / 总10层', price: '¥1200', desc: '带独立客厅的一居室，适合希望保留会客、运动或学习空间的住户。南向主采光面，家具布置余量更大。' }
+    ]
+  },
+  '3': {
+    name: '经开青年公寓',
+    rooms: [
+      { id: '1', name: '经开标准一居', area: '32㎡', orient: '南向', layout: '1室1卫', floor: '3层 / 总9层', price: '¥900', desc: '标准一居室，动线直接，适合经开区产业园通勤。独立卫浴和基础厨房设备齐全，入住门槛低。' },
+      { id: '2', name: '经开舒适两居', area: '58㎡', orient: '东南向', layout: '2室1厅1卫', floor: '6层 / 总9层', price: '¥1400', desc: '两居室面向合租场景，客厅和双卧分隔明确。东南向公共区采光更好，适合两位同事或朋友合租。' }
+    ]
+  },
+  '4': {
+    name: '港区人才社区',
+    rooms: [
+      { id: '1', name: '港区经济单间', area: '26㎡', orient: '南向', layout: '开间', floor: '2层 / 总8层', price: '¥700', desc: '预算友好的紧凑单间，生活设施集中布置，适合航空港就业圈短通勤独居。' },
+      { id: '2', name: '港区独立一居', area: '34㎡', orient: '东向', layout: '1室1卫', floor: '5层 / 总8层', price: '¥1000', desc: '独立一居室，早间采光舒适，卧室与洗浴区互不干扰，适合稳定工作节奏的住户。' }
+    ]
+  },
+  '5': {
+    name: '二七人才公寓',
+    rooms: [
+      { id: '1', name: '二七舒适两居', area: '56㎡', orient: '南向', layout: '2室1厅1卫', floor: '4层 / 总11层', price: '¥1000', desc: '两居室总价友好，适合合租。南向卧室采光稳定，公共区尺度适中，兼顾生活成本和居住舒适度。' },
+      { id: '2', name: '二七通透三居', area: '78㎡', orient: '南北通透', layout: '3室1厅1卫', floor: '7层 / 总11层', price: '¥1500', desc: '三居室适合多人合租，南北通透，公共客厅可承载聚餐、学习和共享收纳需求。' }
+    ]
+  },
+  '6': {
+    name: '中原青年社区',
+    rooms: [
+      { id: '1', name: '中原温馨一居', area: '31㎡', orient: '南向', layout: '1室1卫', floor: '3层 / 总9层', price: '¥850', desc: '老城生活圈的一居室，周边配套成熟，适合重视生活便利和通勤稳定的住户。' },
+      { id: '2', name: '中原合租两居', area: '54㎡', orient: '东南向', layout: '2室1厅1卫', floor: '6层 / 总9层', price: '¥1300', desc: '两居室适合朋友合租，卧室尺度接近，公共区域紧凑实用。东南向采光适合日常居家。' }
+    ]
+  }
+};
+
+var currentRoomApartment = roomApartments['1'];
+var currentRoom = roomApartments['1'].rooms[0];
+function applyRoomContext() {
+  var params = new URLSearchParams(window.location.search);
+  var aptId = params.get('aptId') || '1';
+  var roomId = params.get('roomId') || '1';
+  var apt = roomApartments[aptId] || roomApartments['1'];
+  var room = (apt.rooms || []).find(function(item) { return item.id === roomId; }) || apt.rooms[0];
+  currentRoomApartment = apt;
+  currentRoom = room;
+  document.title = '晓得青年 · ' + room.name;
+  document.getElementById('roomName').textContent = room.name;
+  document.getElementById('roomPrice').textContent = room.price;
+  document.getElementById('roomArea').textContent = room.area;
+  document.getElementById('roomOrient').textContent = room.orient;
+  document.getElementById('roomLayout').textContent = room.layout;
+  document.getElementById('roomFloor').textContent = room.floor.split('/')[0].trim();
+  document.getElementById('roomDesc').textContent = room.desc;
+  document.getElementById('detailAptName').textContent = apt.name;
+  document.getElementById('detailLayout').textContent = room.layout;
+  document.getElementById('detailArea').textContent = room.area;
+  document.getElementById('detailOrient').textContent = room.orient;
+  document.getElementById('detailFloor').textContent = room.floor;
+  document.getElementById('detailRent').textContent = room.price;
+}
+applyRoomContext();
+
+function openShareSheet() {
+  if (window.requireAuth && !window.isAuthorized()) {
+    requireAuth(openShareSheet);
+    return;
+  }
+  closeAllSheets();
+  showToast('已唤起微信分享转发');
+}
+
+function closeAllSheets() {
+  document.querySelectorAll('.sheet-mask.show, .comment-sheet.show').forEach(function(el) {
+    el.classList.remove('show');
+  });
+}
+
+var roomFavoriteOn = false;
+function toggleRoomFavorite() {
+  if (window.requireAuth && !window.isAuthorized()) {
+    requireAuth(toggleRoomFavorite);
+    return;
+  }
+  roomFavoriteOn = !roomFavoriteOn;
+  var btn = document.getElementById('roomFavBtn');
+  if (btn) btn.classList.toggle('faved', roomFavoriteOn);
+  showToast(roomFavoriteOn ? '已收藏' : '已取消收藏');
+}
+
+(function() {
+  var gallery = document.getElementById('gallery');
+  var counter = document.getElementById('galleryCounter');
+  var slides = gallery.querySelectorAll('.gallery-img');
+  var total = slides.length;
+  gallery.addEventListener('scroll', function() {
+    var idx = Math.round(gallery.scrollLeft / gallery.clientWidth) + 1;
+    counter.textContent = idx + ' / ' + total;
+  }, { passive: true });
+})();
+
+var lastRoomCommentAt = 0;
+var COMMENT_REPEAT_INTERVAL = 5 * 60 * 1000;
+var commentTextInput = document.getElementById('commentText');
+var commentCount = document.getElementById('commentCount');
+if (commentTextInput && commentCount) {
+  commentTextInput.addEventListener('input', function() {
+    commentCount.textContent = commentTextInput.value.length + '/200';
+  });
+}
+
+function openCommentSheet() {
+  if (window.requireAuth && !window.isAuthorized()) {
+    requireAuth(openCommentSheet);
+    return;
+  }
+  closeAllSheets();
+  document.getElementById('commentMask').classList.add('show');
+  document.getElementById('commentSheet').classList.add('show');
+  if (commentTextInput && commentCount) {
+    commentCount.textContent = commentTextInput.value.length + '/200';
+    commentTextInput.focus();
+  }
+}
+
+function closeCommentSheet() {
+  document.getElementById('commentMask').classList.remove('show');
+  document.getElementById('commentSheet').classList.remove('show');
+}
+
+function escapeHtml(text) {
+  return text.replace(/[&<>"']/g, function(ch) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+
+function submitComment() {
+  if (window.requireAuth && !window.isAuthorized()) {
+    requireAuth(submitComment);
+    return;
+  }
+  var textarea = document.getElementById('commentText');
+  var text = textarea.value.trim();
+  if (!text) {
+    showToast('请先写下评价内容');
+    return;
+  }
+  if (text.length > 200) {
+    showToast('评价内容不能超过 200 字');
+    return;
+  }
+  var now = Date.now();
+  if (lastRoomCommentAt && now - lastRoomCommentAt < COMMENT_REPEAT_INTERVAL) {
+    showToast('5分钟内不能重复提交评价');
+    return;
+  }
+  document.getElementById('roomCommentList').insertAdjacentHTML('afterbegin',
+    '<div class="comment-item">' +
+      '<div class="comment-user">' +
+        '<div class="c-avatar cav-1">我</div>' +
+        '<span class="c-name">我</span>' +
+        '<span class="c-time">刚刚</span>' +
+      '</div>' +
+      '<div class="c-body">' + escapeHtml(text) + '</div>' +
+      '<div class="c-actions">' +
+        '<span class="c-like" onclick="showToast(&quot;已点赞&quot;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg> 0</span>' +
+        '<span class="c-like" onclick="showToast(&quot;已回复&quot;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 回复</span>' +
+      '</div>' +
+    '</div>'
+  );
+  lastRoomCommentAt = now;
+  textarea.value = '';
+  if (commentCount) commentCount.textContent = '0/200';
+  closeCommentSheet();
+  showToast('评价已发布');
+}
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800);
+}
+</script>
+
+<script src="auth-guard.js"></script>
+<script>requireAuth(function() {});</script>
+
+</body>
+</html>

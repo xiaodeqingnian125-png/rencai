@@ -1,0 +1,82 @@
+<view class="messages-page">
+  <view class="msg-tabs">
+    <button
+      wx:for="{{tabs}}"
+      wx:key="value"
+      class="msg-tab {{activeType === item.value ? 'active' : ''}}"
+      data-value="{{item.value}}"
+      bindtap="selectType"
+    >
+      <text>{{item.label}}</text>
+      <view class="msg-tab-line"></view>
+    </button>
+  </view>
+
+  <view wx:if="{{filteredMessages.length}}" class="msg-list">
+    <view
+      wx:for="{{filteredMessages}}"
+      wx:key="id"
+      class="msg-item {{item.unread ? 'unread' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="openMessage"
+    >
+      <view class="msg-icon {{item.toneClass}}">
+        <image src="{{item.icon}}" mode="aspectFit"></image>
+      </view>
+      <view class="msg-body">
+        <view class="msg-title">{{item.title}}</view>
+        <view class="msg-preview">{{item.preview}}</view>
+        <view class="msg-meta">{{item.time}}</view>
+      </view>
+      <view wx:if="{{item.unread}}" class="msg-dot"></view>
+    </view>
+  </view>
+
+  <view wx:else class="msg-empty">
+    <image src="/assets/icons/msg-comment.svg" mode="aspectFit"></image>
+    <text>暂无消息</text>
+  </view>
+
+  <view wx:if="{{showDetail}}" class="sheet-mask" bindtap="closeDetail"></view>
+  <view wx:if="{{showDetail}}" class="detail-sheet">
+    <view class="sheet-handle"></view>
+    <view class="sheet-head">
+      <view class="msg-icon sheet-icon {{selectedMessage.toneClass}}">
+        <image src="{{selectedMessage.icon}}" mode="aspectFit"></image>
+      </view>
+      <view class="sheet-title-wrap">
+        <view class="sheet-kicker">{{selectedMessage.typeLabel}}消息 · {{selectedMessage.status}}</view>
+        <view class="sheet-title">{{selectedMessage.title}}</view>
+      </view>
+      <button class="sheet-close" bindtap="closeDetail">
+        <image src="/assets/icons/close-muted.svg" mode="aspectFit"></image>
+      </button>
+    </view>
+
+    <view class="sheet-body">
+      <view class="detail-meta-grid">
+        <view class="detail-meta">
+          <text>消息类型</text>
+          <view>{{selectedMessage.typeLabel}}</view>
+        </view>
+        <view class="detail-meta">
+          <text>时间</text>
+          <view>{{selectedMessage.time}}</view>
+        </view>
+      </view>
+      <view class="detail-card">
+        <text class="detail-label">完整内容</text>
+        <view class="detail-text">{{selectedMessage.detail}}</view>
+      </view>
+      <view class="quick-actions">
+        <button
+          wx:for="{{detailActions}}"
+          wx:key="label"
+          class="quick-action {{item.primary ? 'primary' : ''}}"
+          data-action="{{item.action}}"
+          bindtap="handleDetailAction"
+        >{{item.label}}</button>
+      </view>
+    </view>
+  </view>
+</view>

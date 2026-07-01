@@ -1,0 +1,99 @@
+<view class="admin-page">
+  <view class="toolbar">
+    <view class="search-box">
+      <image src="/assets/icons/search.svg" mode="aspectFit"></image>
+      <input value="{{keyword}}" placeholder="{{config.search}}" bindinput="handleSearch" />
+    </view>
+    <button class="btn-add" bindtap="openForm">{{config.addText}}</button>
+  </view>
+
+  <scroll-view scroll-x class="filter-scroll" show-scrollbar="{{false}}">
+    <view class="filter-row">
+      <button
+        wx:for="{{config.filters}}"
+        wx:key="value"
+        class="filter-chip {{activeFilter === item.value ? 'active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="setFilter"
+      >{{item.label}}</button>
+    </view>
+  </scroll-view>
+
+  <view class="summary-grid">
+    <view class="summary-card">
+      <view class="summary-value">{{summary.total}}</view>
+      <text>全部记录</text>
+    </view>
+    <view class="summary-card">
+      <view class="summary-value">{{summary.pending}}</view>
+      <text>待处理</text>
+    </view>
+    <view class="summary-card">
+      <view class="summary-value">{{summary.active}}</view>
+      <text>已上线</text>
+    </view>
+  </view>
+
+  <scroll-view scroll-y class="admin-scroll">
+    <view wx:if="{{visibleItems.length}}" class="admin-list">
+      <view wx:for="{{visibleItems}}" wx:key="id" class="admin-item">
+        <view class="item-header">
+          <view class="item-title-wrap">
+            <view class="item-name">{{item.title}}</view>
+            <view class="item-meta">{{item.meta}}</view>
+          </view>
+          <text class="status {{item.statusClass}}">{{item.statusLabel}}</text>
+        </view>
+        <view class="item-desc">{{item.desc}}</view>
+        <view class="item-actions">
+          <button class="btn-sm primary" data-id="{{item.id}}" bindtap="openForm">编辑</button>
+          <button class="btn-sm" data-id="{{item.id}}" data-status="active" bindtap="updateStatus">通过</button>
+          <button class="btn-sm" data-id="{{item.id}}" data-status="hidden" bindtap="updateStatus">隐藏</button>
+          <button class="btn-sm danger" data-id="{{item.id}}" bindtap="deleteItem">删除</button>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty">
+      <view>⌕</view>
+      <text>暂无匹配记录</text>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{formOpen}}" class="modal-mask" bindtap="closeForm"></view>
+  <view wx:if="{{formOpen}}" class="modal-card">
+    <view class="modal-title">{{editingId ? '编辑记录' : config.addText}}</view>
+    <scroll-view scroll-y class="modal-fields">
+      <view wx:for="{{config.fields}}" wx:key="key" class="modal-field">
+        <text>{{item.label}}</text>
+        <textarea
+          wx:if="{{item.type === 'textarea'}}"
+          data-key="{{item.key}}"
+          value="{{form[item.key]}}"
+          placeholder="{{item.placeholder}}"
+          bindinput="handleFieldInput"
+        ></textarea>
+        <input
+          wx:else
+          data-key="{{item.key}}"
+          value="{{form[item.key]}}"
+          placeholder="{{item.placeholder}}"
+          bindinput="handleFieldInput"
+        />
+      </view>
+      <view class="modal-field">
+        <text>状态</text>
+        <view class="status-options">
+          <button class="{{form.status === 'pending' ? 'active' : ''}}" data-value="pending" bindtap="setFormStatus">待审核</button>
+          <button class="{{form.status === 'processing' ? 'active' : ''}}" data-value="processing" bindtap="setFormStatus">处理中</button>
+          <button class="{{form.status === 'active' ? 'active' : ''}}" data-value="active" bindtap="setFormStatus">上线</button>
+          <button class="{{form.status === 'hidden' || form.status === 'disabled' ? 'active' : ''}}" data-value="hidden" bindtap="setFormStatus">隐藏</button>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="modal-actions">
+      <button class="modal-btn cancel" bindtap="closeForm">取消</button>
+      <button wx:if="{{editingId}}" class="modal-btn delete" data-id="{{editingId}}" bindtap="deleteItem">删除</button>
+      <button class="modal-btn confirm" bindtap="saveItem">保存</button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晓得青年 · 找室友</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   Warm Community palette — shared tokens
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #fafaf6;
+  --surface: #fffdf7;
+  --surface-warm: #fef8ef;
+  --fg: #2d2318;
+  --fg-2: #5c4a38;
+  --muted: #8c7a68;
+  --meta: #a69682;
+  --border: #e8e0d4;
+  --border-soft: #f0eae0;
+  --accent: #e8723c;
+  --accent-on: #ffffff;
+  --accent-hover: #f0804a;
+  --accent-active: #d4622c;
+
+  --font-display: "SF Pro Display", "PingFang SC", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "PingFang SC", "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 21px;
+
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 980px;
+
+  --elev-raised: 0 12px 32px rgba(0,0,0,0.06);
+  --ease-standard: cubic-bezier(0.28, 0, 0.22, 1);
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+
+  --price-orange: #e8590c;
+  --community-green: #5b9a6f;
+  --map-blue: #5b8cb8;
+  --guide-plum: #9b7eb8;
+  --badge-red: #e04a3a;
+
+  --device-bg: #d8d0c4;
+  --phone-bezel: #0a0a0a;
+  --phone-inner: #0a0a0a;
+
+  /* Gender avatar gradients */
+  --av-female-1: #e8a0b0;
+  --av-female-2: #d08090;
+  --av-male-1: #8cb0c8;
+  --av-male-2: #6c90a8;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  display: grid; place-items: center;
+  min-height: 100vh;
+  background: var(--device-bg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame {
+  width: 390px; min-width: 390px;
+  height: 844px;
+  background: var(--phone-bezel);
+  border-radius: 50px;
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+.phone-screen {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  border-radius: 38px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.dynamic-island {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 34px;
+  background: var(--phone-inner); border-radius: 20px;
+  z-index: 100;
+}
+
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px 0;
+  height: 50px;
+  font-size: 14px; font-weight: 600;
+  color: var(--fg);
+}
+.status-time { flex: 1; }
+.status-icons { display: flex; align-items: center; gap: 6px; }
+.status-icons svg { width: 16px; height: 16px; }
+
+/* Nav with back */
+.mp-nav {
+  display: flex; align-items: center;
+  height: 44px; padding: 0 12px;
+  position: relative;
+  flex-shrink: 0;
+}
+.mp-nav-back {
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+  flex-shrink: 0;
+}
+.mp-nav-back:active { background: var(--surface); }
+.mp-nav-back svg { width: 22px; height: 22px; color: var(--fg); }
+.mp-nav-title {
+  flex: 1; text-align: center;
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  margin-right: 32px; /* balance the back btn */
+}
+
+.mp-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding-bottom: 8px;
+}
+.mp-scroll::-webkit-scrollbar { width: 0; }
+
+/* ═════════════════════════════════════════════════════════════════
+   Filter Row
+   ═════════════════════════════════════════════════════════════════ */
+.filter-row {
+  display: flex; gap: 8px;
+  padding: 8px 16px;
+  flex-shrink: 0;
+}
+.filter-chips {
+  display: flex; gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  flex: 1;
+  -ms-overflow-style: none; scrollbar-width: none;
+}
+.filter-chips::-webkit-scrollbar { display: none; }
+.filter-chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 500;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-standard);
+  user-select: none;
+  flex-shrink: 0;
+}
+.filter-chip:active { transform: scale(0.96); }
+.filter-chip.active { background: var(--accent); color: var(--accent-on); border-color: var(--accent); }
+
+/* ═════════════════════════════════════════════════════════════════
+   Post Cards
+   ═════════════════════════════════════════════════════════════════ */
+.post-list {
+  padding: 4px 16px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.post-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard),
+              box-shadow var(--motion-fast) var(--ease-standard);
+  user-select: none;
+}
+.post-card:active { transform: scale(0.985); }
+.post-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+}
+.post-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 16px; font-weight: 600;
+  color: var(--accent-on);
+  flex-shrink: 0;
+}
+.av-female { background: linear-gradient(135deg, var(--av-female-1), var(--av-female-2)); }
+.av-male   { background: linear-gradient(135deg, var(--av-male-1), var(--av-male-2)); }
+
+.post-user { flex: 1; min-width: 0; }
+.post-username { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+.post-meta { font-size: 12px; color: var(--muted); }
+.post-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 600;
+  flex-shrink: 0;
+}
+.badge-has-room { background: color-mix(in oklab, var(--community-green) 12%, transparent); color: var(--community-green); }
+.badge-need-room { background: color-mix(in oklab, var(--map-blue) 12%, transparent); color: var(--map-blue); }
+.badge-confirmed {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px; font-weight: 700;
+  background: var(--accent);
+  color: var(--accent-on);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.badge-review {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px; font-weight: 700;
+  background: color-mix(in oklab, var(--warn) 16%, var(--bg));
+  color: var(--fg-2);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.review-queue {
+  padding: 4px 16px 0;
+  display: grid;
+  gap: 10px;
+}
+.review-card {
+  border: 1px solid color-mix(in oklab, var(--warn) 28%, var(--border));
+  background: color-mix(in oklab, var(--warn) 8%, var(--bg));
+  border-radius: var(--radius-lg);
+  padding: 13px 14px;
+}
+.review-card strong {
+  display: block;
+  font-size: 14px;
+  color: var(--fg);
+  margin-bottom: 4px;
+}
+.review-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-2);
+}
+
+.post-body { }
+.post-body-row {
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+.post-body-row + .post-body-row { margin-top: 6px; }
+.post-tag {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 13px; color: var(--fg-2);
+}
+.post-tag svg { width: 14px; height: 14px; color: var(--meta); flex-shrink: 0; }
+.post-contact {
+  margin-top: 10px;
+  display: flex; justify-content: flex-end;
+}
+.btn-contact {
+  padding: 8px 18px;
+  background: var(--accent);
+  color: var(--accent-on);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.btn-contact:active { opacity: 0.85; }
+
+/* Floating publish */
+.float-pub {
+  position: absolute; bottom: 100px; right: 16px;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-on);
+  display: grid; place-items: center;
+  box-shadow: 0 6px 20px rgba(232,114,60,0.35);
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard);
+  z-index: 50;
+}
+.float-pub:active { transform: scale(0.92); }
+.float-pub svg { width: 24px; height: 24px; }
+
+/* Empty */
+.empty-state {
+  text-align: center; padding: 48px 20px;
+  color: var(--muted);
+}
+.empty-state svg { width: 48px; height: 48px; color: var(--border); margin-bottom: 12px; }
+.empty-state p { font-size: 14px; line-height: 1.5; }
+
+/* Toast */
+.toast {
+  position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+  background: var(--fg); color: var(--bg);
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 14px; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 200;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* Modal sheets */
+.modal-mask {
+  position: absolute; inset: 0;
+  background: rgba(45,35,24,0.28);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+  z-index: 160;
+}
+.modal-mask.show { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-height: 84%; overflow-y: auto;
+  background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  padding: 18px 18px 24px;
+  transform: translateY(100%);
+  transition: transform var(--motion-base) var(--ease-standard);
+  box-shadow: 0 -12px 32px rgba(45,35,24,0.16);
+  z-index: 170;
+}
+.sheet.show { transform: translateY(0); }
+.sheet-hd { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.sheet-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.sheet-close { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--surface-warm); color: var(--fg); display: grid; place-items: center; cursor: pointer; }
+.sheet-close svg { width: 18px; height: 18px; }
+.segment { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.segment button { border: 1px solid var(--border); background: var(--bg); border-radius: var(--radius-pill); padding: 9px 10px; color: var(--fg); font: 600 13px var(--font-body); cursor: pointer; }
+.segment button.active { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
+.form-grid { display: grid; gap: 10px; }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 13px; font-weight: 600; color: var(--fg-2); }
+.field input, .field select, .field textarea {
+  width: 100%; border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--bg); color: var(--fg); font: 14px var(--font-body);
+  padding: 11px 12px; outline: 0;
+}
+.field textarea { min-height: 72px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 86%); }
+.confirm-field {
+  border: 1px solid color-mix(in oklab, var(--accent) 18%, var(--border));
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--accent) 5%, var(--bg));
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.confirm-field input {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.confirm-field span {
+  display: block;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--fg-2);
+}
+.confirm-field strong {
+  color: var(--fg);
+  font-weight: 700;
+}
+.action-row { display: flex; gap: 10px; margin-top: 14px; }
+.btn { flex: 1; border: 0; border-radius: var(--radius-pill); padding: 12px 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.btn-primary { background: var(--accent); color: var(--accent-on); }
+.btn-secondary { background: var(--surface-warm); color: var(--fg); }
+.detail-panel { border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--bg); padding: 14px; margin-bottom: 12px; }
+.detail-user { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.detail-user strong { display: block; font-size: 16px; }
+.detail-user span { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+.detail-list { display: grid; gap: 8px; }
+.detail-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--border-soft); font-size: 14px; }
+.detail-row span:first-child { color: var(--muted); }
+.detail-row span:last-child { color: var(--fg); text-align: right; }
+.contact-box { background: color-mix(in oklab, var(--accent) 6%, var(--bg)); border: 1px solid color-mix(in oklab, var(--accent) 20%, var(--border)); border-radius: var(--radius-md); padding: 12px; font-size: 14px; color: var(--fg-2); line-height: 1.5; }
+
+.home-indicator {
+  width: 134px; height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  margin: 8px auto;
+  opacity: 0.2;
+}
+
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-frame { width: 100vw; height: 100vh; height: 100dvh; min-width: unset; border-radius: 0; padding: 0; box-shadow: none; }
+  .phone-screen { border-radius: 0; }
+  .dynamic-island { display: none; }
+  .status-bar { padding: 12px 20px 0; height: 44px; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"/><rect x="3" y="5" width="2" height="6" rx="0.5"/><rect x="6" y="2" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="11" rx="0.5"/></svg>
+        <svg viewBox="0 0 18 12" fill="currentColor"><path d="M1 3.5h1.5L3.5 8h11l1-4.5H16a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1v-6a1 1 0 011-1z"/><rect x="4" y="8.5" width="10" height="1.5" rx="0.5"/></svg>
+        <svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"/><rect x="2" y="2" width="18" height="8" rx="1"/><rect x="25" y="3" width="2" height="6" rx="0.8"/></svg>
+      </div>
+    </div>
+
+    <div class="mp-nav">
+      <div class="mp-nav-back" onclick="history.back()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <span class="mp-nav-title">找室友</span>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-row" data-od-id="roommate-filters">
+      <div class="filter-chips" id="typeChips">
+        <span class="filter-chip active" onclick="setType('all', this)">全部</span>
+        <span class="filter-chip" onclick="setType('has_room', this)">有房找室友</span>
+        <span class="filter-chip" onclick="setType('need_room', this)">无房找合租</span>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="mp-scroll" data-od-id="roommate-scroll">
+      <div class="review-queue" id="reviewQueue"></div>
+      <div class="post-list" id="postList"></div>
+    </div>
+
+    <!-- Publish FAB -->
+    <div class="float-pub" onclick="openPostSheet()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    </div>
+
+    <div class="home-indicator"></div>
+    <div class="modal-mask" id="modalMask" onclick="closeSheets()"></div>
+    <div class="sheet" id="detailSheet" aria-hidden="true"></div>
+    <div class="sheet" id="postSheet" aria-hidden="true">
+      <div class="sheet-hd">
+        <div class="sheet-title">发布找室友</div>
+        <button class="sheet-close" onclick="closeSheets()" aria-label="关闭">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="segment">
+        <button id="modeHasRoom" class="active" onclick="setPublishMode('has_room')">有房找室友</button>
+        <button id="modeNeedRoom" onclick="setPublishMode('need_room')">无房找合租</button>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label for="postName">昵称</label><input id="postName" placeholder="例如：小陈"></div>
+        <div class="field"><label for="postGender">性别</label><select id="postGender"><option>女</option><option>男</option></select></div>
+        <div class="field"><label for="postAge">年龄</label><input id="postAge" type="number" inputmode="numeric" placeholder="例如：24"></div>
+        <div class="field has-room-field"><label for="postApartment">公寓/小区</label><input id="postApartment" placeholder="例如：郑东人才公寓"></div>
+        <div class="field has-room-field"><label for="postRooms">房源信息</label><input id="postRooms" placeholder="例如：2居室次卧"></div>
+        <label class="confirm-field has-room-field" for="postSourceConfirm">
+          <input id="postSourceConfirm" type="checkbox">
+          <span><strong>我已获得该公寓房源</strong><br>确认后可提交审核；审核通过前仅自己可见，不会进入公开找室友列表。</span>
+        </label>
+        <div class="field"><label for="postDistrict">期望区域</label><input id="postDistrict" placeholder="例如：高新区 / 郑东新区"></div>
+        <div class="field"><label for="postBudget">预算</label><input id="postBudget" placeholder="例如：800-1000"></div>
+        <div class="field"><label for="postMoveIn">入住时间</label><input id="postMoveIn" placeholder="例如：7月中旬"></div>
+        <div class="field"><label for="postDesc">补充说明</label><textarea id="postDesc" placeholder="作息、通勤、对室友的期待"></textarea></div>
+        <div class="field"><label for="postContact">联系方式</label><input id="postContact" placeholder="例如：微信 xiaode-room-01"></div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-secondary" onclick="closeSheets()">取消</button>
+        <button class="btn btn-primary" id="submitPostBtn" onclick="submitPost()">提交审核</button>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+var posts = [
+  { id:1, type:'has_room', confirmed:true, avatar:'李', sex:'male', name:'小李', age:'25', gender:'男',
+    apartment:'郑东人才公寓', rooms:'1居室', budget:'1200', moveIn:'7月中旬', desc:'主卧朝南有阳台', district:'郑东新区', contact:'微信 xiaoli-room' },
+  { id:2, type:'need_room', avatar:'王', sex:'female', name:'小王', age:'23', gender:'女',
+    apartment:'', rooms:'', budget:'800-1000', moveIn:'7月上旬', desc:'应届毕业生，安静爱干净', district:'二七区/中原区', contact:'微信 xiaowang-0720' },
+  { id:4, type:'need_room', avatar:'赵', sex:'female', name:'小赵', age:'24', gender:'女',
+    apartment:'', rooms:'', budget:'1000-1500', moveIn:'8月', desc:'在经开区上班，想找附近合租', district:'经开区', contact:'微信 zhao-rent' }
+];
+
+var reviewQueue = [
+  { id:3, type:'has_room', confirmed:true, status:'pending_review', avatar:'张', sex:'male', name:'老张', age:'28', gender:'男',
+    apartment:'高新人才家园', rooms:'2居室次卧', budget:'800', moveIn:'随时', desc:'已有2居室，招次卧室友', district:'高新区', contact:'微信 zhang-room' }
+];
+
+var activeType = 'all';
+var publishMode = 'has_room';
+var nextPostId = 5;
+
+function esc(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+    return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch];
+  });
+}
+
+function setType(type, el) {
+  activeType = type;
+  var chips = document.querySelectorAll('#typeChips .filter-chip');
+  for (var i = 0; i < chips.length; i++) chips[i].classList.remove('active');
+  el.classList.add('active');
+  renderPosts();
+  renderReviewQueue();
+}
+
+function renderPosts() {
+  var container = document.getElementById('postList');
+  var filtered = activeType === 'all' ? posts : posts.filter(function(p) { return p.type === activeType; });
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><p>暂无找室友帖子<br>成为第一个发布的人吧</p></div>';
+    return;
+  }
+  var html = '';
+  filtered.forEach(function(p, idx) {
+    var badge = p.type === 'has_room'
+      ? '<span class="post-badge badge-has-room">有房找室友' + (p.confirmed ? '<span class="badge-confirmed">已确认</span>' : '') + '</span>'
+      : '<span class="post-badge badge-need-room">无房找合租</span>';
+    var detail = '';
+    if (p.type === 'has_room') {
+      detail = '<div class="post-body-row">'
+        + '<span class="post-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>' + esc(p.apartment) + '</span>'
+        + '<span class="post-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>' + esc(p.rooms) + '</span>'
+        + '<span class="post-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>¥' + esc(p.budget) + '/月</span>'
+        + '</div>';
+    } else {
+      detail = '<div class="post-body-row">'
+        + '<span class="post-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>' + esc(p.district) + '</span>'
+        + '<span class="post-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>¥' + esc(p.budget) + '/月</span>'
+        + '</div>';
+    }
+    detail += '<div class="post-body-row"><span class="post-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' + esc(p.moveIn) + '入住</span></div>';
+    html += '<div class="post-card" onclick="openPostDetail(' + p.id + ')" style="animation: cardIn 220ms ease-out ' + (idx * 0.05) + 's both;">'
+      + '<div class="post-header">'
+      + '<div class="post-avatar ' + (p.gender === '女' ? 'av-female' : 'av-male') + '">' + esc(p.avatar) + '</div>'
+      + '<div class="post-user"><div class="post-username">' + esc(p.name) + '</div><div class="post-meta">' + esc(p.gender) + ' · ' + esc(p.age) + '岁</div></div>'
+      + badge
+      + '</div>'
+      + '<div class="post-body">' + detail + '</div>'
+      + '<div class="post-contact"><button class="btn-contact" onclick="event.stopPropagation();openPostDetail(' + p.id + ', true)">联系TA</button></div>'
+      + '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function renderReviewQueue() {
+  var container = document.getElementById('reviewQueue');
+  if (!container) return;
+  if (activeType === 'need_room' || reviewQueue.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  var html = '';
+  reviewQueue.forEach(function(p) {
+    html += '<div class="review-card">'
+      + '<strong>' + esc(p.apartment) + ' · ' + esc(p.rooms) + '<span class="badge-review">审核中</span></strong>'
+      + '<p>' + esc(p.name) + '提交的有房找室友帖子已进入审核队列。审核通过后会自动进入公开列表；当前仅自己可见。</p>'
+      + '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function showMask() {
+  document.getElementById('modalMask').classList.add('show');
+}
+
+function closeSheets() {
+  document.getElementById('modalMask').classList.remove('show');
+  document.getElementById('detailSheet').classList.remove('show');
+  document.getElementById('postSheet').classList.remove('show');
+}
+
+function openPostSheet() {
+  if (!requireAuth(function() { openPostSheet(); })) return;
+  showMask();
+  document.getElementById('postSheet').classList.add('show');
+}
+
+function setPublishMode(mode) {
+  publishMode = mode;
+  document.getElementById('modeHasRoom').classList.toggle('active', mode === 'has_room');
+  document.getElementById('modeNeedRoom').classList.toggle('active', mode === 'need_room');
+  document.getElementById('submitPostBtn').textContent = mode === 'has_room' ? '提交审核' : '发布';
+  var fields = document.querySelectorAll('.has-room-field');
+  for (var i = 0; i < fields.length; i++) {
+    fields[i].style.display = mode === 'has_room' ? 'grid' : 'none';
+  }
+}
+
+function submitPost() {
+  if (!requireAuth(function() { submitPost(); })) return;
+  var name = document.getElementById('postName').value.trim();
+  var gender = document.getElementById('postGender').value;
+  var age = document.getElementById('postAge').value.trim();
+  var apartment = document.getElementById('postApartment').value.trim();
+  var rooms = document.getElementById('postRooms').value.trim();
+  var district = document.getElementById('postDistrict').value.trim();
+  var budget = document.getElementById('postBudget').value.trim();
+  var moveIn = document.getElementById('postMoveIn').value.trim();
+  var desc = document.getElementById('postDesc').value.trim();
+  var contact = document.getElementById('postContact').value.trim();
+  if (!name || !age || !district || !budget || !moveIn || !desc || !contact) {
+    showToast('请补全帖子信息');
+    return;
+  }
+  if (publishMode === 'has_room' && (!apartment || !rooms)) {
+    showToast('请填写房源信息');
+    return;
+  }
+  if (publishMode === 'has_room' && !document.getElementById('postSourceConfirm').checked) {
+    showToast('请先确认已获得该公寓房源');
+    return;
+  }
+  var newPost = {
+    id: nextPostId++,
+    type: publishMode,
+    confirmed: publishMode === 'has_room',
+    status: publishMode === 'has_room' ? 'pending_review' : 'published',
+    avatar: name.slice(0, 1),
+    sex: gender === '女' ? 'female' : 'male',
+    name: name,
+    age: age,
+    gender: gender,
+    apartment: publishMode === 'has_room' ? apartment : '',
+    rooms: publishMode === 'has_room' ? rooms : '',
+    budget: budget,
+    moveIn: moveIn,
+    desc: desc,
+    district: district,
+    contact: contact
+  };
+  if (publishMode === 'has_room') {
+    reviewQueue.unshift(newPost);
+  } else {
+    posts.unshift(newPost);
+  }
+  ['postName','postAge','postApartment','postRooms','postDistrict','postBudget','postMoveIn','postDesc','postContact'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('postSourceConfirm').checked = false;
+  closeSheets();
+  renderPosts();
+  renderReviewQueue();
+  showToast(publishMode === 'has_room' ? '已提交审核，审核通过后公开' : '帖子已发布');
+}
+
+function openPostDetail(id, focusContact) {
+  if (!requireAuth(function() { openPostDetail(id, focusContact); })) return;
+  var p = posts.find(function(item) { return item.id === id; });
+  if (!p) return;
+  var badge = p.type === 'has_room'
+    ? '有房找室友' + (p.confirmed ? ' · 房源已确认' : ' · 待核验')
+    : '无房找合租';
+  var houseRows = p.type === 'has_room'
+    ? '<div class="detail-row"><span>公寓/小区</span><span>' + esc(p.apartment) + '</span></div><div class="detail-row"><span>房源信息</span><span>' + esc(p.rooms) + '</span></div>'
+    : '<div class="detail-row"><span>目标区域</span><span>' + esc(p.district) + '</span></div>';
+  document.getElementById('detailSheet').innerHTML =
+    '<div class="sheet-hd"><div class="sheet-title">帖子详情</div><button class="sheet-close" onclick="closeSheets()" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>'
+    + '<div class="detail-panel"><div class="detail-user"><div class="post-avatar ' + (p.gender === '女' ? 'av-female' : 'av-male') + '">' + esc(p.avatar) + '</div><div><strong>' + esc(p.name) + '</strong><span>' + esc(p.gender) + ' · ' + esc(p.age) + '岁 · ' + badge + '</span></div></div><div class="detail-list">'
+    + houseRows
+    + '<div class="detail-row"><span>预算</span><span>¥' + esc(p.budget) + '/月</span></div><div class="detail-row"><span>入住时间</span><span>' + esc(p.moveIn) + '</span></div><div class="detail-row"><span>说明</span><span>' + esc(p.desc) + '</span></div></div></div>'
+    + '<div class="contact-box" id="contactBox"><strong>联系方式</strong><br>' + esc(p.contact) + '<br>沟通前建议先说明预算、入住时间和生活习惯。</div>'
+    + '<div class="action-row"><button class="btn btn-secondary" onclick="closeSheets()">关闭</button><button class="btn btn-primary" onclick="copyContact(' + p.id + ')">复制联系方式</button></div>';
+  showMask();
+  document.getElementById('detailSheet').classList.add('show');
+}
+
+function copyContact(id) {
+  if (!requireAuth(function() { copyContact(id); })) return;
+  var p = posts.find(function(item) { return item.id === id; });
+  if (!p) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(p.contact).then(function() {
+      showToast('联系方式已复制');
+    }).catch(function() {
+      showToast(p.contact);
+    });
+  } else {
+    showToast(p.contact);
+  }
+}
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1800);
+}
+
+renderPosts();
+setPublishMode('has_room');
+renderReviewQueue();
+
+var sheet = document.createElement('style');
+sheet.textContent = '@keyframes cardIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }';
+document.head.appendChild(sheet);
+</script>
+
+<script src="auth-guard.js"></script>
+
+</body>
+</html>

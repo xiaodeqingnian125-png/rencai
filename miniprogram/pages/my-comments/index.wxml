@@ -1,0 +1,41 @@
+<view class="comments-page">
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" enable-back-to-top class="comments-scroll">
+    <view wx:if="{{comments.length}}" class="comment-list">
+      <view wx:for="{{comments}}" wx:key="id" class="comment-item">
+        <view
+          class="comment-target"
+          data-path="{{item.path}}"
+          bindtap="openTarget"
+        >
+          <view class="target-icon {{item.targetTone}}">{{item.targetIcon}}</view>
+          <view class="target-main">
+            <text class="target-type">{{item.targetType}}</text>
+            <view class="target-name">{{item.target}}</view>
+          </view>
+          <image class="target-arrow" src="/assets/icons/chevron-muted.svg" mode="aspectFit"></image>
+        </view>
+        <view class="comment-body">{{item.body}}</view>
+        <view class="comment-actions">
+          <view class="like">
+            <view class="like-icon">赞</view>
+            <text>{{item.likes}}</text>
+          </view>
+          <button class="delete-btn" data-id="{{item.id}}" catchtap="deleteComment">删除</button>
+        </view>
+        <view class="comment-user">
+          <view class="comment-avatar">{{item.userInitial}}</view>
+          <text class="comment-name">{{item.userName}}</text>
+          <text class="comment-time">{{item.time}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="empty">
+      <view class="empty-card">
+        <view class="empty-icon">◌</view>
+        <text class="empty-title">还没有发表过评论</text>
+        <text class="empty-copy">看过的公寓和户型，评价会集中显示在这里。</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

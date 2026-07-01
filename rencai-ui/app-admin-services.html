@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>晓得青年 · 服务管理</title><link rel="stylesheet" href="admin-shared.css"></head>
+<body><div class="phone-frame"><div class="phone-screen">
+  <div class="dynamic-island"></div><div class="status-bar"><span>9:41</span><div class="status-icons"><svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="2" height="4" rx="0.5"/><rect x="3" y="5" width="2" height="6" rx="0.5"/><rect x="6" y="2" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="11" rx="0.5"/></svg><svg viewBox="0 0 28 12" fill="currentColor"><rect x="0" y="0" width="24" height="12" rx="2.5" stroke="currentColor" fill="none" stroke-width="1"/><rect x="2" y="2" width="18" height="8" rx="1"/></svg></div></div>
+  <div class="mp-nav"><div class="mp-nav-back" onclick="history.back()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></div><span class="mp-nav-title">服务管理</span></div>
+  <div class="toolbar"><div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><input id="searchInput" placeholder="搜索服务/订单" oninput="render()"></div><button class="btn-add" onclick="openForm(null)">+ 新增</button></div>
+  <div class="filter-row"><button class="filter-chip active" onclick="setFilter('all', this)">全部</button><button class="filter-chip" onclick="setFilter('processing', this)">处理中</button><button class="filter-chip" onclick="setFilter('active', this)">已完成</button><button class="filter-chip" onclick="setFilter('hidden', this)">已关闭</button></div>
+  <div class="summary-grid" id="summary"></div><div class="mp-scroll"><div class="list" id="list"></div></div>
+  <div class="modal-mask" id="formMask" onclick="closeForm(event)"><div class="modal-card" onclick="event.stopPropagation()"><div class="modal-title" id="formTitle">新增服务</div><div id="fieldBox"></div><div class="modal-actions"><button class="modal-btn btn-cancel" onclick="closeForm()">取消</button><button class="modal-btn btn-delete" id="btnDelete" style="display:none" onclick="deleteItem()">删除</button><button class="modal-btn btn-confirm" onclick="saveItem()">保存</button></div></div></div>
+  <div class="modal-mask" id="deleteMask" onclick="closeDelete(event)"><div class="modal-card" onclick="event.stopPropagation()"><div class="modal-title">确认删除</div><p style="text-align:center;font-size:14px;color:var(--muted);margin-bottom:16px;">确定删除这条服务记录吗？</p><div class="modal-actions"><button class="modal-btn btn-cancel" onclick="closeDelete()">取消</button><button class="modal-btn btn-delete" onclick="confirmDelete()">确认删除</button></div></div></div>
+  <div class="home-indicator"></div><div class="toast" id="toast"></div>
+</div></div>
+<script>
+var pageConfig={addTitle:'新增服务记录',editTitle:'编辑服务记录',requiredKey:'name',requiredLabel:'服务名称',defaultStatus:'processing',fields:[
+  {key:'name',label:'服务名称',placeholder:'如：搬家代办'},
+  {key:'orderNo',label:'订单编号',placeholder:'如：SV20260701001'},
+  {key:'user',label:'用户',placeholder:'如：陈同学'},
+  {key:'address',label:'服务地址',placeholder:'如：郑东人才公寓 3-1202'},
+  {key:'time',label:'预约时间',placeholder:'如：今天 18:00 前'},
+  {key:'assignee',label:'接单人',placeholder:'如：管家小周'},
+  {key:'desc',label:'需求说明',placeholder:'用户提交的服务需求',type:'textarea'}
+]};
+var data=[
+  {id:1,name:'维修上门',orderNo:'SV20260701001',user:'陈同学',address:'郑东人才公寓 3-1202',time:'今天 18:00 前',assignee:'管家小周',desc:'卫生间水龙头漏水，需要上门维修。',status:'processing'},
+  {id:2,name:'搬家代办',orderNo:'SV20260701002',user:'林同学',address:'高新人才家园 2-803',time:'明天 10:00',assignee:'待分配',desc:'需要帮忙搬 4 个纸箱和一张书桌。',status:'processing'},
+  {id:3,name:'资料代取',orderNo:'SV20260630009',user:'张同学',address:'经开青年公寓',time:'昨天 16:00',assignee:'管家小李',desc:'已完成资料代取并送达前台。',status:'active'}
+];
+var nextId=4;
+function renderItem(item){var s=statusInfo(item.status);return '<div class="item"><div class="item-header"><div><div class="item-name">'+escapeHtml(item.name)+'</div><div class="item-meta">'+escapeHtml(item.orderNo)+' · '+escapeHtml(item.user)+'</div></div><span class="status '+s[1]+'">'+s[0]+'</span></div><div class="item-desc">'+escapeHtml(item.address)+'<br>'+escapeHtml(item.time)+' · 接单人：'+escapeHtml(item.assignee)+'<br>'+escapeHtml(item.desc)+'</div><div class="item-actions"><button class="btn-sm primary" onclick="openForm('+item.id+')">编辑</button><button class="btn-sm" onclick="updateStatus('+item.id+',&quot;active&quot;,&quot;服务已完成&quot;)">完成</button><button class="btn-sm" onclick="updateStatus('+item.id+',&quot;hidden&quot;,&quot;服务已关闭&quot;)">关闭</button><button class="btn-sm danger" onclick="removeItem('+item.id+')">删除</button></div></div>';}
+</script><script src="admin-shared.js"></script></body></html>
