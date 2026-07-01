@@ -1,10 +1,4 @@
-const typeLabels = {
-  activity: "活动",
-  borrow: "借用",
-  service: "服务",
-  comment: "评论",
-  system: "系统"
-};
+const { messages: baseMessages } = require("../../data/business");
 
 Page({
   data: {
@@ -16,112 +10,7 @@ Page({
       { value: "service", label: "服务" },
       { value: "comment", label: "评论" }
     ],
-    messages: [
-      {
-        id: 1,
-        type: "activity",
-        typeLabel: "活动",
-        icon: "/assets/icons/msg-activity.svg",
-        toneClass: "tone-activity",
-        title: "活动提醒",
-        preview: "你报名的「郑东公寓周末集市」将于明天14:00开始",
-        detail: "你报名的「郑东公寓周末集市」将于明天14:00在郑东人才公寓中心花园开始。建议提前10分钟到场，现场可领取摊位指引和活动贴纸。",
-        time: "10分钟前",
-        unread: true,
-        status: "待开始"
-      },
-      {
-        id: 2,
-        type: "borrow",
-        typeLabel: "借用",
-        icon: "/assets/icons/msg-borrow.svg",
-        toneClass: "tone-borrow",
-        title: "借用申请已确认",
-        preview: "小李已确认你借用「电钻」的申请，取件位置：3号楼502",
-        detail: "小李已确认你借用「电钻」的申请。取件位置：3号楼502；建议今日19:00-21:00之间取件，归还前请确认电池和钻头配件齐全。",
-        time: "1小时前",
-        unread: true,
-        status: "待取件"
-      },
-      {
-        id: 3,
-        type: "service",
-        typeLabel: "服务",
-        icon: "/assets/icons/msg-service.svg",
-        toneClass: "tone-service",
-        title: "订单已支付",
-        preview: "你已成功支付「代办入住手续」¥50.00，客服将在1个工作日内联系你",
-        detail: "你已成功支付「代办入住手续」¥50.00。客服将在1个工作日内联系你确认材料清单，如需补充身份证明或租赁材料，会通过消息继续提醒。",
-        time: "2小时前",
-        unread: false,
-        status: "处理中"
-      },
-      {
-        id: 4,
-        type: "activity",
-        typeLabel: "活动",
-        icon: "/assets/icons/msg-activity.svg",
-        toneClass: "tone-activity",
-        title: "活动取消通知",
-        preview: "原定于7月20日的「人才公寓篮球友谊赛」因场地原因取消",
-        detail: "原定于7月20日的「人才公寓篮球友谊赛」因场地维护取消。报名名额会自动释放，后续重启时间将在活动页同步。",
-        time: "昨天",
-        unread: true,
-        status: "已取消"
-      },
-      {
-        id: 5,
-        type: "borrow",
-        typeLabel: "借用",
-        icon: "/assets/icons/msg-borrow.svg",
-        toneClass: "tone-borrow",
-        title: "借用即将到期",
-        preview: "你借用的「露营帐篷」还剩1天到期，请及时归还",
-        detail: "你借用的「露营帐篷」还剩1天到期，请在明日20:00前归还至2号楼前台。若需要延长借用时间，请先联系物主确认。",
-        time: "昨天",
-        unread: false,
-        status: "待归还"
-      },
-      {
-        id: 6,
-        type: "service",
-        typeLabel: "服务",
-        icon: "/assets/icons/msg-service.svg",
-        toneClass: "tone-service",
-        title: "服务完成",
-        preview: "你的「代取快递」订单已完成，请确认收货",
-        detail: "你的「代取快递」订单已完成，快递已放置在5号楼一层临时寄存柜。请确认收货，如有遗漏可联系服务人员补充处理。",
-        time: "7月1日",
-        unread: false,
-        status: "待确认"
-      },
-      {
-        id: 7,
-        type: "comment",
-        typeLabel: "评论",
-        icon: "/assets/icons/msg-comment.svg",
-        toneClass: "tone-comment",
-        title: "评价收到回复",
-        preview: "郑东人才公寓管家回复了你的户型评价",
-        detail: "郑东人才公寓管家回复了你对「精致一居室」的评价：感谢反馈，厨房收纳架本周会补充安装，欢迎入住后继续提出建议。",
-        time: "7月1日",
-        unread: false,
-        status: "已回复"
-      },
-      {
-        id: 8,
-        type: "system",
-        typeLabel: "系统",
-        icon: "/assets/icons/msg-system.svg",
-        toneClass: "tone-system",
-        title: "系统通知",
-        preview: "欢迎加入晓得青年！开始探索你的理想公寓吧",
-        detail: "欢迎加入晓得青年。你可以在首页查看人才公寓，在服务页报名活动和提交代办需求，也可以通过借个锤子共享闲置工具。",
-        time: "7月1日",
-        unread: false,
-        status: "已送达"
-      }
-    ],
+    messages: JSON.parse(JSON.stringify(baseMessages)),
     filteredMessages: [],
     hasUnread: true,
     showDetail: false,
@@ -220,7 +109,10 @@ Page({
       return;
     }
     if (action === "service") {
-      wx.switchTab({ url: "/pages/service/index" });
+      const url = this.data.selectedMessage && this.data.selectedMessage.type === "service"
+        ? "/pages/service-list/index"
+        : "/pages/activity-list/index";
+      wx.navigateTo({ url });
       return;
     }
     if (action === "borrow") {
@@ -238,9 +130,13 @@ Page({
     const messageMap = {
       remind: "已加入提醒",
       contact: "已为你打开联系入口",
-      comments: "我的评论下一步接入",
+      comments: "已打开我的评论",
       reply: "已打开回复入口"
     };
+    if (action === "comments") {
+      wx.navigateTo({ url: "/pages/my-comments/index" });
+      return;
+    }
     this.setData({ showDetail: false });
     wx.showToast({
       title: messageMap[action] || "操作已提交",

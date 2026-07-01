@@ -1,67 +1,165 @@
-<view class="admin-page">
-  <view class="toolbar">
-    <view class="search-box">
-      <image src="/assets/icons/search.svg" mode="aspectFit"></image>
-      <input value="{{keyword}}" placeholder="{{config.search}}" bindinput="handleSearch" />
-    </view>
-    <button class="btn-add" bindtap="openForm">{{config.addText}}</button>
-  </view>
-
-  <scroll-view scroll-x class="filter-scroll" show-scrollbar="{{false}}">
-    <view class="filter-row">
-      <button
-        wx:for="{{config.filters}}"
-        wx:key="value"
-        class="filter-chip {{activeFilter === item.value ? 'active' : ''}}"
-        data-value="{{item.value}}"
-        bindtap="setFilter"
-      >{{item.label}}</button>
-    </view>
-  </scroll-view>
-
-  <view class="summary-grid">
-    <view class="summary-card">
-      <view class="summary-value">{{summary.total}}</view>
-      <text>全部记录</text>
-    </view>
-    <view class="summary-card">
-      <view class="summary-value">{{summary.pending}}</view>
-      <text>待处理</text>
-    </view>
-    <view class="summary-card">
-      <view class="summary-value">{{summary.active}}</view>
-      <text>已上线</text>
-    </view>
-  </view>
-
-  <scroll-view scroll-y class="admin-scroll">
-    <view wx:if="{{visibleItems.length}}" class="admin-list">
-      <view wx:for="{{visibleItems}}" wx:key="id" class="admin-item">
-        <view class="item-header">
-          <view class="item-title-wrap">
-            <view class="item-name">{{item.title}}</view>
-            <view class="item-meta">{{item.meta}}</view>
-          </view>
-          <text class="status {{item.statusClass}}">{{item.statusLabel}}</text>
+<view class="admin-page {{isApartment ? 'apartment-mode' : ''}}">
+  <block wx:if="{{isApartment}}">
+    <view class="apartment-admin">
+      <view class="apartment-toolbar">
+        <view class="apartment-search">
+          <image src="/assets/icons/search.svg" mode="aspectFit"></image>
+          <input value="{{keyword}}" placeholder="{{config.search}}" bindinput="handleSearch" />
         </view>
-        <view class="item-desc">{{item.desc}}</view>
-        <view class="item-actions">
-          <button class="btn-sm primary" data-id="{{item.id}}" bindtap="openForm">编辑</button>
-          <button class="btn-sm" data-id="{{item.id}}" data-status="active" bindtap="updateStatus">通过</button>
-          <button class="btn-sm" data-id="{{item.id}}" data-status="hidden" bindtap="updateStatus">隐藏</button>
-          <button class="btn-sm danger" data-id="{{item.id}}" bindtap="deleteItem">删除</button>
+        <view class="apartment-add" bindtap="openForm">{{config.addText}}</view>
+      </view>
+
+      <scroll-view scroll-y class="apartment-scroll">
+        <view wx:if="{{visibleItems.length}}" class="apartment-list">
+          <view wx:for="{{visibleItems}}" wx:key="id" class="apartment-card">
+            <view class="apartment-card-head">
+              <view class="apartment-name">{{item.title}}</view>
+              <view class="apartment-actions">
+                <view class="apartment-btn" data-id="{{item.id}}" bindtap="openForm">编辑</view>
+                <view class="apartment-btn danger" data-id="{{item.id}}" bindtap="deleteItem">删除</view>
+              </view>
+            </view>
+            <view class="apartment-meta">
+              <text>{{item.apartmentAddress}}</text>
+              <text>{{item.apartmentRent}}</text>
+              <text>{{item.apartmentFacility}}</text>
+            </view>
+            <text class="apartment-status {{item.statusClass}}">{{item.statusLabel}}</text>
+          </view>
+        </view>
+        <view wx:else class="apartment-empty">
+          <view>⌕</view>
+          <text>暂无公寓数据</text>
+        </view>
+      </scroll-view>
+    </view>
+  </block>
+
+  <block wx:elif="{{isRoom}}">
+    <view class="room-admin">
+      <scroll-view scroll-x class="room-filter-scroll" show-scrollbar="{{false}}">
+        <view class="room-filter-row">
+          <view
+            wx:for="{{config.filters}}"
+            wx:key="value"
+            class="room-filter-chip {{activeFilter === item.value ? 'active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="setFilter"
+          >{{item.label}}</view>
+        </view>
+      </scroll-view>
+
+      <view class="room-toolbar">
+        <view class="room-add" bindtap="openForm">{{config.addText}}</view>
+      </view>
+
+      <scroll-view scroll-y class="room-scroll">
+        <view wx:if="{{visibleItems.length}}" class="room-list">
+          <view wx:for="{{visibleItems}}" wx:key="id" class="room-card">
+            <view class="room-card-head">
+              <view class="room-name">{{item.title}}</view>
+              <view class="room-actions">
+                <view class="room-btn" data-id="{{item.id}}" bindtap="openForm">编辑</view>
+                <view class="room-btn danger" data-id="{{item.id}}" bindtap="deleteItem">删除</view>
+              </view>
+            </view>
+            <view class="room-apartment">{{item.roomApartment}}</view>
+            <view class="room-meta">{{item.roomMeta}}</view>
+            <text class="room-status {{item.statusClass}}">{{item.statusLabel}}</text>
+          </view>
+        </view>
+        <view wx:else class="empty">
+          <view>⌕</view>
+          <text>暂无户型数据</text>
+        </view>
+      </scroll-view>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="shared-admin">
+      <view class="shared-toolbar">
+        <view class="shared-search">
+          <image src="/assets/icons/search.svg" mode="aspectFit"></image>
+          <input value="{{keyword}}" placeholder="{{config.search}}" bindinput="handleSearch" />
+        </view>
+        <view class="shared-add" bindtap="openForm">{{config.addText}}</view>
+      </view>
+
+      <scroll-view scroll-x class="shared-filter-scroll" show-scrollbar="{{false}}">
+        <view class="shared-filter-row">
+          <view
+            wx:for="{{config.filters}}"
+            wx:key="value"
+            class="shared-filter-chip {{activeFilter === item.value ? 'active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="setFilter"
+          >{{item.label}}</view>
+        </view>
+      </scroll-view>
+
+      <view class="shared-summary-grid">
+        <view class="shared-summary-card">
+          <view class="shared-summary-value">{{summary.total}}</view>
+          <text>{{summary.totalLabel}}</text>
+        </view>
+        <view class="shared-summary-card">
+          <view class="shared-summary-value">{{summary.pending}}</view>
+          <text>{{summary.pendingLabel}}</text>
+        </view>
+        <view class="shared-summary-card">
+          <view class="shared-summary-value">{{summary.active}}</view>
+          <text>{{summary.activeLabel}}</text>
         </view>
       </view>
+
+      <scroll-view scroll-y class="shared-scroll">
+        <view wx:if="{{visibleItems.length}}" class="shared-list">
+          <view wx:for="{{visibleItems}}" wx:key="id" class="shared-card">
+            <view class="shared-card-head">
+              <view class="shared-title-wrap">
+                <view class="shared-name">{{item.title}}</view>
+                <view class="shared-meta">{{item.meta}}</view>
+              </view>
+              <text class="shared-status {{item.statusClass}}">{{item.statusLabel}}</text>
+            </view>
+            <view class="shared-desc">
+              <text wx:for="{{item.descLines}}" wx:key="*this">{{item}}</text>
+            </view>
+            <view class="shared-actions">
+              <view class="shared-btn primary" data-id="{{item.id}}" bindtap="openForm">编辑</view>
+              <view
+                class="shared-btn"
+                data-id="{{item.id}}"
+                data-status="{{item.primaryAction.status}}"
+                data-toast="{{item.primaryAction.toast}}"
+                bindtap="updateStatus"
+              >{{item.primaryAction.label}}</view>
+              <view
+                class="shared-btn"
+                data-id="{{item.id}}"
+                data-status="{{item.secondaryAction.status}}"
+                data-toast="{{item.secondaryAction.toast}}"
+                bindtap="updateStatus"
+              >{{item.secondaryAction.label}}</view>
+              <view class="shared-btn danger" data-id="{{item.id}}" bindtap="deleteItem">删除</view>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="empty">
+          <view>⌕</view>
+          <text>暂无匹配记录</text>
+        </view>
+      </scroll-view>
     </view>
-    <view wx:else class="empty">
-      <view>⌕</view>
-      <text>暂无匹配记录</text>
-    </view>
-  </scroll-view>
+  </block>
 
   <view wx:if="{{formOpen}}" class="modal-mask" bindtap="closeForm"></view>
   <view wx:if="{{formOpen}}" class="modal-card">
-    <view class="modal-title">{{editingId ? '编辑记录' : config.addText}}</view>
+    <view class="modal-head">
+      <view class="modal-title">{{editingId ? config.editTitle : config.addTitle}}</view>
+      <view class="modal-subtitle">{{config.title}} · {{editingId ? '更新当前内容' : '创建新记录'}}</view>
+    </view>
     <scroll-view scroll-y class="modal-fields">
       <view wx:for="{{config.fields}}" wx:key="key" class="modal-field">
         <text>{{item.label}}</text>
@@ -83,10 +181,13 @@
       <view class="modal-field">
         <text>状态</text>
         <view class="status-options">
-          <button class="{{form.status === 'pending' ? 'active' : ''}}" data-value="pending" bindtap="setFormStatus">待审核</button>
-          <button class="{{form.status === 'processing' ? 'active' : ''}}" data-value="processing" bindtap="setFormStatus">处理中</button>
-          <button class="{{form.status === 'active' ? 'active' : ''}}" data-value="active" bindtap="setFormStatus">上线</button>
-          <button class="{{form.status === 'hidden' || form.status === 'disabled' ? 'active' : ''}}" data-value="hidden" bindtap="setFormStatus">隐藏</button>
+          <block wx:for="{{config.statusOptions}}" wx:key="value">
+            <view
+              class="{{form.status === item.value ? 'active' : ''}}"
+              data-value="{{item.value}}"
+              bindtap="setFormStatus"
+            >{{item.label}}</view>
+          </block>
         </view>
       </view>
     </scroll-view>

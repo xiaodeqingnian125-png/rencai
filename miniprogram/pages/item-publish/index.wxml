@@ -1,0 +1,34 @@
+<view class="publish-page">
+  <view class="form-card">
+    <view class="form-title">共享你的物品</view>
+    <view class="field">
+      <text>物品名称</text>
+      <input maxlength="20" placeholder="如：锤子、螺丝刀、电饭煲" data-field="name" bindinput="handleInput" />
+    </view>
+    <view class="field">
+      <text>物品类型</text>
+      <view class="cat-row">
+        <button
+          wx:for="{{categories}}"
+          wx:key="value"
+          class="cat-chip {{activeCategory === item.value ? 'active' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="selectCategory"
+        >{{item.label}}</button>
+      </view>
+    </view>
+    <view class="field">
+      <text>物品描述</text>
+      <textarea maxlength="200" placeholder="描述成色、配件、适用场景" data-field="desc" bindinput="handleInput"></textarea>
+    </view>
+    <view class="field">
+      <text>借用规则</text>
+      <input maxlength="100" placeholder="如：借用3天内归还，需自取" data-field="rules" bindinput="handleInput" />
+    </view>
+    <view class="field">
+      <text>取件位置</text>
+      <input maxlength="50" placeholder="如：3号楼1楼大厅" data-field="location" bindinput="handleInput" />
+    </view>
+  </view>
+  <button class="submit-btn" bindtap="submitItem">发布物品</button>
+</view>

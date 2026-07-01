@@ -1,0 +1,280 @@
+.item-detail-page {
+  min-height: 100vh;
+  padding-bottom: 150rpx;
+  background: #fafaf6;
+}
+
+.item-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 360rpx;
+}
+
+.item-hero image {
+  width: 130rpx;
+  height: 130rpx;
+  opacity: 0.45;
+}
+
+.thumb-tool {
+  background: linear-gradient(135deg, #efe8d8, #e0d4b8);
+}
+
+.thumb-outdoor {
+  background: linear-gradient(135deg, #e8efe8, #d0e0d0);
+}
+
+.thumb-appliance {
+  background: linear-gradient(135deg, #efe8f0, #ddd0e0);
+}
+
+.thumb-other {
+  background: linear-gradient(135deg, #f0ece2, #e0d8c8);
+}
+
+.item-tag {
+  position: absolute;
+  left: 32rpx;
+  top: 32rpx;
+  height: 42rpx;
+  padding: 0 20rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 253, 247, 0.72);
+  color: #5c4a38;
+  font-size: 23rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+}
+
+.content {
+  padding: 34rpx 32rpx 30rpx;
+}
+
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.item-title {
+  color: #2d2318;
+  font-size: 42rpx;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.item-sub {
+  margin-top: 8rpx;
+  color: #8c7a68;
+  font-size: 26rpx;
+}
+
+.item-status {
+  flex-shrink: 0;
+  padding-top: 10rpx;
+  font-size: 24rpx;
+  font-weight: 750;
+}
+
+.status-available {
+  color: #5b9a6f;
+}
+
+.status-borrowed {
+  color: #8c7a68;
+}
+
+.notice-card,
+.owner-card,
+.section-card,
+.info-cell {
+  border: 1rpx solid #f0eae0;
+  border-radius: 28rpx;
+  background: #fffdf7;
+}
+
+.notice-card {
+  margin-top: 24rpx;
+  padding: 24rpx 28rpx;
+  background: #fff8f2;
+  color: #d76924;
+  font-size: 27rpx;
+  line-height: 1.5;
+}
+
+.owner-card {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-top: 24rpx;
+  padding: 24rpx;
+}
+
+.owner-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 50%;
+  background: #e8723c;
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 750;
+}
+
+.owner-info view {
+  color: #2d2318;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.owner-info text {
+  display: block;
+  margin-top: 6rpx;
+  color: #8c7a68;
+  font-size: 24rpx;
+}
+
+.section-card {
+  margin-top: 24rpx;
+  padding: 28rpx;
+}
+
+.section-title {
+  margin-bottom: 12rpx;
+  color: #2d2318;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.paragraph {
+  color: #5c4a38;
+  font-size: 29rpx;
+  line-height: 1.6;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+  margin-top: 24rpx;
+}
+
+.info-cell {
+  min-width: 0;
+  padding: 24rpx;
+}
+
+.info-cell text {
+  display: block;
+  margin-bottom: 8rpx;
+  color: #a69682;
+  font-size: 24rpx;
+}
+
+.info-cell view {
+  color: #2d2318;
+  font-size: 28rpx;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  padding: 18rpx 32rpx calc(18rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid #f0eae0;
+  background: #fffdf7;
+}
+
+.request-btn,
+.submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88rpx;
+  border-radius: 999rpx;
+  background: #e8723c;
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 750;
+}
+
+.request-btn.disabled {
+  background: #d8cec0;
+}
+
+.sheet-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 80;
+  background: rgba(45, 35, 24, 0.32);
+}
+
+.form-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  padding: 18rpx 36rpx calc(36rpx + env(safe-area-inset-bottom));
+  border-radius: 48rpx 48rpx 0 0;
+  background: #fffdf7;
+}
+
+.sheet-handle {
+  width: 84rpx;
+  height: 10rpx;
+  margin: 0 auto 24rpx;
+  border-radius: 999rpx;
+  background: #e8e0d4;
+}
+
+.sheet-title {
+  margin-bottom: 22rpx;
+  color: #2d2318;
+  font-size: 36rpx;
+  font-weight: 750;
+}
+
+.field {
+  margin-bottom: 20rpx;
+}
+
+.field text {
+  display: block;
+  margin-bottom: 10rpx;
+  color: #8c7a68;
+  font-size: 26rpx;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 0 24rpx;
+  border: 1rpx solid #e8e0d4;
+  border-radius: 20rpx;
+  background: #fafaf6;
+  color: #2d2318;
+  font-size: 30rpx;
+}
+
+.field input {
+  height: 84rpx;
+}
+
+.field textarea {
+  height: 160rpx;
+  padding-top: 22rpx;
+  line-height: 1.5;
+}

@@ -1,0 +1,156 @@
+.service-list-page {
+  min-height: 100vh;
+  padding-bottom: 44rpx;
+  background: #fafaf6;
+}
+
+.search-area {
+  padding: 20rpx 32rpx 12rpx;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  height: 78rpx;
+  padding: 0 24rpx;
+  border: 1rpx solid #e8e0d4;
+  border-radius: 24rpx;
+  background: #fffdf7;
+}
+
+.search-box image {
+  width: 34rpx;
+  height: 34rpx;
+  margin-right: 14rpx;
+}
+
+.search-box input {
+  flex: 1;
+  min-width: 0;
+  height: 78rpx;
+  color: #2d2318;
+  font-size: 29rpx;
+}
+
+.search-box button {
+  color: #e8723c;
+  font-size: 24rpx;
+}
+
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  padding: 14rpx 32rpx 36rpx;
+}
+
+.service-card {
+  display: flex;
+  gap: 24rpx;
+  padding: 24rpx;
+  border: 1rpx solid #f0eae0;
+  border-radius: 30rpx;
+  background: #fffdf7;
+}
+
+.service-card:active {
+  transform: scale(0.99);
+}
+
+.service-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 132rpx;
+  height: 132rpx;
+  border-radius: 18rpx;
+  flex-shrink: 0;
+}
+
+.service-cover image {
+  width: 54rpx;
+  height: 54rpx;
+  opacity: 0.55;
+}
+
+.service-cover-1 {
+  background: #fff0e7;
+}
+
+.service-cover-2 {
+  background: #e8f0e8;
+}
+
+.service-cover-3 {
+  background: #edf5fa;
+}
+
+.service-cover-4 {
+  background: #f4edf7;
+}
+
+.service-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.service-top {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.service-name {
+  overflow: hidden;
+  color: #2d2318;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.service-category {
+  flex-shrink: 0;
+  height: 34rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  background: #fef8ef;
+  color: #8c7a68;
+  font-size: 22rpx;
+  line-height: 34rpx;
+}
+
+.service-desc {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 10rpx;
+  color: #8c7a68;
+  font-size: 26rpx;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.service-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-top: 14rpx;
+  color: #a69682;
+  font-size: 24rpx;
+}
+
+.service-price {
+  color: #e8590c;
+  font-size: 34rpx;
+  font-weight: 750;
+}
+
+.service-price text {
+  margin-left: 2rpx;
+  color: #8c7a68;
+  font-size: 22rpx;
+  font-weight: 400;
+}

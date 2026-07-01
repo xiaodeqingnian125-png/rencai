@@ -78,7 +78,6 @@
           <view class="comment-body">{{item.body}}</view>
           <view class="comment-actions">
             <button data-index="{{index}}" bindtap="likeComment">赞 {{item.likes}}</button>
-            <button bindtap="replyComment">回复</button>
           </view>
         </view>
       </view>

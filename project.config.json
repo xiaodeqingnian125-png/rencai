@@ -45,7 +45,7 @@
     "disableSWC": true
   },
   "appid": "wxe67038403635b7d7",
-  "projectname": "quickstart-wx-cloud",
+  "projectname": "rencai-weixin",
   "libVersion": "2.20.1",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {

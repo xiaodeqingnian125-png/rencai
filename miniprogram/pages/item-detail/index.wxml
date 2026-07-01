@@ -1,0 +1,72 @@
+<view wx:if="{{item}}" class="item-detail-page">
+  <view class="item-hero {{item.thumbClass}}">
+    <image src="/assets/icons/item-generic.svg" mode="aspectFit"></image>
+    <text class="item-tag">{{item.categoryLabel}}</text>
+  </view>
+
+  <view class="content">
+    <view class="title-row">
+      <view>
+        <view class="item-title">{{item.name}}</view>
+        <view class="item-sub">{{item.location}}</view>
+      </view>
+      <text class="item-status status-{{item.statusClass}}">{{item.statusLabel}}</text>
+    </view>
+
+    <view wx:if="{{item.expectedReturn}}" class="notice-card">{{item.expectedReturn}}，可先提交预约借用意向。</view>
+
+    <view class="owner-card">
+      <view class="owner-avatar">{{item.ownerAvatar}}</view>
+      <view class="owner-info">
+        <view>{{item.owner}}</view>
+        <text>物主 · 由晓得青年消息页协助对接</text>
+      </view>
+    </view>
+
+    <view class="section-card">
+      <view class="section-title">物品说明</view>
+      <view class="paragraph">{{item.detail}}</view>
+    </view>
+
+    <view class="info-grid">
+      <view class="info-cell">
+        <text>借用规则</text>
+        <view>{{item.rules}}</view>
+      </view>
+      <view class="info-cell">
+        <text>取件位置</text>
+        <view>{{item.pickupLocation}}</view>
+      </view>
+    </view>
+
+    <view class="section-card">
+      <view class="section-title">归还提醒</view>
+      <view class="paragraph">{{item.returnTip}}</view>
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="request-btn {{requested ? 'disabled' : ''}}" bindtap="openRequest">
+      {{requestButtonText}}
+    </button>
+  </view>
+
+  <view wx:if="{{requestOpen}}" class="sheet-mask" bindtap="closeRequest"></view>
+  <view wx:if="{{requestOpen}}" class="form-sheet">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">{{requestSheetTitle}}</view>
+    <view class="field">
+      <text>借用时间</text>
+      <input placeholder="如：7月6日 19:00" data-field="startDate" bindinput="handleInput" />
+    </view>
+    <view class="field">
+      <text>预计归还</text>
+      <input placeholder="如：7月8日 20:00" data-field="endDate" bindinput="handleInput" />
+    </view>
+    <view class="field">
+      <text>留言</text>
+      <textarea placeholder="说明用途，方便物主确认" data-field="message" bindinput="handleInput"></textarea>
+    </view>
+    <button class="submit-btn" bindtap="submitRequest">发送给物主</button>
+  </view>
+</view>

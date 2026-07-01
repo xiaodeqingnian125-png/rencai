@@ -93,13 +93,6 @@ Page({
     this.setData({ "room.comments": comments });
   },
 
-  replyComment() {
-    wx.showToast({
-      title: "回复功能下一步接入",
-      icon: "none"
-    });
-  },
-
   onShareAppMessage() {
     return {
       title: this.data.room ? `${this.data.apartment.name} · ${this.data.room.name}` : "晓得青年户型详情",

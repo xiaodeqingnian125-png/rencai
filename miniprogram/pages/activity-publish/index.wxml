@@ -1,0 +1,54 @@
+<view class="form-page">
+  <view class="form-card">
+    <view class="form-title">活动信息</view>
+    <view class="field">
+      <text>活动标题</text>
+      <input maxlength="30" placeholder="如：周五桌游夜" data-field="title" bindinput="handleInput" />
+    </view>
+    <view class="field">
+      <text>活动类型</text>
+      <input placeholder="运动 / 兴趣 / 分享 / 公益" data-field="category" bindinput="handleInput" />
+    </view>
+    <view class="field">
+      <text>活动形式</text>
+      <view class="seg-row">
+        <button
+          wx:for="{{modeOptions}}"
+          wx:key="*this"
+          class="seg {{activeMode === item ? 'active' : ''}}"
+          data-value="{{item}}"
+          bindtap="selectMode"
+        >{{item}}</button>
+      </view>
+    </view>
+    <view class="field-grid">
+      <view class="field">
+        <text>日期</text>
+        <input placeholder="7月20日" data-field="date" bindinput="handleInput" />
+      </view>
+      <view class="field">
+        <text>时间</text>
+        <input placeholder="19:30" data-field="time" bindinput="handleInput" />
+      </view>
+    </view>
+    <view class="field">
+      <text>地点</text>
+      <input placeholder="{{locationPlaceholder}}" data-field="location" bindinput="handleInput" />
+    </view>
+    <view class="field-grid">
+      <view class="field">
+        <text>费用</text>
+        <input type="number" placeholder="0=免费" data-field="fee" bindinput="handleInput" />
+      </view>
+      <view class="field">
+        <text>人数上限</text>
+        <input type="number" placeholder="不限可留空" data-field="maxCount" bindinput="handleInput" />
+      </view>
+    </view>
+    <view class="field">
+      <text>活动介绍</text>
+      <textarea maxlength="1000" placeholder="写清楚活动内容、集合方式和注意事项" data-field="intro" bindinput="handleInput"></textarea>
+    </view>
+  </view>
+  <button class="submit-btn" bindtap="submitActivity">提交审核</button>
+</view>

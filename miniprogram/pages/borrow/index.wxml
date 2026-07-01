@@ -29,8 +29,8 @@
       wx:for="{{filteredItems}}"
       wx:key="id"
       class="item-card"
-      data-name="{{item.name}}"
-      bindtap="showStaticTip"
+      data-id="{{item.id}}"
+      bindtap="goItemDetail"
     >
       <view class="item-thumb {{item.thumbClass}}">
         <image src="/assets/icons/item-generic.svg" mode="aspectFit"></image>
@@ -53,7 +53,7 @@
     <text class="empty-copy">换个关键词试试</text>
   </view>
 
-  <view class="float-pub" data-name="发布物品" bindtap="showStaticTip">
+  <view class="float-pub" bindtap="goItemPublish">
     <image src="/assets/icons/plus.svg" mode="aspectFit"></image>
   </view>
 </view>

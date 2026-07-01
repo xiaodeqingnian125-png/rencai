@@ -104,13 +104,6 @@ Page({
     this.setData({ "apartment.comments": comments });
   },
 
-  replyComment() {
-    wx.showToast({
-      title: "回复功能下一步接入",
-      icon: "none"
-    });
-  },
-
   onShareAppMessage() {
     return {
       title: this.data.apartment ? this.data.apartment.name : "晓得青年人才公寓",

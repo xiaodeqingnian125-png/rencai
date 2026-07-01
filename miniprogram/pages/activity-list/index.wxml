@@ -1,0 +1,46 @@
+<view class="activity-list-page">
+  <scroll-view scroll-x class="filter-scroll" show-scrollbar="{{false}}">
+    <view class="filter-row">
+      <button
+        wx:for="{{tabs}}"
+        wx:key="value"
+        class="filter-chip {{activeType === item.value ? 'active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="selectType"
+      >{{item.label}}</button>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{visibleActivities.length}}" class="activity-list">
+    <view
+      wx:for="{{visibleActivities}}"
+      wx:key="id"
+      class="activity-card"
+      data-id="{{item.id}}"
+      bindtap="goDetail"
+    >
+      <view class="activity-cover {{item.coverClass}}">
+        <text class="activity-badge badge-{{item.typeClass}}">{{item.typeLabel}}</text>
+        <view class="activity-date">{{item.shortDate}}</view>
+      </view>
+      <view class="activity-body">
+        <view class="activity-title">{{item.title}}</view>
+        <view class="activity-meta">{{item.date}} · {{item.location}}</view>
+        <view class="activity-row">
+          <text>{{item.mode}} · {{item.fee}}</text>
+          <text class="activity-status status-{{item.statusClass}}">{{item.statusText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="empty-state">
+    <text class="empty-title">近期暂无活动</text>
+    <text>换个筛选看看，或发起一个新活动。</text>
+    <button class="primary-btn empty-btn" bindtap="goPublish">发起活动</button>
+  </view>
+
+  <button class="float-pub" bindtap="goPublish">
+    <image src="/assets/icons/plus.svg" mode="aspectFit"></image>
+  </button>
+</view>

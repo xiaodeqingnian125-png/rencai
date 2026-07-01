@@ -1,0 +1,44 @@
+<view class="service-list-page">
+  <view class="search-area">
+    <view class="search-box">
+      <image src="/assets/icons/search.svg" mode="aspectFit"></image>
+      <input
+        value="{{searchValue}}"
+        placeholder="搜索服务名称、类型或说明"
+        confirm-type="search"
+        bindinput="handleSearch"
+      />
+      <button wx:if="{{searchValue}}" bindtap="clearSearch">清空</button>
+    </view>
+  </view>
+
+  <view wx:if="{{visibleServices.length}}" class="service-list">
+    <view
+      wx:for="{{visibleServices}}"
+      wx:key="id"
+      class="service-card"
+      data-id="{{item.id}}"
+      bindtap="goDetail"
+    >
+      <view class="service-cover {{item.coverClass}}">
+        <image src="/assets/icons/service-clock.svg" mode="aspectFit"></image>
+      </view>
+      <view class="service-info">
+        <view class="service-top">
+          <text class="service-name">{{item.name}}</text>
+          <text class="service-category">{{item.category}}</text>
+        </view>
+        <view class="service-desc">{{item.desc}}</view>
+        <view class="service-row">
+          <text>{{item.duration}}</text>
+          <view class="service-price">¥{{item.price}}<text>{{item.unit}}</text></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="empty-state">
+    <text class="empty-title">暂无代办服务</text>
+    <text>换个关键词试试，或稍后再来看看。</text>
+  </view>
+</view>

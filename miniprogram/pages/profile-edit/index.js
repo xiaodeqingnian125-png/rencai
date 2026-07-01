@@ -22,7 +22,7 @@ Page({
   noop() {},
 
   changeAvatar() {
-    wx.showToast({ title: "更换头像下一步接入", icon: "none" });
+    wx.showToast({ title: "静态版暂不上传头像", icon: "none" });
   },
 
   openModal(e) {

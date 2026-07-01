@@ -1,0 +1,66 @@
+<view wx:if="{{activity}}" class="detail-page">
+  <view class="hero {{activity.coverClass}}">
+    <text class="hero-badge badge-{{activity.typeClass}}">{{activity.typeLabel}}</text>
+    <view class="hero-date">{{activity.shortDate}}</view>
+  </view>
+
+  <view class="content">
+    <view class="title-row">
+      <view class="title">{{activity.title}}</view>
+      <text class="status status-{{activity.statusClass}}">{{activity.statusText}}</text>
+    </view>
+
+    <view class="info-grid">
+      <view class="info-cell">
+        <text>时间</text>
+        <view>{{activity.date}}</view>
+      </view>
+      <view class="info-cell">
+        <text>地点</text>
+        <view>{{activity.location}}</view>
+      </view>
+      <view class="info-cell">
+        <text>费用</text>
+        <view>{{activity.fee}}</view>
+      </view>
+      <view class="info-cell">
+        <text>主办</text>
+        <view>{{activity.organizer}}</view>
+      </view>
+    </view>
+
+    <view class="section-card">
+      <view class="section-title">活动介绍</view>
+      <view class="paragraph">{{activity.intro}}</view>
+    </view>
+
+    <view class="section-card">
+      <view class="section-title">报名须知</view>
+      <view wx:for="{{activity.notes}}" wx:key="*this" class="note-row">
+        <view class="dot"></view>
+        <text>{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="register-btn {{registerDisabled ? 'disabled' : ''}}" bindtap="openRegister">
+      {{registerButtonText}}
+    </button>
+  </view>
+
+  <view wx:if="{{formOpen}}" class="sheet-mask" bindtap="closeRegister"></view>
+  <view wx:if="{{formOpen}}" class="form-sheet">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">确认报名信息</view>
+    <view class="field">
+      <text>姓名</text>
+      <input value="{{form.name}}" data-field="name" placeholder="请输入姓名" bindinput="handleInput" />
+    </view>
+    <view class="field">
+      <text>手机号</text>
+      <input value="{{form.phone}}" data-field="phone" type="number" placeholder="用于活动联系" bindinput="handleInput" />
+    </view>
+    <button class="submit-btn" bindtap="submitRegister">提交报名</button>
+  </view>
+</view>
