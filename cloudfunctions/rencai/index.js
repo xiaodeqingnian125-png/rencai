@@ -18,6 +18,8 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const _ = db.command;
 
+const { migrateApartments, migrateRoomTypes } = require("./lib/migrate");
+
 // 管理员判定条件
 const ADMIN_NICKNAME = "晓邱";
 const ADMIN_PHONE = "17739768562";
@@ -492,6 +494,10 @@ exports.main = async (event, context) => {
         return await createServiceOrder(params);
       case "isActivityRegistered":
         return await isActivityRegistered(params);
+      case "migrateApartments":
+        return await migrateApartments();
+      case "migrateRoomTypes":
+        return await migrateRoomTypes();
       default:
         return { ok: false, error: "unknown_action", action };
     }
