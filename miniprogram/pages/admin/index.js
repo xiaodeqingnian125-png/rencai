@@ -544,6 +544,48 @@ function fileExt(name) {
   return matched ? matched[1] : "";
 }
 
+// ========== 公寓专用 CSV 字段映射（任务 7） ==========
+// 经纬度由后续地理编码模块自动生成，CSV 不再承载 longitude/latitude
+// apartment_code 作为外键（关联户型），由管理员维护唯一性
+
+// 公寓 CSV 表头（10 列：删除经纬度，新增 apartment_code）
+const APARTMENT_CSV_HEADERS = [
+  "公寓编号", "公寓名称", "区域", "地址", "位置摘要",
+  "最低租金", "最高租金", "居室类型", "状态", "封面图文件名"
+];
+
+// 公寓对象 → CSV 行
+function apartmentToCsvRow(apt) {
+  return [
+    apt.apartment_code || "",
+    apt.name || "",
+    apt.district || "",
+    apt.address || "",
+    apt.location_meta || "",
+    apt.price_min || "",
+    apt.price_max || "",
+    apt.room_summary || "",
+    apt.status || "",
+    apt.image || ""
+  ];
+}
+
+// CSV 行 → 公寓对象（导入用）
+function csvRowToApartment(row) {
+  return {
+    apartment_code: row["公寓编号"] || "",
+    name: row["公寓名称"] || "",
+    district: row["区域"] || "",
+    address: row["地址"] || "",
+    location_meta: row["位置摘要"] || "",
+    price_min: parseInt(row["最低租金"]) || 0,
+    price_max: parseInt(row["最高租金"]) || 0,
+    room_summary: row["居室类型"] || "",
+    status: row["状态"] || "active",
+    image: row["封面图文件名"] || ""
+  };
+}
+
 Page({
   data: {
     type: "activities",
