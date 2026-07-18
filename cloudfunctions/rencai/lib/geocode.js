@@ -4,6 +4,11 @@
  */
 
 const axios = require("axios");
+const localEnv = require("../env");
+
+// 读取 key：优先用云函数环境变量，回退到本地 env.js
+const TENCENT_KEY = process.env.TENCENT_MAP_KEY || localEnv.TENCENT_MAP_KEY;
+const AMAP_KEY = process.env.AMAP_KEY || localEnv.AMAP_KEY;
 
 // 郑州经纬度范围（用于校验）
 const ZHENGZHOU_BOUNDS = {
@@ -31,7 +36,7 @@ function isInRange(lng, lat) {
  * 调用腾讯地图 Geocoder
  */
 async function geocodeByTencent(address) {
-  const key = process.env.TENCENT_MAP_KEY;
+  const key = TENCENT_KEY;
   if (!key) return null;
 
   try {
@@ -56,7 +61,7 @@ async function geocodeByTencent(address) {
  * 调用高德地图 Geocoder
  */
 async function geocodeByAmap(address) {
-  const key = process.env.AMAP_KEY;
+  const key = AMAP_KEY;
   if (!key) return null;
 
   try {
