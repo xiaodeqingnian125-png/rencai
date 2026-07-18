@@ -4,6 +4,7 @@ const {
   toggleFavoriteForUser,
   toggleCommentLikeForUser
 } = require("../../data/queries");
+const db = require("../../data/db");
 
 Page({
   data: {
@@ -15,6 +16,7 @@ Page({
     commentCount: "0/200",
     lastCommentAt: 0,
     loginModalVisible: false,
+    isAdmin: false,
     navTop: "",
     navHeight: "",
     navWidth: "",
@@ -59,10 +61,25 @@ Page({
     const { apartment, room } = getRoomById(this.aptId, this.roomId);
     const app = getApp();
     const isLoggedIn = app.globalData.isLoggedIn;
+    const isAdmin = !!app.globalData.isAdmin;
     this.setData({
       apartment,
       room,
+      isAdmin,
       favorite: isLoggedIn && room.favorite ? room.favorite : false
+    });
+  },
+
+  onImageChange(e) {
+    const newImage = e.detail.value;
+    db.saveAdminItem("room_types", {
+      id: this.roomId,
+      image: newImage
+    }).then(() => {
+      this.setData({ "room.image": newImage });
+      wx.showToast({ title: "图片已更新", icon: "success" });
+    }).catch(() => {
+      wx.showToast({ title: "更新失败", icon: "none" });
     });
   },
 
