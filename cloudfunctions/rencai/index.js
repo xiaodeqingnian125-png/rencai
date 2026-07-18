@@ -19,6 +19,13 @@ const db = cloud.database();
 const _ = db.command;
 
 const { migrateApartments, migrateRoomTypes } = require("./lib/migrate");
+const {
+  createImportTask,
+  previewImport,
+  confirmImport,
+  getImportTask,
+  listImportTasks
+} = require("./lib/import-task");
 
 // 管理员判定条件
 const ADMIN_NICKNAME = "晓邱";
@@ -229,6 +236,21 @@ async function importAdminItems(type, rows) {
     }
   }
   return { created, updated, ignored };
+}
+
+async function exportAdminItems(targetType, filters = {}) {
+  const col = db.collection(targetType);
+  let query = col;
+
+  if (filters.district) {
+    query = query.where({ district: filters.district });
+  }
+  if (filters.status) {
+    query = query.where({ status: filters.status });
+  }
+
+  const { data } = await query.get();
+  return { ok: true, items: data };
 }
 
 // ========== 用户侧写操作 ==========
@@ -498,6 +520,23 @@ exports.main = async (event, context) => {
         return await migrateApartments();
       case "migrateRoomTypes":
         return await migrateRoomTypes();
+      case "createImportTask":
+        return await createImportTask(
+          event.targetType,
+          event.fileName,
+          event.csvContent,
+          event.operator
+        );
+      case "previewImport":
+        return await previewImport(event.taskId);
+      case "confirmImport":
+        return await confirmImport(event.taskId);
+      case "getImportTask":
+        return await getImportTask(event.taskId);
+      case "listImportTasks":
+        return await listImportTasks(event.targetType, event.page, event.pageSize);
+      case "exportAdminItems":
+        return await exportAdminItems(event.targetType, event.filters || {});
       default:
         return { ok: false, error: "unknown_action", action };
     }
