@@ -22,6 +22,7 @@
     "pages/profile-edit/index",
     "pages/admin/index",
     "pages/admin/import-history/index",
+    "pages/admin/import-preview/index",
     "pages/profile/index"
   ],
   "window": {

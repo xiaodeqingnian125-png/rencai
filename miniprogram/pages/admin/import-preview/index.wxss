@@ -1,0 +1,158 @@
+.import-preview-page {
+  min-height: 100vh;
+  background: #fafaf6;
+  padding-bottom: 140rpx;
+}
+
+.task-summary {
+  background: #fffdf7;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #f0eae0;
+}
+
+.summary-row {
+  display: flex;
+  margin-bottom: 12rpx;
+}
+
+.summary-label {
+  width: 100rpx;
+  color: #8c7a68;
+  font-size: 26rpx;
+}
+
+.summary-value {
+  flex: 1;
+  color: #2d2318;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.summary-stats {
+  display: flex;
+  gap: 32rpx;
+  margin-top: 20rpx;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx;
+  border-radius: 12rpx;
+}
+
+.stat-item.success { background: #eef5ee; }
+.stat-item.fail { background: #fdecea; }
+
+.stat-num {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.stat-item.success .stat-num { color: #5b9a6f; }
+.stat-item.fail .stat-num { color: #e04a3a; }
+
+.stat-label {
+  font-size: 22rpx;
+  color: #8c7a68;
+}
+
+.error-section, .preview-section {
+  margin: 24rpx 32rpx;
+  background: #fffdf7;
+  border: 1rpx solid #f0eae0;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #2d2318;
+  margin-bottom: 16rpx;
+}
+
+.error-item {
+  display: flex;
+  gap: 16rpx;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f0eae0;
+  font-size: 26rpx;
+}
+
+.error-item:last-child { border-bottom: 0; }
+
+.error-row {
+  color: #e04a3a;
+  font-weight: 600;
+  min-width: 120rpx;
+}
+
+.error-reason {
+  flex: 1;
+  color: #5c4a38;
+}
+
+.preview-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f0eae0;
+  font-size: 26rpx;
+}
+
+.preview-item:last-child { border-bottom: 0; }
+
+.preview-name { color: #2d2318; }
+
+.preview-warning {
+  color: #d4a04a;
+  font-size: 22rpx;
+}
+
+.action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 16rpx;
+  padding: 20rpx 32rpx;
+  background: #fffdf7;
+  border-top: 1rpx solid #f0eae0;
+}
+
+.btn-cancel, .btn-confirm {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: 0;
+}
+
+.btn-cancel {
+  background: #f0eae0;
+  color: #8c7a68;
+}
+
+.btn-confirm {
+  background: #e8723c;
+  color: #fff;
+}
+
+.completed-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 30rpx;
+  background: #eef5ee;
+  color: #5b9a6f;
+  font-size: 28rpx;
+  font-weight: 600;
+}
