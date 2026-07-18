@@ -64,25 +64,45 @@
   border-color: #e8723c;
 }
 
-.phone-wechat-btn {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: left;
-  line-height: normal;
+/* 微信获取模式：input 视觉层 + 透明 button 覆盖层 */
+.phone-wechat-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* 只读 input 作为视觉层，样式完全继承 .field-input */
+.phone-wechat-input {
+  background: #fafaf6;
+}
+
+/* input 禁用态会变灰，这里覆盖回正常颜色 */
+.phone-wechat-input[disabled] {
   color: #2d2318;
+  opacity: 1;
 }
 
-.phone-wechat-btn::after {
-  border: 0;
-}
-
-.phone-wechat-btn:active {
-  border-color: #e8723c;
-}
-
-.phone-wechat-btn.is-placeholder {
+.phone-wechat-input.is-placeholder {
   color: #b5a99a;
+}
+
+/* 透明 button 覆盖在 input 之上，负责触发 getPhoneNumber */
+.phone-wechat-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  z-index: 2;
+}
+
+.phone-wechat-overlay::after {
+  border: 0;
+  content: none;
 }
 
 .phone-toggle {

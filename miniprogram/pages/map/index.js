@@ -14,7 +14,7 @@ function getDistrictShort(district) {
 }
 
 function getLocationShort(apartment) {
-  return `${apartment.location.split("与")[0]} · ${apartment.district}`;
+  return apartment.location;
 }
 
 Page({

@@ -25,13 +25,28 @@
       </view>
     </view>
 
-    <view class="location-bar">
-      <image src="/assets/icons/location.svg" mode="aspectFit"></image>
-      <view class="location-copy">
-        <view>{{apartment.location}}</view>
-        <text>{{apartment.locationMeta}}</text>
+    <view class="location-section">
+      <view class="favorite-chips">
+        <view class="fav-chip fav-chip-apt">
+          <image src="/assets/icons/heart-filled.svg" mode="aspectFit"></image>
+          <text><text class="fav-num">{{apartment.apartmentFavoriteCount}}</text>人收藏公寓</text>
+        </view>
+        <view class="fav-chip fav-chip-room">
+          <image src="/assets/icons/location-accent.svg" mode="aspectFit"></image>
+          <text><text class="fav-num">{{apartment.roomFavoriteCount}}</text>人收藏户型</text>
+        </view>
       </view>
-      <button class="location-map" bindtap="goMap">查看地图</button>
+      <view class="location-tap" bindtap="goMap" hover-class="location-tap-hover">
+        <image src="/assets/icons/location-accent.svg" mode="aspectFit"></image>
+        <view class="location-tap-text">
+          <view class="location-tap-addr">{{apartment.location}}</view>
+          <text class="location-tap-meta">{{apartment.locationMeta}}</text>
+        </view>
+        <view class="location-tap-arrow">
+          <text>地图</text>
+          <image src="/assets/icons/chevron-right.svg" mode="aspectFit"></image>
+        </view>
+      </view>
     </view>
 
     <view class="info-section">

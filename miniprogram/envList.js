@@ -13,8 +13,7 @@
  * 不配置环境 ID 时，小程序自动使用 mock 模式运行。
  */
 
-const envList = [];
-// const envList = ["your-cloud-env-id"];
+const envList = ["cloud1-d4gbiicxhcd67b748"];
 
 const isMac = false;
 

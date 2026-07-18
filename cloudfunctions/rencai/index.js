@@ -93,6 +93,30 @@ async function getUserByOpenid(openid) {
   return data.length > 0 ? data[0] : null;
 }
 
+// 通过 getPhoneNumber 回调的 code 换取真实手机号
+// 调用微信开放接口 phonenumber.getPhoneNumber
+async function getPhoneByCode(code) {
+  if (!code) {
+    return { ok: false, error: "missing_code" };
+  }
+  try {
+    const result = await cloud.openapi.phonenumber.getPhoneNumber({ code });
+    // wx-server-sdk 返回结构：{ errCode, errMsg, phoneInfo: { phoneNumber, purePhoneNumber, countryCode, watermark } }
+    if (result.errCode !== 0) {
+      console.error("[rencai] getPhoneByCode errCode:", result.errCode, result.errMsg);
+      return { ok: false, error: result.errMsg || "get_phone_failed" };
+    }
+    const phoneNumber = result.phoneInfo && result.phoneInfo.phoneNumber;
+    if (!phoneNumber) {
+      return { ok: false, error: "empty_phone" };
+    }
+    return { ok: true, phoneNumber };
+  } catch (err) {
+    console.error("[rencai] getPhoneByCode exception:", err);
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
 async function isUserAdmin(userId) {
   const { data } = await db.collection("users").where({ id: Number(userId) }).get();
   if (!data.length) return false;
@@ -434,6 +458,8 @@ exports.main = async (event, context) => {
         return await loginUser(params.openid || wxContext.OPENID, params.nickname, params.phone);
       case "getUserByOpenid":
         return await getUserByOpenid(params.openid || wxContext.OPENID);
+      case "getPhoneByCode":
+        return await getPhoneByCode(params.code);
       case "isUserAdmin":
         return await isUserAdmin(params.userId);
       case "getAdminDataset":

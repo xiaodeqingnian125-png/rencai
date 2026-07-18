@@ -23,23 +23,54 @@ Component({
     },
 
     // 微信手机号快速验证回调
-    // 真实环境：e.detail.code 发送到后端调用 phonenumber.getPhoneNumber 换取真实号码
-    // mock 环境：开发工具下 e.detail.phoneNumber 可能为空，自动切换手动输入
+    // 微信安全策略：e.detail.phoneNumber 不再直接返回，需用 e.detail.code
+    // 通过云函数 getPhoneByCode 调用 phonenumber.getPhoneNumber 换取真实号码
     onGetPhoneNumber(e) {
       if (e.detail.errMsg !== "getPhoneNumber:ok") {
         wx.showToast({ title: "未获取到手机号，请手动输入", icon: "none" });
         this.setData({ phoneInputMode: "manual" });
         return;
       }
-      // 真实环境/真机上 e.detail.phoneNumber 有值
-      if (e.detail.phoneNumber) {
-        this.setData({ phone: e.detail.phoneNumber });
-        wx.showToast({ title: "手机号已获取", icon: "none" });
+      const code = e.detail.code;
+      if (!code) {
+        wx.showToast({ title: "请手动输入手机号", icon: "none" });
+        this.setData({ phoneInputMode: "manual" });
         return;
       }
-      // 开发工具下可能无值，自动切换手动输入
-      wx.showToast({ title: "请手动输入手机号", icon: "none" });
-      this.setData({ phoneInputMode: "manual" });
+      // 云开发未初始化时（mock 模式）直接降级手动输入
+      const app = getApp();
+      if (!app.globalData.cloudReady) {
+        wx.showToast({ title: "请手动输入手机号", icon: "none" });
+        this.setData({ phoneInputMode: "manual" });
+        return;
+      }
+      // 通过云函数用 code 换取真实手机号
+      this.setData({ loading: true });
+      wx.cloud.callFunction({
+        name: "rencai",
+        data: { action: "getPhoneByCode", code },
+        success: (cfRes) => {
+          this.setData({ loading: false });
+          const result = cfRes.result;
+          if (result && result.ok && result.phoneNumber) {
+            this.setData({ phone: result.phoneNumber });
+            wx.showToast({ title: "手机号已获取", icon: "none" });
+            // 昵称已填则自动登录，否则等用户填完昵称手动点登录
+            if (this.data.nickname.trim()) {
+              this.onLogin();
+            }
+          } else {
+            wx.showToast({ title: "获取手机号失败，请手动输入", icon: "none" });
+            this.setData({ phoneInputMode: "manual" });
+          }
+        },
+        fail: (err) => {
+          console.error("[login] getPhoneByCode failed:", err);
+          this.setData({ loading: false });
+          wx.showToast({ title: "获取手机号失败，请手动输入", icon: "none" });
+          this.setData({ phoneInputMode: "manual" });
+        }
+      });
     },
 
     // 切换手机号输入模式

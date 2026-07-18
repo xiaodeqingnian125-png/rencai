@@ -18,17 +18,20 @@ App({
     this.restoreLogin();
   },
 
-  // 初始化云开发（仅当配置了云环境时生效）
+  // 初始化云开发
+  // 只要配置了云环境 ID 就初始化（用于手机号获取等云能力）
+  // 数据层模式（mock/cloud）由 db.js 的 DATA_MODE 单独控制
   initCloud() {
-    if (db.isCloudMode() && envList.envList.length > 0) {
+    if (envList.envList.length > 0) {
       wx.cloud.init({
         env: envList.envList[0],
         traceUser: true
       });
       this.globalData.cloudReady = true;
-      console.log("[cloud] 云开发已初始化，环境:", envList.envList[0]);
+      console.log("[cloud] 云开发已初始化，环境:", envList.envList[0],
+        db.isCloudMode() ? "(数据层: cloud)" : "(数据层: mock)");
     } else {
-      console.log("[cloud] 使用 mock 模式，未初始化云开发");
+      console.log("[cloud] 未配置云环境，使用 mock 模式");
     }
   },
 

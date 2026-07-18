@@ -75,6 +75,25 @@ function isFavorited(targetType, targetId, userId = CURRENT_USER_ID) {
   ));
 }
 
+function countFavorites(targetType, targetId) {
+  const numericTargetId = byNumericId(targetId);
+  return tables.favorites.filter((favorite) => (
+    favorite.target_type === targetType &&
+    favorite.target_id === numericTargetId
+  )).length;
+}
+
+function countRoomFavoritesByApartment(apartmentId) {
+  const numericApartmentId = byNumericId(apartmentId);
+  const roomIds = tables.roomTypes
+    .filter((room) => room.apartment_id === numericApartmentId)
+    .map((room) => room.id);
+  return tables.favorites.filter((favorite) => (
+    favorite.target_type === "room_type" &&
+    roomIds.includes(favorite.target_id)
+  )).length;
+}
+
 function commentToPage(comment) {
   const user = getUserById(comment.user_id);
   return {
@@ -140,6 +159,8 @@ function apartmentToDetail(apartment) {
     imageClass: apartment.image_class,
     image: apartment.image,
     favorite: isFavorited("apartment", apartment.id),
+    apartmentFavoriteCount: countFavorites("apartment", apartment.id),
+    roomFavoriteCount: countRoomFavoritesByApartment(apartment.id),
     rooms,
     costs: clone(apartment.costs),
     privateFacilities: clone(apartment.private_facilities),
@@ -331,12 +352,12 @@ function getFavoriteRecords(userId = CURRENT_USER_ID) {
       return {
         id: apartment.id,
         name: apartment.name,
-        detail: `${apartment.address.split("与")[0]} · ${apartment.district}`,
+        detail: apartment.address,
         price: `${priceText(apartment).split("-")[0]}起`,
         imageClass: index % 2 === 0 ? "ci-apart" : "ci-apart ci-apart-alt",
         image: apartment.image,
         typeLabel: "公寓",
-        tags: [apartment.district, apartment.location_meta.split(" · ")[0]]
+        tags: [apartment.district, apartment.location_meta]
       };
     })
     .filter(Boolean);

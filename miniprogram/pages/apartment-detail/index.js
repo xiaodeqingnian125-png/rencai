@@ -108,7 +108,11 @@ Page({
     const userId = app.globalData.userId;
     const result = toggleFavoriteForUser("apartment", this.data.apartment.id, userId);
     if (!result.ok) return;
-    this.setData({ favorite: result.favorite });
+    const apartment = getApartmentById(this.apartmentId);
+    this.setData({
+      favorite: result.favorite,
+      "apartment.apartmentFavoriteCount": apartment.apartmentFavoriteCount
+    });
     wx.showToast({
       title: result.favorite ? "已收藏" : "已取消收藏",
       icon: "none"
