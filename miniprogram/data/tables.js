@@ -39,6 +39,7 @@ const users = [
 const apartments = [
   {
     id: 1,
+    apartment_code: "A001",
     name: "郑东人才公寓",
     district: "郑东新区",
     price_min: 1200,
@@ -60,6 +61,7 @@ const apartments = [
   },
   {
     id: 2,
+    apartment_code: "A002",
     name: "高新人才家园",
     district: "高新区",
     price_min: 800,
@@ -81,6 +83,7 @@ const apartments = [
   },
   {
     id: 3,
+    apartment_code: "A003",
     name: "经开青年公寓",
     district: "经开区",
     price_min: 900,
@@ -102,6 +105,7 @@ const apartments = [
   },
   {
     id: 4,
+    apartment_code: "A004",
     name: "港区人才社区",
     district: "航空港区",
     price_min: 700,
@@ -123,6 +127,7 @@ const apartments = [
   },
   {
     id: 5,
+    apartment_code: "A005",
     name: "二七人才公寓",
     district: "二七区",
     price_min: 1000,
@@ -144,6 +149,7 @@ const apartments = [
   },
   {
     id: 6,
+    apartment_code: "A006",
     name: "中原青年社区",
     district: "中原区",
     price_min: 850,
@@ -172,20 +178,20 @@ const roomImageMap = {
 };
 
 const roomTypes = [
-  { id: 101, apartment_id: 1, legacy_room_id: 1, name: "精致一居室", area: "35㎡", orient: "南向", layout: "1室1卫", floor: "3层 / 总8层", price: 1200, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "独立一居室户型，玄关入户，动静分区明确。客厅连接景观阳台，通风采光俱佳。卧室带飘窗，可俯瞰社区花园。精装修交付，拎包即可入住。" },
-  { id: 102, apartment_id: 1, legacy_room_id: 2, name: "舒适两居室", area: "55㎡", orient: "东南向", layout: "2室1厅1卫", floor: "5层 / 总8层", price: 1500, image_class: "ri-2", image: roomImageMap["ri-2"], status: "active", desc: "两居室适合合租或小家庭入住，客餐厅连通，主卧采光稳定，次卧可作为书房或室友房。厨房独立，日常做饭和收纳都更从容。" },
-  { id: 103, apartment_id: 1, legacy_room_id: 3, name: "阳光大单间", area: "28㎡", orient: "南向", layout: "开间", floor: "2层 / 总8层", price: 1000, image_class: "ri-3", image: roomImageMap["ri-3"], status: "active", desc: "开间户型紧凑高效，睡眠区、书桌区和简餐区集中布置。适合预算敏感、通勤优先的年轻住户，南向窗保证基础采光。" },
-  { id: 201, apartment_id: 2, legacy_room_id: 1, name: "高新阳光单间", area: "29㎡", orient: "南向", layout: "开间", floor: "4层 / 总10层", price: 800, image_class: "ri-3", image: roomImageMap["ri-3"], status: "active", desc: "面向高新区通勤人群的经济单间，空间紧凑但采光直接。床、书桌、衣柜沿墙排布，适合刚入职或短通勤独居。" },
-  { id: 202, apartment_id: 2, legacy_room_id: 2, name: "高新舒适一居", area: "36㎡", orient: "东南向", layout: "1室1卫", floor: "6层 / 总10层", price: 1000, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "独立一居室，卧室和生活区分区更清楚。东南向采光温和，适合需要长期稳定居住和居家办公的年轻住户。" },
-  { id: 203, apartment_id: 2, legacy_room_id: 3, name: "青年独立一居", area: "42㎡", orient: "南向", layout: "1室1厅1卫", floor: "8层 / 总10层", price: 1200, image_class: "ri-2", image: roomImageMap["ri-2"], status: "active", desc: "带独立客厅的一居室，适合希望保留会客、运动或学习空间的住户。南向主采光面，家具布置余量更大。" },
-  { id: 301, apartment_id: 3, legacy_room_id: 1, name: "经开标准一居", area: "32㎡", orient: "南向", layout: "1室1卫", floor: "3层 / 总9层", price: 900, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "标准一居室，动线直接，适合经开区产业园通勤。独立卫浴和基础厨房设备齐全，入住门槛低。" },
-  { id: 302, apartment_id: 3, legacy_room_id: 2, name: "经开舒适两居", area: "58㎡", orient: "东南向", layout: "2室1厅1卫", floor: "6层 / 总9层", price: 1400, image_class: "ri-2", image: roomImageMap["ri-2"], status: "active", desc: "两居室面向合租场景，客厅和双卧分隔明确。东南向公共区采光更好，适合两位同事或朋友合租。" },
-  { id: 401, apartment_id: 4, legacy_room_id: 1, name: "港区经济单间", area: "26㎡", orient: "南向", layout: "开间", floor: "2层 / 总8层", price: 700, image_class: "ri-3", image: roomImageMap["ri-3"], status: "active", desc: "预算友好的紧凑单间，生活设施集中布置，适合航空港就业圈短通勤独居。" },
-  { id: 402, apartment_id: 4, legacy_room_id: 2, name: "港区独立一居", area: "34㎡", orient: "东向", layout: "1室1卫", floor: "5层 / 总8层", price: 1000, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "独立一居室，早间采光舒适，卧室与洗浴区互不干扰，适合稳定工作节奏的住户。" },
-  { id: 501, apartment_id: 5, legacy_room_id: 1, name: "二七舒适两居", area: "56㎡", orient: "南向", layout: "2室1厅1卫", floor: "4层 / 总11层", price: 1000, image_class: "ri-2", image: roomImageMap["ri-2"], status: "active", desc: "两居室总价友好，适合合租。南向卧室采光稳定，公共区尺度适中，兼顾生活成本和居住舒适度。" },
-  { id: 502, apartment_id: 5, legacy_room_id: 2, name: "二七通透三居", area: "78㎡", orient: "南北通透", layout: "3室1厅1卫", floor: "7层 / 总11层", price: 1500, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "三居室适合多人合租，南北通透，公共客厅可承载聚餐、学习和共享收纳需求。" },
-  { id: 601, apartment_id: 6, legacy_room_id: 1, name: "中原温馨一居", area: "31㎡", orient: "南向", layout: "1室1卫", floor: "3层 / 总9层", price: 850, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "老城生活圈的一居室，周边配套成熟，适合重视生活便利和通勤稳定的住户。" },
-  { id: 602, apartment_id: 6, legacy_room_id: 2, name: "中原合租两居", area: "54㎡", orient: "东南向", layout: "2室1厅1卫", floor: "6层 / 总9层", price: 1300, image_class: "ri-2", image: roomImageMap["ri-2"], status: "active", desc: "两居室适合朋友合租，卧室尺度接近，公共区域紧凑实用。东南向采光适合日常居家。" }
+  { id: 101, apartment_id: 1, apartment_code: "A001", legacy_room_id: 1, name: "精致一居室", area: "35㎡", orient: "南向", layout: "1室1卫", floor: "3层 / 总8层", price: 1200, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "独立一居室户型，玄关入户，动静分区明确。客厅连接景观阳台，通风采光俱佳。卧室带飘窗，可俯瞰社区花园。精装修交付，拎包即可入住。" },
+  { id: 102, apartment_id: 1, apartment_code: "A001", legacy_room_id: 2, name: "舒适两居室", area: "55㎡", orient: "东南向", layout: "2室1厅1卫", floor: "5层 / 总8层", price: 1500, image_class: "ri-2", image: roomImageMap["ri-2"], status: "active", desc: "两居室适合合租或小家庭入住，客餐厅连通，主卧采光稳定，次卧可作为书房或室友房。厨房独立，日常做饭和收纳都更从容。" },
+  { id: 103, apartment_id: 1, apartment_code: "A001", legacy_room_id: 3, name: "阳光大单间", area: "28㎡", orient: "南向", layout: "开间", floor: "2层 / 总8层", price: 1000, image_class: "ri-3", image: roomImageMap["ri-3"], status: "active", desc: "开间户型紧凑高效，睡眠区、书桌区和简餐区集中布置。适合预算敏感、通勤优先的年轻住户，南向窗保证基础采光。" },
+  { id: 201, apartment_id: 2, apartment_code: "A002", legacy_room_id: 1, name: "高新阳光单间", area: "29㎡", orient: "南向", layout: "开间", floor: "4层 / 总10层", price: 800, image_class: "ri-3", image: roomImageMap["ri-3"], status: "active", desc: "面向高新区通勤人群的经济单间，空间紧凑但采光直接。床、书桌、衣柜沿墙排布，适合刚入职或短通勤独居。" },
+  { id: 202, apartment_id: 2, apartment_code: "A002", legacy_room_id: 2, name: "高新舒适一居", area: "36㎡", orient: "东南向", layout: "1室1卫", floor: "6层 / 总10层", price: 1000, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "独立一居室，卧室和生活区分区更清楚。东南向采光温和，适合需要长期稳定居住和居家办公的年轻住户。" },
+  { id: 203, apartment_id: 2, apartment_code: "A002", legacy_room_id: 3, name: "青年独立一居", area: "42㎡", orient: "南向", layout: "1室1厅1卫", floor: "8层 / 总10层", price: 1200, image_class: "ri-2", image: roomImageMap["ri-2"], status: "active", desc: "带独立客厅的一居室，适合希望保留会客、运动或学习空间的住户。南向主采光面，家具布置余量更大。" },
+  { id: 301, apartment_id: 3, apartment_code: "A003", legacy_room_id: 1, name: "经开标准一居", area: "32㎡", orient: "南向", layout: "1室1卫", floor: "3层 / 总9层", price: 900, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "标准一居室，动线直接，适合经开区产业园通勤。独立卫浴和基础厨房设备齐全，入住门槛低。" },
+  { id: 302, apartment_id: 3, apartment_code: "A003", legacy_room_id: 2, name: "经开舒适两居", area: "58㎡", orient: "东南向", layout: "2室1厅1卫", floor: "6层 / 总9层", price: 1400, image_class: "ri-2", image: roomImageMap["ri-2"], status: "active", desc: "两居室面向合租场景，客厅和双卧分隔明确。东南向公共区采光更好，适合两位同事或朋友合租。" },
+  { id: 401, apartment_id: 4, apartment_code: "A004", legacy_room_id: 1, name: "港区经济单间", area: "26㎡", orient: "南向", layout: "开间", floor: "2层 / 总8层", price: 700, image_class: "ri-3", image: roomImageMap["ri-3"], status: "active", desc: "预算友好的紧凑单间，生活设施集中布置，适合航空港就业圈短通勤独居。" },
+  { id: 402, apartment_id: 4, apartment_code: "A004", legacy_room_id: 2, name: "港区独立一居", area: "34㎡", orient: "东向", layout: "1室1卫", floor: "5层 / 总8层", price: 1000, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "独立一居室，早间采光舒适，卧室与洗浴区互不干扰，适合稳定工作节奏的住户。" },
+  { id: 501, apartment_id: 5, apartment_code: "A005", legacy_room_id: 1, name: "二七舒适两居", area: "56㎡", orient: "南向", layout: "2室1厅1卫", floor: "4层 / 总11层", price: 1000, image_class: "ri-2", image: roomImageMap["ri-2"], status: "active", desc: "两居室总价友好，适合合租。南向卧室采光稳定，公共区尺度适中，兼顾生活成本和居住舒适度。" },
+  { id: 502, apartment_id: 5, apartment_code: "A005", legacy_room_id: 2, name: "二七通透三居", area: "78㎡", orient: "南北通透", layout: "3室1厅1卫", floor: "7层 / 总11层", price: 1500, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "三居室适合多人合租，南北通透，公共客厅可承载聚餐、学习和共享收纳需求。" },
+  { id: 601, apartment_id: 6, apartment_code: "A006", legacy_room_id: 1, name: "中原温馨一居", area: "31㎡", orient: "南向", layout: "1室1卫", floor: "3层 / 总9层", price: 850, image_class: "ri-1", image: roomImageMap["ri-1"], status: "active", desc: "老城生活圈的一居室，周边配套成熟，适合重视生活便利和通勤稳定的住户。" },
+  { id: 602, apartment_id: 6, apartment_code: "A006", legacy_room_id: 2, name: "中原合租两居", area: "54㎡", orient: "东南向", layout: "2室1厅1卫", floor: "6层 / 总9层", price: 1300, image_class: "ri-2", image: roomImageMap["ri-2"], status: "active", desc: "两居室适合朋友合租，卧室尺度接近，公共区域紧凑实用。东南向采光适合日常居家。" }
 ];
 
 const activities = [
