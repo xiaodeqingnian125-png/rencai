@@ -586,6 +586,72 @@ function csvRowToApartment(row) {
   };
 }
 
+// ========== 户型专用 CSV 字段映射（任务 8） ==========
+// apartment_code 作为外键关联公寓（与任务 7 公寓 CSV 的 apartment_code 对齐）
+// apartment_name 仅作人工阅读便利，导入时以 apartment_code 为准
+
+// 户型 CSV 表头（10列，apartment_code + apartment_name 替代 apartment_id）
+const ROOM_CSV_HEADERS = [
+  "户型名称", "公寓编号", "所属公寓名称", "面积", "朝向",
+  "居室", "楼层", "租金", "状态", "封面图文件名"
+];
+
+// 户型对象 → CSV 行
+function roomToCsvRow(room, apartmentName) {
+  return [
+    room.name || "",
+    room.apartment_code || "",
+    apartmentName || "",
+    room.area || "",
+    room.orient || "",
+    room.layout || "",
+    room.floor || "",
+    room.price || "",
+    room.status || "",
+    room.image || ""
+  ];
+}
+
+// CSV 行 → 户型对象（导入用）
+function csvRowToRoom(row) {
+  return {
+    name: row["户型名称"] || "",
+    apartment_code: row["公寓编号"] || "",
+    apartment_name: row["所属公寓名称"] || "",
+    area: row["面积"] || "",
+    orient: row["朝向"] || "",
+    layout: row["居室"] || "",
+    floor: row["楼层"] || "",
+    price: parseInt(row["租金"]) || 0,
+    status: row["状态"] || "active",
+    image: row["封面图文件名"] || ""
+  };
+}
+
+// 由预构建的表头和行数组生成 CSV 文本
+// 与 config 驱动的 toCsvText 互补，供专用映射函数（apartment/room）使用
+function toCsvTextFromRows(headers, rows) {
+  const header = headers.map((label) => csvCell(label)).join(",");
+  const lines = rows.map((row) => row.map((cell) => csvCell(cell)).join(","));
+  return `\ufeff${[header, ...lines].join("\n")}`;
+}
+
+// 导出户型 CSV：查询公寓列表以获取 apartment_name（便于人工阅读）
+// apartment_code 为外键，apartment_name 仅作展示
+// 调用方传入 rooms/apartments 原始数据（含 apartment_code 字段），接入见任务 18-19
+function exportRoomCsv(rooms, apartments) {
+  const apartmentMap = {};
+  (apartments || []).forEach((apt) => {
+    if (apt.apartment_code) {
+      apartmentMap[apt.apartment_code] = apt.name || "";
+    }
+  });
+  const rows = (rooms || []).map((room) =>
+    roomToCsvRow(room, apartmentMap[room.apartment_code])
+  );
+  return toCsvTextFromRows(ROOM_CSV_HEADERS, rows);
+}
+
 Page({
   data: {
     type: "activities",
