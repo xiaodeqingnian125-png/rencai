@@ -8,6 +8,10 @@ const {
   importAdminRuntimeItems
 } = require("../../data/queries");
 
+// 任务 13 新增的异步接口（createImportTask / exportAdminItems 等）
+// 云模式走云函数，mock 模式回退到 queries 本地数据
+const db = require("../../data/db");
+
 const configs = {
   apartments: {
     title: "公寓管理",
@@ -670,7 +674,13 @@ Page({
     importDraft: "",
     importError: "",
     importHint: "",
-    nextId: 100
+    nextId: 100,
+    // 任务 19：按条件导出筛选条件（picker 索引）
+    exportDistrictIndex: 0,
+    exportStatusIndex: 0,
+    // picker 选项列表（索引 0 为"全部"，不参与筛选）
+    districtOptions: ["全部区域", "郑东新区", "高新区", "经开区", "航空港区", "二七区", "中原区"],
+    statusOptions: ["全部状态", "active", "hidden"]
   },
 
   onLoad(options) {
@@ -892,6 +902,13 @@ Page({
   },
 
   openImport() {
+    // 公寓和户型接入任务制导入流程（任务 19）
+    // admin 页内部 type 为 "apartments"/"rooms"，导入任务 targetType 对应 "apartments"/"room_types"
+    if (this.data.isApartment || this.data.isRoom) {
+      const taskType = this.data.type === "rooms" ? "room_types" : this.data.type;
+      this.importCsvFile(taskType);
+      return;
+    }
     const importHint = tableColumns(this.data.config).map((column) => column.label).join(" / ");
     if (!wx.chooseMessageFile) {
       this.openPasteImport(importHint);
@@ -1017,5 +1034,174 @@ Page({
 
   confirmImport() {
     this.importRowsFromText(this.data.importDraft);
+  },
+
+  // ========== 任务 19：导入流程接入 + 按条件导出 ==========
+
+  // 跳转导入历史页（任务 18 WXML 中 apartments/rooms 均绑定此方法）
+  // data-type 由 WXML 传入：apartments 或 room_types
+  goImportHistory(e) {
+    const type = e.currentTarget.dataset.type;
+    wx.navigateTo({
+      url: `/pages/admin/import-history/index?type=${type}`
+    });
+  },
+
+  // 按条件导出（apartments 专属，rooms 暂不触发）
+  // 调用 db.exportAdminItems 获取过滤后数据，再生成 CSV
+  async exportFiltered(e) {
+    const type = e.currentTarget.dataset.type;
+    const filters = {};
+    if (this.data.exportDistrictIndex > 0) {
+      filters.district = this.data.districtOptions[this.data.exportDistrictIndex];
+    }
+    if (this.data.exportStatusIndex > 0) {
+      filters.status = this.data.statusOptions[this.data.exportStatusIndex];
+    }
+
+    wx.showLoading({ title: "导出中" });
+    try {
+      const res = await db.exportAdminItems(type, filters);
+      // 兼容 mock 模式（返回数组）与云模式（返回 {ok, items}）
+      const items = Array.isArray(res) ? res : (res && res.ok ? res.items : []);
+      if (items.length === 0 && res && !res.ok) {
+        wx.showToast({ title: res.error || "导出失败", icon: "none" });
+        return;
+      }
+      const csvText = this.generateCsvFromItems(type, items);
+      this.downloadCsv(type, csvText);
+    } catch (err) {
+      wx.showToast({ title: "导出失败", icon: "none" });
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  // 根据类型生成 CSV 文本
+  // apartments 使用 APARTMENT_CSV_HEADERS，rooms 使用 ROOM_CSV_HEADERS
+  generateCsvFromItems(type, items) {
+    if (type === "apartments") {
+      const headers = APARTMENT_CSV_HEADERS;
+      const rows = items.map((apt) => apartmentToCsvRow(apt));
+      return toCsvTextFromRows(headers, rows);
+    }
+    // 户型需查公寓名称（云模式返回的 room 对象可能带 apartment_name）
+    const apartmentMap = {};
+    items.forEach((r) => {
+      if (r.apartment_code && r.apartment_name) {
+        apartmentMap[r.apartment_code] = r.apartment_name;
+      }
+    });
+    const headers = ROOM_CSV_HEADERS;
+    const rows = items.map((room) => roomToCsvRow(room, apartmentMap[room.apartment_code]));
+    return toCsvTextFromRows(headers, rows);
+  },
+
+  // 下载 CSV：优先调用 wx.shareFileMessage 发送给好友/文件助手
+  // 失败兜底复制到剪贴板
+  downloadCsv(type, csvText) {
+    const fileName = type === "apartments" ? "公寓导出.csv" : "户型导出.csv";
+    const fs = wx.getFileSystemManager && wx.getFileSystemManager();
+    if (!fs || !wx.env || !wx.env.USER_DATA_PATH) {
+      wx.setClipboardData({
+        data: csvText,
+        success: () => wx.showToast({ title: "已复制到剪贴板", icon: "none" })
+      });
+      return;
+    }
+    const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+    try {
+      fs.writeFileSync(filePath, csvText, "utf8");
+    } catch (err) {
+      wx.setClipboardData({
+        data: csvText,
+        success: () => wx.showToast({ title: "已复制到剪贴板", icon: "none" })
+      });
+      return;
+    }
+    if (wx.shareFileMessage) {
+      wx.shareFileMessage({
+        filePath,
+        success() {
+          wx.showToast({ title: "已生成文件", icon: "success" });
+        },
+        fail() {
+          wx.setClipboardData({
+            data: csvText,
+            success: () => wx.showToast({ title: "已复制到剪贴板", icon: "none" })
+          });
+        }
+      });
+    } else {
+      wx.setClipboardData({
+        data: csvText,
+        success: () => wx.showToast({ title: "已复制到剪贴板", icon: "none" })
+      });
+    }
+  },
+
+  // picker 变更：区域
+  onDistrictChange(e) {
+    this.setData({ exportDistrictIndex: e.detail.value });
+  },
+
+  // picker 变更：状态
+  onStatusChange(e) {
+    this.setData({ exportStatusIndex: e.detail.value });
+  },
+
+  // 任务制导入：选择 CSV 文件 → 创建导入任务 → 跳转预览页
+  // type 为导入任务的 targetType（apartments / room_types）
+  async importCsvFile(type) {
+    if (!wx.chooseMessageFile) {
+      wx.showToast({ title: "当前版本不支持文件导入", icon: "none" });
+      return;
+    }
+    wx.chooseMessageFile({
+      count: 1,
+      type: "file",
+      extension: ["csv", "txt"],
+      success: async (res) => {
+        const file = res.tempFiles && res.tempFiles[0];
+        if (!file) return;
+        const filePath = file.path;
+        const fileName = file.name || "";
+        const fs = wx.getFileSystemManager && wx.getFileSystemManager();
+        if (!fs) {
+          wx.showToast({ title: "无法读取文件", icon: "none" });
+          return;
+        }
+        let csvContent = "";
+        try {
+          csvContent = fs.readFileSync(filePath, "utf-8");
+        } catch (err) {
+          wx.showToast({ title: "读取文件失败", icon: "none" });
+          return;
+        }
+
+        wx.showLoading({ title: "创建任务中" });
+        try {
+          const app = getApp();
+          const operator = (app.globalData && app.globalData.userId) || "";
+          const createRes = await db.createImportTask(type, fileName, csvContent, operator);
+          if (createRes && createRes.ok) {
+            wx.hideLoading();
+            wx.navigateTo({
+              url: `/pages/admin/import-preview/index?taskId=${createRes.taskId}`
+            });
+          } else {
+            wx.hideLoading();
+            wx.showToast({ title: (createRes && createRes.error) || "创建失败", icon: "none" });
+          }
+        } catch (err) {
+          wx.hideLoading();
+          wx.showToast({ title: "创建失败", icon: "none" });
+        }
+      },
+      fail: (error) => {
+        if (error && String(error.errMsg || "").indexOf("cancel") >= 0) return;
+        wx.showToast({ title: "选择文件失败", icon: "none" });
+      }
+    });
   }
 });
