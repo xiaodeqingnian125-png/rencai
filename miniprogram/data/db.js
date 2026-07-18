@@ -9,7 +9,7 @@
  * 切换模式只需修改 DATA_MODE 常量，无需改动业务代码。
  */
 
-const DATA_MODE = "mock"; // "mock" | "cloud"
+const DATA_MODE = "cloud"; // "mock" | "cloud"
 
 // mock-store 同步接口（本地内存）
 const store = require("./mock-store");
