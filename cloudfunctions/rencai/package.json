@@ -4,6 +4,7 @@
   "description": "晓得青年核心云函数 — 用户登录、管理员CRUD、用户侧写操作",
   "main": "index.js",
   "dependencies": {
-    "wx-server-sdk": "latest"
+    "wx-server-sdk": "latest",
+    "axios": "^1.6.0"
   }
 }
