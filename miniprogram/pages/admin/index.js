@@ -450,9 +450,14 @@ function toCsvText(items, config) {
   const columns = tableColumns(config);
   const header = columns.map((column) => csvCell(column.label)).join(",");
   const rows = items.map((item) => columns.map((column) => csvCell(tableCellValue(item, column, config))).join(","));
+  // 拼接 BOM 头，确保 Excel 打开不乱码
   return `\ufeff${[header, ...rows].join("\n")}`;
 }
 
+/**
+ * 去除 BOM 头
+ * UTF-8 BOM（\ufeff）常见于 Excel/WPS 导出的 CSV，导入时需先剥离再解析
+ */
 function stripBom(text) {
   return String(text || "").replace(/^\ufeff/, "");
 }
@@ -470,6 +475,7 @@ function parseDelimitedRows(text, delimiter) {
   let row = [];
   let cell = "";
   let quoted = false;
+  // 去除 BOM 头，避免首行首单元格多出不可见字符
   const source = stripBom(text);
   for (let i = 0; i < source.length; i += 1) {
     const char = source.charAt(i);
