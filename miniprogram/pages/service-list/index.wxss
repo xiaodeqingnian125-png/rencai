@@ -58,13 +58,21 @@
 }
 
 .service-cover {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+  overflow: hidden;
   width: 132rpx;
   height: 132rpx;
   border-radius: 18rpx;
   flex-shrink: 0;
+}
+
+.service-cover-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .service-cover image {
@@ -117,7 +125,7 @@
   border-radius: 999rpx;
   background: #fef8ef;
   color: #8c7a68;
-  font-size: 22rpx;
+  font-size: 24rpx;
   line-height: 34rpx;
 }
 
@@ -151,6 +159,6 @@
 .service-price text {
   margin-left: 2rpx;
   color: #8c7a68;
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 400;
 }

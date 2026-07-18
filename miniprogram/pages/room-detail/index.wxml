@@ -1,14 +1,18 @@
 <view wx:if="{{apartment && room}}" class="room-page">
   <scroll-view class="gallery" scroll-x enhanced show-scrollbar="{{false}}">
-    <view class="gallery-img gi-1"></view>
-    <view class="gallery-img gi-2"></view>
-    <view class="gallery-img gi-3"></view>
+    <image wx:if="{{room.image}}" class="gallery-img" src="{{room.image}}" mode="aspectFill"></image>
+    <view wx:else class="gallery-img grad-cover grad-{{(room.id % 6) + 1}}"></view>
+    <image wx:if="{{apartment.image}}" class="gallery-img" src="{{apartment.image}}" mode="aspectFill"></image>
+    <view wx:else class="gallery-img grad-cover grad-{{(apartment.id % 6) + 1}}"></view>
+    <view class="gallery-img grad-cover grad-{{((room.id + 3) % 6) + 1}}"></view>
   </scroll-view>
   <view class="gallery-counter">1 / 3</view>
-  <view class="gallery-nav">
-    <button class="nav-btn" bindtap="goBack">‹</button>
-    <button class="nav-btn fav {{favorite ? 'on' : ''}}" bindtap="toggleFavorite">♥</button>
-  </view>
+  <button
+    class="nav-btn back-btn"
+    style="top: {{navTop}}; width: {{navWidth}}; height: {{navHeight}}; line-height: {{navHeight}}; border-radius: {{navRadius}};"
+    bindtap="goBack">
+    <image src="/assets/icons/nav-back-dark.svg" mode="aspectFit" style="width: {{navIconSize}}; height: {{navIconSize}};"></image>
+  </button>
 
   <scroll-view class="room-scroll" scroll-y>
     <view class="room-header">
@@ -88,10 +92,13 @@
 
   <view class="bottom-bar">
     <button class="share-btn" open-type="share">分享给朋友</button>
-    <button class="bottom-fav {{favorite ? 'on' : ''}}" bindtap="toggleFavorite">♥</button>
+    <button class="bottom-fav {{favorite ? 'on' : ''}}" bindtap="toggleFavorite">
+      <image wx:if="{{favorite}}" src="/assets/icons/heart-filled.svg" mode="aspectFit"></image>
+      <image wx:else src="/assets/icons/heart-outline-dark.svg" mode="aspectFit"></image>
+    </button>
   </view>
 
-  <view wx:if="{{commentSheetOpen}}" class="sheet-mask" bindtap="closeCommentSheet"></view>
+  <view wx:if="{{commentSheetOpen}}" class="sheet-mask" catchtap="closeCommentSheet"></view>
   <view wx:if="{{commentSheetOpen}}" class="comment-sheet">
     <view class="sheet-grabber"></view>
     <view class="sheet-title">写户型评价</view>
@@ -113,3 +120,9 @@
     </view>
   </view>
 </view>
+
+<login-modal
+  visible="{{loginModalVisible}}"
+  bind:loginsuccess="onLoginSuccess"
+  bind:cancel="onLoginCancel"
+></login-modal>

@@ -8,6 +8,10 @@
         </view>
         <view class="apartment-add" bindtap="openForm">{{config.addText}}</view>
       </view>
+      <view class="bulk-bar">
+        <view class="bulk-btn" bindtap="exportData">批量导出</view>
+        <view class="bulk-btn primary" bindtap="openImport">批量导入</view>
+      </view>
 
       <scroll-view scroll-y class="apartment-scroll">
         <view wx:if="{{visibleItems.length}}" class="apartment-list">
@@ -51,6 +55,10 @@
 
       <view class="room-toolbar">
         <view class="room-add" bindtap="openForm">{{config.addText}}</view>
+      </view>
+      <view class="bulk-bar room-bulk-bar">
+        <view class="bulk-btn" bindtap="exportData">批量导出</view>
+        <view class="bulk-btn primary" bindtap="openImport">批量导入</view>
       </view>
 
       <scroll-view scroll-y class="room-scroll">
@@ -154,7 +162,7 @@
     </view>
   </block>
 
-  <view wx:if="{{formOpen}}" class="modal-mask" bindtap="closeForm"></view>
+  <view wx:if="{{formOpen}}" class="modal-mask" catchtap="closeForm"></view>
   <view wx:if="{{formOpen}}" class="modal-card">
     <view class="modal-head">
       <view class="modal-title">{{editingId ? config.editTitle : config.addTitle}}</view>
@@ -178,6 +186,15 @@
           bindinput="handleFieldInput"
         />
       </view>
+      <view wx:if="{{config.supportImage}}" class="modal-field">
+        <text>封面图</text>
+        <image-uploader
+          value="{{form.image}}"
+          label="上传封面图"
+          cloud-path="{{config.cloudPath}}"
+          bind:change="onImageChange"
+        ></image-uploader>
+      </view>
       <view class="modal-field">
         <text>状态</text>
         <view class="status-options">
@@ -195,6 +212,26 @@
       <button class="modal-btn cancel" bindtap="closeForm">取消</button>
       <button wx:if="{{editingId}}" class="modal-btn delete" data-id="{{editingId}}" bindtap="deleteItem">删除</button>
       <button class="modal-btn confirm" bindtap="saveItem">保存</button>
+    </view>
+  </view>
+
+  <view wx:if="{{importOpen}}" class="modal-mask" catchtap="closeImport"></view>
+  <view wx:if="{{importOpen}}" class="import-card">
+    <view class="modal-head">
+      <view class="modal-title">{{config.title}}批量导入</view>
+      <view class="modal-subtitle">从 Excel / WPS / 飞书表格复制后粘贴，按 ID 合并新增或更新</view>
+    </view>
+    <view class="import-hint">列顺序：{{importHint}}</view>
+    <textarea
+      class="import-textarea"
+      value="{{importDraft}}"
+      placeholder="粘贴表格内容，第一行需要包含表头"
+      bindinput="handleImportInput"
+    ></textarea>
+    <view wx:if="{{importError}}" class="import-error">{{importError}}</view>
+    <view class="modal-actions">
+      <button class="modal-btn cancel" bindtap="closeImport">取消</button>
+      <button class="modal-btn confirm" bindtap="confirmImport">导入</button>
     </view>
   </view>
 </view>

@@ -46,10 +46,11 @@
 
     <view class="save-section">
       <button class="save-btn" bindtap="saveProfile">保存</button>
+      <button class="exit-btn" bindtap="exitApp">退出小程序</button>
     </view>
   </scroll-view>
 
-  <view wx:if="{{modalOpen}}" class="modal-mask" bindtap="closeModal"></view>
+  <view wx:if="{{modalOpen}}" class="modal-mask" catchtap="closeModal"></view>
   <view wx:if="{{modalOpen}}" class="modal-sheet" catchtap="noop">
     <view class="modal-title">{{modalTitle}}</view>
     <input
@@ -68,7 +69,7 @@
     </view>
   </view>
 
-  <view wx:if="{{pickerOpen}}" class="picker-mask" bindtap="closePicker"></view>
+  <view wx:if="{{pickerOpen}}" class="picker-mask" catchtap="closePicker"></view>
   <view wx:if="{{pickerOpen}}" class="picker-sheet" catchtap="noop">
     <view class="picker-head">
       <text>选择公寓</text>

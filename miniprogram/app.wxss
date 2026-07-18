@@ -14,6 +14,21 @@ textarea {
   box-sizing: border-box;
 }
 
+/* ========== 全局渐变封面（替代图片资源，减小包体积） ========== */
+.grad-cover {
+  width: 100%;
+  height: 100%;
+}
+
+.grad-1 { background: linear-gradient(135deg, #f5e6d3 0%, #e8c9a0 45%, #d4a574 100%); }
+.grad-2 { background: linear-gradient(135deg, #e8d5c4 0%, #c9b08a 45%, #a08866 100%); }
+.grad-3 { background: linear-gradient(135deg, #f0e0d0 0%, #dcb8a0 45%, #c09678 100%); }
+.grad-4 { background: linear-gradient(135deg, #e5d0c0 0%, #c8a890 45%, #a08068 100%); }
+.grad-5 { background: linear-gradient(135deg, #f2e2d0 0%, #ddbfa0 45%, #c0a078 100%); }
+.grad-6 { background: linear-gradient(135deg, #e0d0c8 0%, #b89888 45%, #907060 100%); }
+.grad-7 { background: linear-gradient(135deg, #f0e8f0 0%, #ddd0e0 42%, #cbc0d0 100%); }
+.grad-8 { background: linear-gradient(135deg, #dce8e0 0%, #b0c8b8 45%, #88a898 100%); }
+
 button {
   padding: 0;
   margin: 0;
@@ -138,4 +153,84 @@ button::after {
   color: #2d2318;
   font-size: 30rpx;
   font-weight: 700;
+}
+
+/* ========== 全局交互与动画规范 ========== */
+/* 缓动曲线统一为 cubic-bezier(0.28,0,0.22,1)，与设计稿 --ease-standard 一致 */
+
+/* 触控反馈：所有可点击卡片/按钮按下时缩放至 0.99，配合 150ms 过渡 */
+.tap-feedback {
+  transition: transform 150ms cubic-bezier(0.28, 0, 0.22, 1);
+}
+
+.tap-feedback:active {
+  transform: scale(0.99);
+}
+
+/* 按钮按下反馈：背景加深，配合 150ms 过渡 */
+.btn-feedback {
+  transition: background 150ms cubic-bezier(0.28, 0, 0.22, 1), transform 150ms cubic-bezier(0.28, 0, 0.22, 1), opacity 150ms cubic-bezier(0.28, 0, 0.22, 1);
+}
+
+.btn-feedback:active {
+  transform: scale(0.98);
+  opacity: 0.88;
+}
+
+/* 底部弹窗入场动画：从底部滑入 + 淡入，220ms */
+@keyframes sheet-slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.sheet-enter {
+  animation: sheet-slide-up 220ms cubic-bezier(0.28, 0, 0.22, 1) both;
+}
+
+/* 遮罩层淡入：150ms */
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.overlay-enter {
+  animation: overlay-fade-in 150ms cubic-bezier(0.28, 0, 0.22, 1) both;
+}
+
+/* 居中弹窗入场动画：缩放淡入，220ms */
+@keyframes center-pop-in {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.center-pop-enter {
+  animation: center-pop-in 220ms cubic-bezier(0.28, 0, 0.22, 1) both;
+}
+
+/* 标签/Tab 切换指示器过渡 */
+.tab-indicator {
+  transition: opacity 150ms cubic-bezier(0.28, 0, 0.22, 1);
+}
+
+/* 输入框获焦边框过渡 */
+.input-focus {
+  transition: border-color 150ms cubic-bezier(0.28, 0, 0.22, 1);
+}
+
+/* 禁用态按钮规范 */
+.btn-disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }

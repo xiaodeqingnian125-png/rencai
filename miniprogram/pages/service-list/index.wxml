@@ -21,7 +21,8 @@
       bindtap="goDetail"
     >
       <view class="service-cover {{item.coverClass}}">
-        <image src="/assets/icons/service-clock.svg" mode="aspectFit"></image>
+        <image wx:if="{{item.image}}" class="service-cover-img" src="{{item.image}}" mode="aspectFill" lazy-load></image>
+        <view wx:else class="service-cover-img grad-cover grad-{{(item.id % 8) + 1}}"></view>
       </view>
       <view class="service-info">
         <view class="service-top">

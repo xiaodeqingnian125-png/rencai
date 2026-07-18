@@ -1,0 +1,14 @@
+<view class="uploader">
+  <view wx:if="{{imageUrl}}" class="preview-wrap">
+    <image class="preview-img" src="{{imageUrl}}" mode="aspectFill"></image>
+    <view class="preview-actions">
+      <view class="preview-btn replace" bindtap="chooseImage">更换</view>
+      <view class="preview-btn remove" bindtap="clearImage">移除</view>
+    </view>
+  </view>
+  <view wx:else class="upload-btn" bindtap="chooseImage">
+    <text class="upload-icon">+</text>
+    <text class="upload-text">{{label}}</text>
+    <text class="upload-hint">建议尺寸 750×500</text>
+  </view>
+</view>

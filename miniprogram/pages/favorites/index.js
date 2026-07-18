@@ -1,4 +1,4 @@
-const { getApartmentById } = require("../../data/apartments");
+const { getFavoriteRecords } = require("../../data/queries");
 
 Page({
   data: {
@@ -13,35 +13,7 @@ Page({
   },
 
   onLoad() {
-    const apartmentOne = getApartmentById(1);
-    const apartmentFive = getApartmentById(5);
-    const apartments = [apartmentOne, apartmentFive].map((apartment, index) => ({
-      id: apartment.id,
-      name: apartment.name,
-      detail: `${apartment.location.split("与")[0]} · ${apartment.district}`,
-      price: `${apartment.priceText.split("-")[0]}起`,
-      imageClass: index % 2 === 0 ? "ci-apart" : "ci-apart ci-apart-alt",
-      typeLabel: "公寓",
-      tags: [apartment.district, apartment.locationMeta.split(" · ")[0]]
-    }));
-    const rooms = [
-      { apartment: apartmentOne, room: apartmentOne.rooms[0] },
-      { apartment: apartmentOne, room: apartmentOne.rooms[1] },
-      { apartment: apartmentFive, room: apartmentFive.rooms[0] }
-    ].map(({ apartment, room }, index) => ({
-      id: room.id,
-      aptId: apartment.id,
-      name: room.name,
-      detail: `${apartment.name} · ${room.layout}`,
-      price: `${room.price}/月`,
-      imageClass: index % 2 === 0 ? "ci-room" : "ci-room ci-room-alt",
-      typeLabel: "户型",
-      tags: [room.area, room.orient, room.floor.split(" / ")[0]]
-    }));
-    const tabs = this.data.tabs.map((tab) => ({
-      ...tab,
-      count: tab.value === "apartment" ? apartments.length : rooms.length
-    }));
+    const { apartments, rooms, tabs } = getFavoriteRecords();
     this.setData({ apartments, rooms, tabs }, () => this.applyTab());
   },
 

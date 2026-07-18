@@ -11,7 +11,7 @@
 .slogan-text {
   color: #2d2318;
   font-size: 40rpx;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 1rpx;
   line-height: 1.2;
 }
@@ -85,6 +85,7 @@
   border: 1rpx solid #f0eae0;
   border-radius: 24rpx;
   background: #fffdf7;
+  transition: transform 150ms cubic-bezier(0.28, 0, 0.22, 1);
 }
 
 .quick-entry:active {
@@ -158,6 +159,7 @@
   color: #2d2318;
   font-size: 26rpx;
   font-weight: 500;
+  transition: background 150ms cubic-bezier(0.28, 0, 0.22, 1), border-color 150ms cubic-bezier(0.28, 0, 0.22, 1), color 150ms cubic-bezier(0.28, 0, 0.22, 1);
 }
 
 .filter-btn.active {
@@ -167,7 +169,7 @@
 }
 
 .filter-arrow {
-  font-size: 22rpx;
+  font-size: 24rpx;
   line-height: 1;
 }
 
@@ -203,6 +205,7 @@
   background: #fffdf7;
   color: #5c4a38;
   font-size: 26rpx;
+  transition: background 150ms cubic-bezier(0.28, 0, 0.22, 1), border-color 150ms cubic-bezier(0.28, 0, 0.22, 1), color 150ms cubic-bezier(0.28, 0, 0.22, 1);
 }
 
 .filter-option.selected {
@@ -219,6 +222,7 @@
   bottom: 0;
   z-index: 10;
   background: rgba(45, 35, 24, 0.08);
+  animation: overlay-fade-in 150ms cubic-bezier(0.28, 0, 0.22, 1) both;
 }
 
 .apt-list {
@@ -233,6 +237,7 @@
   border: 1rpx solid #f0eae0;
   border-radius: 36rpx;
   background: #fffdf7;
+  transition: transform 150ms cubic-bezier(0.28, 0, 0.22, 1);
 }
 
 .apt-card:active {
@@ -244,6 +249,25 @@
   overflow: hidden;
   width: 100%;
   height: 386rpx;
+}
+
+.apt-card-cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.apt-card-img-shade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(45, 35, 24, 0.18) 0%, rgba(45, 35, 24, 0) 36%, rgba(45, 35, 24, 0) 64%, rgba(45, 35, 24, 0.12) 100%);
+  pointer-events: none;
 }
 
 .apt-img-1 {
@@ -360,7 +384,7 @@
 .apt-card-name {
   color: #2d2318;
   font-size: 34rpx;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -368,7 +392,7 @@
   margin-top: 8rpx;
   color: #e8590c;
   font-size: 40rpx;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.25;
 }
 

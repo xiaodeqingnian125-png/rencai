@@ -28,7 +28,7 @@
   font-size: 28rpx;
   font-weight: 650;
   white-space: nowrap;
-  transition: transform 0.16s ease, background 0.16s ease, color 0.16s ease;
+  transition: transform 150ms cubic-bezier(0.28, 0, 0.22, 1), background 150ms cubic-bezier(0.28, 0, 0.22, 1), color 150ms cubic-bezier(0.28, 0, 0.22, 1);
 }
 
 .type-tab:active {
@@ -48,7 +48,7 @@
   border-radius: 999rpx;
   background: #fef8ef;
   color: #a69682;
-  font-size: 20rpx;
+  font-size: 24rpx;
   line-height: 32rpx;
 }
 
@@ -180,7 +180,7 @@
   border-radius: 8rpx;
   background: #e8723c;
   color: #ffffff;
-  font-size: 20rpx;
+  font-size: 24rpx;
   font-weight: 700;
   line-height: 34rpx;
   flex-shrink: 0;
@@ -207,7 +207,7 @@
   border-radius: 32rpx;
   background: #fffdf7;
   box-shadow: 0 10rpx 28rpx rgba(45, 35, 24, 0.04);
-  transition: transform 0.16s ease, box-shadow 0.16s ease;
+  transition: transform 150ms cubic-bezier(0.28, 0, 0.22, 1), box-shadow 150ms cubic-bezier(0.28, 0, 0.22, 1);
 }
 
 .post-card:active {
@@ -262,7 +262,7 @@
 .post-badge {
   padding: 8rpx 18rpx;
   border-radius: 999rpx;
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 650;
   flex-shrink: 0;
   max-width: 210rpx;
@@ -277,7 +277,7 @@
   border-radius: 8rpx;
   background: #e8723c;
   color: #ffffff;
-  font-size: 20rpx;
+  font-size: 24rpx;
 }
 
 .has-room {
@@ -321,7 +321,7 @@
   border: 1rpx solid #f0eae0;
   border-radius: 999rpx;
   color: #8c7a68;
-  font-size: 22rpx;
+  font-size: 24rpx;
   line-height: 44rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -386,7 +386,7 @@
   background: #e8723c;
   color: #ffffff;
   box-shadow: 0 16rpx 44rpx rgba(232, 114, 60, 0.34);
-  transition: transform 0.16s ease;
+  transition: transform 150ms cubic-bezier(0.28, 0, 0.22, 1);
 }
 
 .float-pub text {
@@ -412,6 +412,7 @@
   bottom: 0;
   z-index: 80;
   background: rgba(45, 35, 24, 0.28);
+  animation: overlay-fade-in 150ms cubic-bezier(0.28, 0, 0.22, 1) both;
 }
 
 .post-sheet,
@@ -426,6 +427,7 @@
   border-radius: 48rpx 48rpx 0 0;
   background: #fffdf7;
   box-shadow: 0 -28rpx 72rpx rgba(45, 35, 24, 0.18);
+  animation: sheet-slide-up 220ms cubic-bezier(0.28, 0, 0.22, 1) both;
 }
 
 .sheet-handle {
@@ -550,6 +552,7 @@
   align-items: center;
   justify-content: center;
   flex: 1;
+  min-width: 0;
   height: 84rpx;
   border-radius: 24rpx;
   font-size: 30rpx;

@@ -70,7 +70,7 @@
 .summary-unit {
   margin-top: 8rpx;
   color: #8c7a68;
-  font-size: 22rpx;
+  font-size: 24rpx;
   line-height: 1;
 }
 
@@ -95,7 +95,7 @@
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
-  transition: color 160ms ease, background 160ms ease;
+  transition: color 150ms cubic-bezier(0.28, 0, 0.22, 1), background 150ms cubic-bezier(0.28, 0, 0.22, 1);
 }
 
 .guide-tab-hover {
@@ -302,7 +302,7 @@
   border-radius: 999rpx;
   background: #fef8ef;
   color: #e8723c;
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 650;
   line-height: 1;
 }
@@ -337,7 +337,7 @@
   border-radius: 999rpx;
   background: #fafaf6;
   color: #8c7a68;
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 650;
   line-height: 1;
   white-space: nowrap;

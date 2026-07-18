@@ -1,6 +1,8 @@
 <view wx:if="{{service}}" class="detail-page">
   <view class="service-hero {{service.coverClass}}">
-    <image src="/assets/icons/service-clock.svg" mode="aspectFit"></image>
+    <image wx:if="{{service.image}}" class="service-hero-img" src="{{service.image}}" mode="aspectFill"></image>
+    <view wx:else class="service-hero-img grad-cover grad-{{(service.id % 8) + 1}}"></view>
+    <view class="service-hero-shade"></view>
   </view>
 
   <view class="content">
@@ -40,7 +42,7 @@
     <button class="order-btn" bindtap="openOrder">提交需求</button>
   </view>
 
-  <view wx:if="{{orderOpen}}" class="sheet-mask" bindtap="closeOrder"></view>
+  <view wx:if="{{orderOpen}}" class="sheet-mask" catchtap="closeOrder"></view>
   <view wx:if="{{orderOpen}}" class="form-sheet">
     <view class="sheet-handle"></view>
     <view class="sheet-title">填写服务需求</view>
@@ -50,7 +52,7 @@
     </view>
     <view class="field">
       <text>手机号</text>
-      <input type="number" placeholder="用于客服联系" data-field="phone" bindinput="handleInput" />
+      <input type="number" maxlength="11" placeholder="用于客服联系" data-field="phone" bindinput="handleInput" />
     </view>
     <view class="field">
       <text>服务地址</text>
@@ -63,3 +65,9 @@
     <button class="submit-btn" bindtap="submitOrder">提交给客服</button>
   </view>
 </view>
+
+<login-modal
+  visible="{{loginModalVisible}}"
+  bind:loginsuccess="onLoginSuccess"
+  bind:cancel="onLoginCancel"
+></login-modal>

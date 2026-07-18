@@ -32,3 +32,9 @@
   </view>
   <button class="submit-btn" bindtap="submitItem">发布物品</button>
 </view>
+
+<login-modal
+  visible="{{loginModalVisible}}"
+  bind:loginsuccess="onLoginSuccess"
+  bind:cancel="onLoginCancel"
+></login-modal>

@@ -1,9 +1,14 @@
 <view wx:if="{{apartment}}" class="detail-page">
   <view class="detail-hero {{apartment.heroClass}}">
-    <button class="hero-btn back-btn" bindtap="goBack">‹</button>
-    <button class="hero-btn fav-btn {{favorite ? 'on' : ''}}" bindtap="toggleFavorite">♥</button>
-    <view class="hero-building low"></view>
-    <view class="hero-building high"></view>
+    <image wx:if="{{apartment.image}}" class="hero-cover" src="{{apartment.image}}" mode="aspectFill"></image>
+    <view wx:else class="hero-cover grad-cover grad-{{(apartment.id % 6) + 1}}"></view>
+    <view class="hero-cover-shade"></view>
+    <button
+      class="hero-btn back-btn"
+      style="top: {{navTop}}; width: {{navWidth}}; height: {{navHeight}}; line-height: {{navHeight}}; border-radius: {{navRadius}};"
+      bindtap="goBack">
+      <image src="/assets/icons/nav-back-dark.svg" mode="aspectFit" style="width: {{navIconSize}}; height: {{navIconSize}};"></image>
+    </button>
     <view class="hero-dots">
       <view class="hero-dot active"></view>
       <view class="hero-dot"></view>
@@ -78,8 +83,8 @@
           bindtap="goRoomDetail"
         >
           <view class="room-img {{item.imageClass}}">
-            <view class="room-plan-line a"></view>
-            <view class="room-plan-line b"></view>
+            <image wx:if="{{item.image}}" class="room-cover" src="{{item.image}}" mode="aspectFill" lazy-load></image>
+            <view wx:else class="room-cover grad-cover grad-{{(item.id % 6) + 1}}"></view>
           </view>
           <view class="room-info">
             <view class="room-name">{{item.name}}</view>
@@ -115,10 +120,13 @@
 
   <view class="bottom-bar">
     <button class="share-btn" open-type="share">分享给朋友</button>
-    <button class="bottom-fav {{favorite ? 'on' : ''}}" bindtap="toggleFavorite">♥</button>
+    <button class="bottom-fav {{favorite ? 'on' : ''}}" bindtap="toggleFavorite">
+      <image wx:if="{{favorite}}" src="/assets/icons/heart-filled.svg" mode="aspectFit"></image>
+      <image wx:else src="/assets/icons/heart-outline-dark.svg" mode="aspectFit"></image>
+    </button>
   </view>
 
-  <view wx:if="{{commentSheetOpen}}" class="sheet-mask" bindtap="closeCommentSheet"></view>
+  <view wx:if="{{commentSheetOpen}}" class="sheet-mask" catchtap="closeCommentSheet"></view>
   <view wx:if="{{commentSheetOpen}}" class="comment-sheet">
     <view class="sheet-grabber"></view>
     <view class="sheet-title">写住户评价</view>
@@ -140,3 +148,9 @@
     </view>
   </view>
 </view>
+
+<login-modal
+  visible="{{loginModalVisible}}"
+  bind:loginsuccess="onLoginSuccess"
+  bind:cancel="onLoginCancel"
+></login-modal>

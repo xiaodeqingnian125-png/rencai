@@ -1,3 +1,5 @@
+const { getHomeApartmentCards } = require("../../data/queries");
+
 const priceRanges = [
   { label: "全部价格", min: 0, max: 99999 },
   { label: "¥500以下", min: 0, max: 500 },
@@ -43,96 +45,27 @@ Page({
     districtOptions: ["全部区域", "郑东新区", "高新区", "经开区", "航空港区", "二七区", "中原区", "管城区", "金水区", "惠济区"],
     priceOptions: priceRanges.map((item) => item.label),
     roomOptions: ["全部", "一居室", "二居室", "三居室", "四居室"],
-    apartments: [
-      {
-        id: 1,
-        name: "郑东人才公寓",
-        district: "郑东新区",
-        priceMin: 1200,
-        priceMax: 1800,
-        rooms: "1-2居",
-        location: "金水东路与东风南路交叉口",
-        tags: [
-          { label: "热门", className: "tag-hot" },
-          { label: "近地铁", className: "tag-subway" }
-        ],
-        imageClass: "apt-img-1",
-        favorite: false
-      },
-      {
-        id: 2,
-        name: "高新人才家园",
-        district: "高新区",
-        priceMin: 800,
-        priceMax: 1200,
-        rooms: "开间/1居",
-        location: "科学大道与长椿路交叉口",
-        tags: [{ label: "新上", className: "tag-new" }],
-        imageClass: "apt-img-2",
-        favorite: true
-      },
-      {
-        id: 3,
-        name: "经开青年公寓",
-        district: "经开区",
-        priceMin: 900,
-        priceMax: 1400,
-        rooms: "1-2居",
-        location: "航海东路与经开第八大街",
-        tags: [{ label: "近地铁", className: "tag-subway" }],
-        imageClass: "apt-img-3",
-        favorite: false
-      },
-      {
-        id: 4,
-        name: "港区人才社区",
-        district: "航空港区",
-        priceMin: 700,
-        priceMax: 1000,
-        rooms: "开间/1居",
-        location: "华夏大道与迎宾路交叉口",
-        tags: [],
-        imageClass: "apt-img-4",
-        favorite: false
-      },
-      {
-        id: 5,
-        name: "二七人才公寓",
-        district: "二七区",
-        priceMin: 1000,
-        priceMax: 1500,
-        rooms: "2-3居",
-        location: "大学路与航海路交叉口",
-        tags: [{ label: "热门", className: "tag-hot" }],
-        imageClass: "apt-img-5",
-        favorite: false
-      },
-      {
-        id: 6,
-        name: "中原青年社区",
-        district: "中原区",
-        priceMin: 850,
-        priceMax: 1300,
-        rooms: "1-2居",
-        location: "建设路与秦岭路交叉口",
-        tags: [
-          { label: "新上", className: "tag-new" },
-          { label: "近地铁", className: "tag-subway" }
-        ],
-        imageClass: "apt-img-6",
-        favorite: false
-      }
-    ],
+    apartments: [],
     filteredApartments: []
   },
 
   onLoad() {
-    this.applyFilters();
+    this.loadApartments();
+  },
+
+  onShow() {
+    this.loadApartments();
   },
 
   onPullDownRefresh() {
-    this.applyFilters();
+    this.loadApartments();
     wx.stopPullDownRefresh();
+  },
+
+  loadApartments() {
+    this.setData({ apartments: getHomeApartmentCards() }, () => {
+      this.applyFilters();
+    });
   },
 
   handleSearchInput(e) {

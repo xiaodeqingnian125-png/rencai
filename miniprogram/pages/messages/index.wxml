@@ -37,7 +37,7 @@
     <text>暂无消息</text>
   </view>
 
-  <view wx:if="{{showDetail}}" class="sheet-mask" bindtap="closeDetail"></view>
+  <view wx:if="{{showDetail}}" class="sheet-mask" catchtap="closeDetail"></view>
   <view wx:if="{{showDetail}}" class="detail-sheet">
     <view class="sheet-handle"></view>
     <view class="sheet-head">

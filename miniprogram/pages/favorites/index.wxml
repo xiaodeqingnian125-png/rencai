@@ -23,12 +23,8 @@
         bindtap="openFavorite"
       >
         <view class="card-img {{item.imageClass}}">
-          <view class="img-glow"></view>
-          <view class="img-block main"></view>
-          <view class="img-block side"></view>
-          <view class="img-line a"></view>
-          <view class="img-line b"></view>
-          <view class="img-line c"></view>
+          <image wx:if="{{item.image}}" class="card-cover" src="{{item.image}}" mode="aspectFill" lazy-load></image>
+          <view wx:else class="card-cover grad-cover grad-{{(item.id % 6) + 1}}"></view>
           <view class="img-badge">{{item.typeLabel}}</view>
         </view>
         <view class="card-main">

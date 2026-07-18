@@ -114,7 +114,7 @@
     <text>+</text>
   </view>
 
-  <view wx:if="{{postSheetOpen || detailSheetOpen}}" class="sheet-mask" bindtap="closeAllSheets"></view>
+  <view wx:if="{{postSheetOpen || detailSheetOpen}}" class="sheet-mask" catchtap="closeAllSheets"></view>
   <view wx:if="{{postSheetOpen}}" class="post-sheet" catchtap="noop">
     <view class="sheet-handle"></view>
     <view class="sheet-head">
@@ -196,3 +196,9 @@
     </view>
   </view>
 </view>
+
+<login-modal
+  visible="{{loginModalVisible}}"
+  bind:loginsuccess="onLoginSuccess"
+  bind:cancel="onLoginCancel"
+></login-modal>

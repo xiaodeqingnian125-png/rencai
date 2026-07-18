@@ -1,4 +1,5 @@
 const { getBorrowItemById } = require("../../data/business");
+const { createBorrowRequestForUser } = require("../../data/queries");
 
 Page({
   data: {
@@ -11,11 +12,13 @@ Page({
       startDate: "",
       endDate: "",
       message: ""
-    }
+    },
+    loginModalVisible: false
   },
 
   onLoad(options) {
-    this.setData({ item: getBorrowItemById(options.id) }, () => this.syncRequestState());
+    this.itemId = options.id;
+    this.setData({ item: getBorrowItemById(this.itemId) }, () => this.syncRequestState());
   },
 
   syncRequestState() {
@@ -28,7 +31,25 @@ Page({
     });
   },
 
+  ensureLogin() {
+    const app = getApp();
+    if (!app.globalData.isLoggedIn) {
+      this.setData({ loginModalVisible: true });
+      return false;
+    }
+    return true;
+  },
+
+  onLoginSuccess() {
+    this.setData({ loginModalVisible: false });
+  },
+
+  onLoginCancel() {
+    this.setData({ loginModalVisible: false });
+  },
+
   openRequest() {
+    if (!this.ensureLogin()) return;
     if (this.data.requested) {
       wx.showToast({ title: "申请已提交，等待物主确认", icon: "none" });
       return;
@@ -46,9 +67,22 @@ Page({
   },
 
   submitRequest() {
-    const { startDate, endDate } = this.data.form;
+    const { startDate, endDate, message } = this.data.form;
     if (!startDate.trim() || !endDate.trim()) {
       wx.showToast({ title: "请填写借用开始和归还时间", icon: "none" });
+      return;
+    }
+    const app = getApp();
+    const userId = app.globalData.userId;
+    const result = createBorrowRequestForUser(
+      this.data.item.id,
+      userId,
+      startDate.trim(),
+      endDate.trim(),
+      message.trim()
+    );
+    if (!result.ok) {
+      wx.showToast({ title: "申请提交失败", icon: "none" });
       return;
     }
     this.setData({ requestOpen: false, requested: true }, () => this.syncRequestState());

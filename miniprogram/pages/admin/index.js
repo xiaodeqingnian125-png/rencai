@@ -1,3 +1,13 @@
+const {
+  getAdminDataset,
+  getAdminRoomFilters,
+  getNextAdminId,
+  saveAdminRuntimeItem,
+  deleteAdminRuntimeItem,
+  updateAdminRuntimeStatus,
+  importAdminRuntimeItems
+} = require("../../data/queries");
+
 const configs = {
   apartments: {
     title: "公寓管理",
@@ -10,6 +20,8 @@ const configs = {
     requiredKey: "name",
     requiredLabel: "公寓名称",
     defaultStatus: "active",
+    supportImage: true,
+    cloudPath: "covers/apartments",
     summaryLabels: ["全部公寓", "待处理", "启用中"],
     primaryAction: { label: "启用", status: "active", toast: "公寓已启用" },
     secondaryAction: { label: "停用", status: "hidden", toast: "公寓已停用" },
@@ -35,14 +47,6 @@ const configs = {
       { key: "rent", label: "租金范围", placeholder: "如：¥1200-1800/月" },
       { key: "rooms", label: "居室类型", placeholder: "如：1-2居" },
       { key: "desc", label: "配套摘要", placeholder: "配套设施、公共设施、周边服务", type: "textarea" }
-    ],
-    items: [
-      { id: 1, name: "郑东人才公寓", district: "郑东新区", address: "金水东路与东风南路交叉口", rent: "¥1200-1800/月", rooms: "1-2居", facilityCount: 15, desc: "配套 15 项：健身房、快递柜、自习室、洗衣房等", status: "active" },
-      { id: 2, name: "高新人才家园", district: "高新区", address: "科学大道与长椿路交叉口", rent: "¥800-1200/月", rooms: "开间/1居", facilityCount: 9, desc: "配套 9 项：快递柜、自习室、洗衣房等", status: "active" },
-      { id: 3, name: "经开青年公寓", district: "经开区", address: "航海东路与经开第八大街", rent: "¥900-1400/月", rooms: "1-2居", facilityCount: 12, desc: "配套 12 项：健身房、充电桩、社区医院等", status: "active" },
-      { id: 4, name: "港区人才社区", district: "航空港区", address: "华夏大道与迎宾路交叉口", rent: "¥700-1000/月", rooms: "开间/1居", facilityCount: 8, desc: "配套 8 项：快递柜、洗衣房、便利店等", status: "active" },
-      { id: 5, name: "二七人才公寓", district: "二七区", address: "大学路与航海路交叉口", rent: "¥1000-1500/月", rooms: "2-3居", facilityCount: 11, desc: "配套 11 项：健身房、自习室、快递柜等", status: "active" },
-      { id: 6, name: "中原青年社区", district: "中原区", address: "建设路与秦岭路交叉口", rent: "¥850-1300/月", rooms: "1-2居", facilityCount: 10, desc: "配套 10 项：洗衣房、快递柜、自习室等", status: "active" }
     ]
   },
   rooms: {
@@ -56,6 +60,8 @@ const configs = {
     requiredKey: "name",
     requiredLabel: "户型名称",
     defaultStatus: "active",
+    supportImage: true,
+    cloudPath: "covers/rooms",
     summaryLabels: ["全部户型", "待处理", "启用中"],
     primaryAction: { label: "启用", status: "active", toast: "户型已启用" },
     secondaryAction: { label: "停用", status: "hidden", toast: "户型已停用" },
@@ -68,12 +74,7 @@ const configs = {
       { label: "户型", key: "desc" }
     ],
     chipKeys: ["apartment", "area", "orient"],
-    filters: [
-      { value: "all", label: "全部" },
-      { value: "郑东人才公寓", label: "郑东人才公寓" },
-      { value: "二七人才公寓", label: "二七人才公寓" },
-      { value: "中原青年社区", label: "中原青年社区" }
-    ],
+    filters: getAdminRoomFilters(),
     statusOptions: [
       { value: "active", label: "启用" },
       { value: "hidden", label: "停用" }
@@ -86,14 +87,6 @@ const configs = {
       { key: "rooms", label: "居室", placeholder: "如：1室1厅1卫" },
       { key: "rent", label: "租金", placeholder: "如：¥1200/月起" },
       { key: "floor", label: "楼层", placeholder: "如：3层/总8层" }
-    ],
-    items: [
-      { id: 1, apartment: "郑东人才公寓", name: "精致一居室", area: "35㎡", orient: "南向", rooms: "1室1厅1卫", rent: "¥1200/月起", floor: "3层/总8层", status: "active" },
-      { id: 2, apartment: "郑东人才公寓", name: "舒适两居室", area: "55㎡", orient: "东南向", rooms: "2室1厅1卫", rent: "¥1500/月起", floor: "5层/总8层", status: "active" },
-      { id: 3, apartment: "郑东人才公寓", name: "阳光大单间", area: "28㎡", orient: "南向", rooms: "开间", rent: "¥1000/月起", floor: "2层/总8层", status: "active" },
-      { id: 4, apartment: "二七人才公寓", name: "温馨一居室", area: "32㎡", orient: "南向", rooms: "1室1卫", rent: "¥1000/月起", floor: "4层/总12层", status: "active" },
-      { id: 5, apartment: "二七人才公寓", name: "宽敞两居室", area: "60㎡", orient: "西南向", rooms: "2室1厅1卫", rent: "¥1500/月起", floor: "8层/总12层", status: "active" },
-      { id: 6, apartment: "中原青年社区", name: "舒适一居室", area: "38㎡", orient: "东南向", rooms: "1室1厅1卫", rent: "¥850/月起", floor: "6层/总10层", status: "active" }
     ]
   },
   activities: {
@@ -105,6 +98,8 @@ const configs = {
     requiredKey: "name",
     requiredLabel: "活动名称",
     defaultStatus: "pending",
+    supportImage: true,
+    cloudPath: "covers/activities",
     addTitle: "新增活动",
     editTitle: "编辑活动",
     summaryLabels: ["全部记录", "待处理", "已上线"],
@@ -131,11 +126,6 @@ const configs = {
       { key: "quota", label: "人数限制", placeholder: "如：12人" },
       { key: "owner", label: "发起人", placeholder: "如：小李" },
       { key: "desc", label: "活动说明", placeholder: "报名条件、费用、注意事项", type: "textarea" }
-    ],
-    items: [
-      { id: 1, name: "周末羽毛球搭子局", category: "运动", time: "周六 15:00", place: "郑东人才公寓活动室", quota: "12人", owner: "小李", desc: "自带球拍，社区提供场地。", status: "pending" },
-      { id: 2, name: "青年租房避坑分享", category: "分享", time: "周三 19:30", place: "线上直播", quota: "不限", owner: "运营小晓", desc: "围绕合同、押金和维修责任做经验分享。", status: "active" },
-      { id: 3, name: "社区公益清洁日", category: "公益", time: "7月6日 09:00", place: "中原青年社区", quota: "20人", owner: "社区管家", desc: "报名后统一发放工具和手套。", status: "hidden" }
     ]
   },
   services: {
@@ -147,6 +137,8 @@ const configs = {
     requiredKey: "name",
     requiredLabel: "服务名称",
     defaultStatus: "processing",
+    supportImage: true,
+    cloudPath: "covers/services",
     addTitle: "新增服务记录",
     editTitle: "编辑服务记录",
     summaryLabels: ["全部记录", "待处理", "已上线"],
@@ -178,11 +170,6 @@ const configs = {
       { key: "time", label: "预约时间", placeholder: "如：今天 18:00 前" },
       { key: "assignee", label: "接单人", placeholder: "如：管家小周" },
       { key: "desc", label: "需求说明", placeholder: "用户提交的服务需求", type: "textarea" }
-    ],
-    items: [
-      { id: 1, name: "维修上门", orderNo: "SV20260701001", user: "陈同学", address: "郑东人才公寓 3-1202", time: "今天 18:00 前", assignee: "管家小周", desc: "卫生间水龙头漏水，需要上门维修。", status: "processing" },
-      { id: 2, name: "搬家代办", orderNo: "SV20260701002", user: "林同学", address: "高新人才家园 2-803", time: "明天 10:00", assignee: "待分配", desc: "需要帮忙搬 4 个纸箱和一张书桌。", status: "processing" },
-      { id: 3, name: "资料代取", orderNo: "SV20260630009", user: "张同学", address: "经开青年公寓", time: "昨天 16:00", assignee: "管家小李", desc: "已完成资料代取并送达前台。", status: "active" }
     ]
   },
   items: {
@@ -225,11 +212,6 @@ const configs = {
       { key: "location", label: "所在位置", placeholder: "如：郑东人才公寓 5 栋" },
       { key: "rule", label: "借用规则", placeholder: "如：限 2 天内归还" },
       { key: "desc", label: "物品说明", placeholder: "成色、配件、押金要求", type: "textarea" }
-    ],
-    items: [
-      { id: 1, name: "冲击钻", category: "工具", owner: "王同学", location: "郑东人才公寓 5 栋", rule: "限 2 天内归还", desc: "含钻头套装，适合安装置物架。", status: "active" },
-      { id: 2, name: "折叠梯", category: "工具", owner: "社区前台", location: "高新人才家园前台", rule: "当天归还", desc: "1.8 米折叠梯，需登记手机号。", status: "processing" },
-      { id: 3, name: "电饭煲", category: "家电", owner: "李同学", location: "经开青年公寓 2 栋", rule: "限 3 天内归还", desc: "功能正常，内胆轻微使用痕迹。", status: "pending" }
     ]
   },
   comments: {
@@ -269,11 +251,6 @@ const configs = {
       { key: "rating", label: "评分", placeholder: "如：4.8" },
       { key: "tags", label: "标签", placeholder: "如：交通方便、管家响应快" },
       { key: "content", label: "评论内容", placeholder: "用户评价正文", type: "textarea" }
-    ],
-    items: [
-      { id: 1, target: "郑东人才公寓", user: "周同学", rating: "4.8", tags: "交通方便、管家响应快", content: "离地铁站近，房间采光不错，维修反馈也比较及时。", status: "active" },
-      { id: 2, target: "精致一居室", user: "林同学", rating: "4.5", tags: "户型紧凑、性价比高", content: "一个人住刚好，收纳空间如果再多一点会更好。", status: "pending" },
-      { id: 3, target: "高新人才家园", user: "匿名用户", rating: "3.2", tags: "噪音反馈", content: "临街房间晚上略吵，建议看房时注意楼栋位置。", status: "hidden" }
     ]
   },
   users: {
@@ -314,11 +291,6 @@ const configs = {
       { key: "apartment", label: "所在公寓", placeholder: "如：郑东人才公寓" },
       { key: "room", label: "房间号", placeholder: "如：3-1202" },
       { key: "note", label: "备注", placeholder: "认证材料、入住状态、风险备注", type: "textarea" }
-    ],
-    items: [
-      { id: 1, name: "陈同学", phone: "138****2688", role: "住户", apartment: "郑东人才公寓", room: "3-1202", note: "已入住，认证材料完整。", status: "active" },
-      { id: 2, name: "林同学", phone: "156****9012", role: "住户", apartment: "高新人才家园", room: "2-803", note: "等待上传劳动合同或人才码。", status: "pending" },
-      { id: 3, name: "管家小周", phone: "177****3321", role: "管家", apartment: "中原青年社区", room: "服务中心", note: "负责服务订单和维修派单。", status: "active" }
     ]
   }
 };
@@ -431,6 +403,141 @@ function buildSummary(items, config) {
   };
 }
 
+function tableColumns(config) {
+  const columns = [
+    { key: "id", label: "ID" },
+    ...(config.fields || []).map((field) => ({ key: field.key, label: field.label })),
+    { key: "status", label: "状态" }
+  ];
+  const seen = {};
+  return columns.filter((column) => {
+    if (seen[column.key]) return false;
+    seen[column.key] = true;
+    return true;
+  });
+}
+
+function cleanTableCell(value) {
+  return String(value === undefined || value === null ? "" : value)
+    .replace(/\t/g, " ")
+    .replace(/\r?\n/g, " ")
+    .trim();
+}
+
+function tableCellValue(item, column, config) {
+  if (column.key === "status") {
+    return statusInfo(item.status, config).label;
+  }
+  return item[column.key];
+}
+
+function toTableText(items, config) {
+  const columns = tableColumns(config);
+  const header = columns.map((column) => column.label).join("\t");
+  const rows = items.map((item) => columns.map((column) => cleanTableCell(tableCellValue(item, column, config))).join("\t"));
+  return [header, ...rows].join("\n");
+}
+
+function csvCell(value) {
+  const text = cleanTableCell(value);
+  if (/[",\r\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+}
+
+function toCsvText(items, config) {
+  const columns = tableColumns(config);
+  const header = columns.map((column) => csvCell(column.label)).join(",");
+  const rows = items.map((item) => columns.map((column) => csvCell(tableCellValue(item, column, config))).join(","));
+  return `\ufeff${[header, ...rows].join("\n")}`;
+}
+
+function stripBom(text) {
+  return String(text || "").replace(/^\ufeff/, "");
+}
+
+function detectTableDelimiter(text) {
+  const firstLine = stripBom(text).split(/\r?\n/).find((line) => line.trim()) || "";
+  const tabCount = (firstLine.match(/\t/g) || []).length;
+  const commaCount = (firstLine.match(/,/g) || []).length;
+  if (tabCount >= commaCount && tabCount > 0) return "\t";
+  return ",";
+}
+
+function parseDelimitedRows(text, delimiter) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let quoted = false;
+  const source = stripBom(text);
+  for (let i = 0; i < source.length; i += 1) {
+    const char = source.charAt(i);
+    const next = source.charAt(i + 1);
+    if (char === '"') {
+      if (quoted && next === '"') {
+        cell += '"';
+        i += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+    if (!quoted && char === delimiter) {
+      row.push(cell.trim());
+      cell = "";
+      continue;
+    }
+    if (!quoted && (char === "\n" || char === "\r")) {
+      if (char === "\r" && next === "\n") {
+        i += 1;
+      }
+      row.push(cell.trim());
+      rows.push(row);
+      row = [];
+      cell = "";
+      continue;
+    }
+    cell += char;
+  }
+  row.push(cell.trim());
+  rows.push(row);
+  return rows.filter((line) => line.some((value) => value));
+}
+
+function tableTextToRows(text, config) {
+  const delimiter = detectTableDelimiter(text);
+  const tableRows = parseDelimitedRows(text, delimiter);
+  if (tableRows.length < 2) {
+    throw new Error("请提供至少包含表头和一行数据的表格");
+  }
+  const columns = tableColumns(config);
+  const labelToKey = columns.reduce((map, column) => {
+    map[column.label] = column.key;
+    map[column.key] = column.key;
+    return map;
+  }, {});
+  const header = tableRows[0].map((cell) => labelToKey[cell] || cell);
+  if (header.indexOf("name") < 0) {
+    throw new Error("表格必须包含名称列");
+  }
+  return tableRows.slice(1).map((cells) => {
+    return header.reduce((row, key, index) => {
+      if (key) row[key] = cells[index] || "";
+      return row;
+    }, {});
+  }).filter((row) => String(row.name || "").trim());
+}
+
+function exportFileName(config) {
+  return `${config.title || "数据"}-批量导出.csv`;
+}
+
+function fileExt(name) {
+  const matched = String(name || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+  return matched ? matched[1] : "";
+}
+
 Page({
   data: {
     type: "activities",
@@ -443,26 +550,59 @@ Page({
     activeFilter: "all",
     summary: { total: 0, pending: 0, active: 0, totalLabel: "全部记录", pendingLabel: "待处理", activeLabel: "已上线" },
     formOpen: false,
+    importOpen: false,
     editingId: null,
     form: {},
+    importDraft: "",
+    importError: "",
+    importHint: "",
     nextId: 100
   },
 
   onLoad(options) {
+    // 权限校验：仅管理员可访问
+    const app = getApp();
+    if (!app.globalData.isAdmin) {
+      wx.showToast({ title: "仅管理员可访问", icon: "none" });
+      setTimeout(() => wx.navigateBack(), 1200);
+      return;
+    }
     const type = configs[options.type] ? options.type : "activities";
     const config = clone(configs[type]);
+    if (type === "rooms") {
+      config.filters = getAdminRoomFilters();
+    }
+    const items = getAdminDataset(type);
     config.statusOptions = config.statusOptions || config.filters.filter((item) => item.value !== "all");
     this.setData({
       type,
       config,
-      items: clone(config.items),
+      items,
       isApartment: type === "apartments",
       isRoom: type === "rooms",
       activeFilter: "all",
-      nextId: 100,
-      summary: buildSummary(config.items, config)
+      nextId: getNextAdminId(type),
+      summary: buildSummary(items, config)
     }, () => this.applyFilters());
     wx.setNavigationBarTitle({ title: config.title });
+  },
+
+  isRuntimeManagedType() {
+    return true;
+  },
+
+  reloadAdminItems() {
+    const type = this.data.type;
+    const items = getAdminDataset(type);
+    const updates = {
+      items,
+      nextId: getNextAdminId(type),
+      summary: buildSummary(items, this.data.config)
+    };
+    if (type === "rooms") {
+      updates["config.filters"] = getAdminRoomFilters();
+    }
+    this.setData(updates, () => this.applyFilters());
   },
 
   handleSearch(e) {
@@ -499,7 +639,12 @@ Page({
       form[field.key] = item ? item[field.key] || "" : "";
     });
     form.status = item ? item.status : this.defaultStatus();
+    form.image = item ? item.image || "" : "";
     this.setData({ formOpen: true, editingId: id, form });
+  },
+
+  onImageChange(e) {
+    this.setData({ "form.image": e.detail.value });
   },
 
   defaultStatus() {
@@ -526,11 +671,18 @@ Page({
       return;
     }
     const isEditing = Boolean(this.data.editingId);
+    const nextItem = { id: isEditing ? this.data.editingId : this.data.nextId, ...form };
+    if (this.isRuntimeManagedType()) {
+      saveAdminRuntimeItem(this.data.type, nextItem);
+      this.setData({ formOpen: false, editingId: null, form: {} }, () => this.reloadAdminItems());
+      wx.showToast({ title: isEditing ? "已同步修改" : "已新增并同步", icon: "none" });
+      return;
+    }
     let items;
     if (isEditing) {
       items = this.data.items.map((item) => item.id === this.data.editingId ? { ...item, ...form } : item);
     } else {
-      items = [{ id: this.data.nextId, ...form }, ...this.data.items];
+      items = [nextItem, ...this.data.items];
       this.setData({ nextId: this.data.nextId + 1 });
     }
     this.setData({ items, formOpen: false, editingId: null, form: {} }, () => this.applyFilters());
@@ -540,22 +692,216 @@ Page({
   deleteItem(e) {
     const id = Number(e.currentTarget.dataset.id || this.data.editingId);
     if (!id) return;
-    this.setData({
-      items: this.data.items.filter((item) => item.id !== id),
-      formOpen: false,
-      editingId: null,
-      form: {}
-    }, () => this.applyFilters());
-    wx.showToast({ title: "已删除", icon: "none" });
+    const itemLabel = this.data.config.singularLabel || this.data.config.title || "记录";
+    wx.showModal({
+      title: "确认删除",
+      content: `删除后不可恢复，确定删除该${itemLabel}吗？`,
+      confirmColor: "#e04a3a",
+      success: (res) => {
+        if (!res.confirm) return;
+        if (this.isRuntimeManagedType()) {
+          deleteAdminRuntimeItem(this.data.type, id);
+          this.setData({ formOpen: false, editingId: null, form: {} }, () => this.reloadAdminItems());
+          wx.showToast({ title: "已删除并同步", icon: "none" });
+          return;
+        }
+        this.setData({
+          items: this.data.items.filter((item) => item.id !== id),
+          formOpen: false,
+          editingId: null,
+          form: {}
+        }, () => this.applyFilters());
+        wx.showToast({ title: "已删除", icon: "none" });
+      }
+    });
   },
 
   updateStatus(e) {
     const id = Number(e.currentTarget.dataset.id);
     const status = e.currentTarget.dataset.status;
     const toast = e.currentTarget.dataset.toast || "状态已更新";
+    if (this.isRuntimeManagedType()) {
+      updateAdminRuntimeStatus(this.data.type, id, status);
+      this.reloadAdminItems();
+      wx.showToast({ title: toast, icon: "none" });
+      return;
+    }
     this.setData({
       items: this.data.items.map((item) => item.id === id ? { ...item, status } : item)
     }, () => this.applyFilters());
     wx.showToast({ title: toast, icon: "none" });
+  },
+
+  exportData() {
+    const fileName = exportFileName(this.data.config);
+    const tableText = toTableText(this.data.items, this.data.config);
+    const csvText = toCsvText(this.data.items, this.data.config);
+    const fs = wx.getFileSystemManager && wx.getFileSystemManager();
+    if (!fs || !wx.env || !wx.env.USER_DATA_PATH) {
+      wx.setClipboardData({
+        data: tableText,
+        success: () => wx.showToast({ title: "表格已复制", icon: "none" })
+      });
+      return;
+    }
+    const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+    fs.writeFile({
+      filePath,
+      data: csvText,
+      encoding: "utf8",
+      success: () => {
+        if (wx.shareFileMessage) {
+          wx.shareFileMessage({
+            filePath,
+            fileName,
+            fail: () => {
+              wx.setClipboardData({
+                data: tableText,
+                success: () => wx.showToast({ title: "已复制表格内容", icon: "none" })
+              });
+            }
+          });
+          return;
+        }
+        wx.setClipboardData({
+          data: tableText,
+          success: () => wx.showToast({ title: "CSV已生成，表格已复制", icon: "none" })
+        });
+      },
+      fail: () => {
+        wx.setClipboardData({
+          data: tableText,
+          success: () => wx.showToast({ title: "表格已复制", icon: "none" })
+        });
+      }
+    });
+  },
+
+  openImport() {
+    const importHint = tableColumns(this.data.config).map((column) => column.label).join(" / ");
+    if (!wx.chooseMessageFile) {
+      this.openPasteImport(importHint);
+      return;
+    }
+    wx.chooseMessageFile({
+      count: 1,
+      type: "file",
+      extension: ["csv", "tsv", "txt", "xls", "xlsx"],
+      success: (res) => {
+        const file = res.tempFiles && res.tempFiles[0];
+        if (file) {
+          this.importTableFile(file);
+        }
+      },
+      fail: (error) => {
+        if (error && String(error.errMsg || "").indexOf("cancel") >= 0) {
+          return;
+        }
+        this.openPasteImport(importHint);
+      }
+    });
+  },
+
+  openPasteImport(importHint) {
+    this.setData({ importOpen: true, importDraft: "", importError: "", importHint });
+  },
+
+  closeImport() {
+    this.setData({ importOpen: false, importDraft: "", importError: "", importHint: "" });
+  },
+
+  handleImportInput(e) {
+    this.setData({ importDraft: e.detail.value, importError: "" });
+  },
+
+  importTableFile(file) {
+    const name = file.name || file.path || "";
+    const ext = fileExt(name);
+    if (ext === "xls" || ext === "xlsx") {
+      wx.showModal({
+        title: "请另存为 CSV",
+        content: "当前原生静态版不引入 Excel 解析库，暂不能直接解析 .xls/.xlsx。请在 Excel/WPS 中另存为 CSV（UTF-8）后上传。",
+        showCancel: false
+      });
+      return;
+    }
+    if (["csv", "tsv", "txt", ""].indexOf(ext) < 0) {
+      wx.showToast({ title: "请上传 CSV/TSV 表格", icon: "none" });
+      return;
+    }
+    if (file.size && file.size > 2 * 1024 * 1024) {
+      wx.showToast({ title: "表格文件请控制在2MB内", icon: "none" });
+      return;
+    }
+    const fs = wx.getFileSystemManager && wx.getFileSystemManager();
+    if (!fs) {
+      const importHint = tableColumns(this.data.config).map((column) => column.label).join(" / ");
+      this.openPasteImport(importHint);
+      return;
+    }
+    fs.readFile({
+      filePath: file.path,
+      encoding: "utf8",
+      success: (res) => this.importRowsFromText(res.data),
+      fail: () => wx.showToast({ title: "读取表格失败", icon: "none" })
+    });
+  },
+
+  parseImportRows(text) {
+    if (!String(text || "").trim().startsWith("{") && !String(text || "").trim().startsWith("[")) {
+      return tableTextToRows(text, this.data.config);
+    }
+    const payload = JSON.parse(text);
+    if (payload.type && payload.type !== this.data.type) {
+      throw new Error(`当前页面是${this.data.config.title}，不能导入 ${payload.type}`);
+    }
+    const rows = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload.items)
+        ? payload.items
+        : Array.isArray(payload.data)
+          ? payload.data
+          : [];
+    return rows.filter((row) => row && String(row.name || "").trim());
+  },
+
+  importRowsFromText(text) {
+    const source = String(text || "").trim();
+    const importHint = tableColumns(this.data.config).map((column) => column.label).join(" / ");
+    if (!source) {
+      this.setData({ importOpen: true, importHint, importError: "请提供表格内容" });
+      return;
+    }
+    let rows;
+    try {
+      rows = this.parseImportRows(source);
+    } catch (error) {
+      this.setData({ importOpen: true, importHint, importError: error.message || "表格格式不正确" });
+      return;
+    }
+    if (!rows.length) {
+      this.setData({ importOpen: true, importHint, importError: "没有可导入的数据，请检查名称列" });
+      return;
+    }
+    // 显示导入中状态
+    wx.showLoading({ title: "正在导入...", mask: true });
+    const summary = importAdminRuntimeItems(this.data.type, rows);
+    this.setData({ importOpen: false, importDraft: "", importError: "", importHint: "" }, () => this.reloadAdminItems());
+    wx.hideLoading();
+    // 区分新增和更新数量的详细结果
+    const parts = [];
+    if (summary.created > 0) parts.push(`新增${summary.created}条`);
+    if (summary.updated > 0) parts.push(`更新${summary.updated}条`);
+    if (summary.ignored > 0) parts.push(`忽略${summary.ignored}条`);
+    const resultText = parts.length > 0 ? parts.join("，") : "无变更";
+    wx.showToast({
+      title: resultText,
+      icon: "none",
+      duration: 2500
+    });
+  },
+
+  confirmImport() {
+    this.importRowsFromText(this.data.importDraft);
   }
 });

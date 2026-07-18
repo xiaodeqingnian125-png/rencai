@@ -81,7 +81,7 @@
     </view>
   </view>
 
-  <view wx:if="{{activeFilter}}" class="filter-backdrop" bindtap="closeFilter"></view>
+  <view wx:if="{{activeFilter}}" class="filter-backdrop" catchtap="closeFilter"></view>
 
   <view wx:if="{{filteredApartments.length}}" class="apt-list">
     <view
@@ -93,8 +93,9 @@
       bindtap="handleApartmentTap"
     >
       <view class="apt-card-img {{item.imageClass}}">
-        <view class="apt-building low"></view>
-        <view class="apt-building high"></view>
+        <image wx:if="{{item.image}}" class="apt-card-cover" src="{{item.image}}" mode="aspectFill" lazy-load></image>
+        <view wx:else class="apt-card-cover grad-cover grad-{{(item.id % 6) + 1}}"></view>
+        <view class="apt-card-img-shade"></view>
         <view class="apt-tag-row">
           <text
             wx:for="{{item.tags}}"

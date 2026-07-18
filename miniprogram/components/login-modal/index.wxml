@@ -1,0 +1,47 @@
+<view wx:if="{{visible}}" class="login-overlay" catchtap="onMaskTap">
+  <view class="login-card" catchtap="noop">
+    <view class="login-title">登录晓得青年</view>
+    <view class="login-subtitle">登录后可使用报名、评论、收藏等功能</view>
+
+    <view class="field-group">
+      <view class="field-label">昵称</view>
+      <input
+        class="field-input"
+        type="nickname"
+        placeholder="请输入昵称"
+        value="{{nickname}}"
+        bindinput="onNicknameInput"
+        maxlength="20"
+      />
+    </view>
+
+    <view class="field-group">
+      <view class="field-label">手机号</view>
+      <!-- 微信获取模式：按钮伪装为输入框 -->
+      <button
+        wx:if="{{phoneInputMode === 'wechat'}}"
+        class="field-input phone-wechat-btn {{!phone ? 'is-placeholder' : ''}}"
+        open-type="getPhoneNumber"
+        bindgetphonenumber="onGetPhoneNumber"
+      >{{phone || '点击获取微信手机号'}}</button>
+      <!-- 手动输入模式 -->
+      <input
+        wx:else
+        class="field-input"
+        type="number"
+        placeholder="请输入手机号"
+        value="{{phone}}"
+        bindinput="onPhoneInput"
+        maxlength="11"
+      />
+      <view class="phone-toggle" bindtap="togglePhoneMode">
+        {{phoneInputMode === 'wechat' ? '无法获取？手动输入' : '使用微信获取'}}
+      </view>
+    </view>
+
+    <view class="login-tips">游客可浏览首页公寓，登录后解锁全部功能。</view>
+
+    <button class="login-btn" bindtap="onLogin" loading="{{loading}}">登录</button>
+    <button class="login-cancel" bindtap="onCancel">暂不登录</button>
+  </view>
+</view>

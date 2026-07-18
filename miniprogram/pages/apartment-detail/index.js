@@ -1,4 +1,9 @@
 const { getApartmentById } = require("../../data/apartments");
+const {
+  submitUserComment,
+  toggleFavoriteForUser,
+  toggleCommentLikeForUser
+} = require("../../data/queries");
 
 Page({
   data: {
@@ -7,15 +12,73 @@ Page({
     commentSheetOpen: false,
     commentDraft: "",
     commentCount: "0/200",
-    lastCommentAt: 0
+    lastCommentAt: 0,
+    loginModalVisible: false,
+    navTop: "",
+    navHeight: "",
+    navWidth: "",
+    navRadius: "",
+    navIconSize: ""
   },
 
   onLoad(options) {
-    const apartment = getApartmentById(options.id);
+    this.apartmentId = options.id;
+    this.initNavBar();
+    this.loadApartment();
+  },
+
+  initNavBar() {
+    try {
+      const menu = wx.getMenuButtonBoundingClientRect();
+      const h = menu.height;
+      this.setData({
+        navTop: menu.top + "px",
+        navHeight: h + "px",
+        navWidth: Math.round(h * 1.3) + "px",
+        navRadius: h / 2 + "px",
+        navIconSize: Math.round(h * 0.5) + "px"
+      });
+    } catch (e) {
+      this.setData({
+        navTop: "calc(env(safe-area-inset-top) + 12px)",
+        navHeight: "32px",
+        navWidth: "42px",
+        navRadius: "16px",
+        navIconSize: "16px"
+      });
+    }
+  },
+
+  onShow() {
+    this.loadApartment();
+  },
+
+  loadApartment() {
+    const apartment = getApartmentById(this.apartmentId);
+    const app = getApp();
+    const isLoggedIn = app.globalData.isLoggedIn;
     this.setData({
       apartment,
-      favorite: apartment.favorite
+      favorite: isLoggedIn && apartment.favorite ? apartment.favorite : false
     });
+  },
+
+  ensureLogin() {
+    const app = getApp();
+    if (!app.globalData.isLoggedIn) {
+      this.setData({ loginModalVisible: true });
+      return false;
+    }
+    return true;
+  },
+
+  onLoginSuccess() {
+    this.setData({ loginModalVisible: false });
+    this.loadApartment();
+  },
+
+  onLoginCancel() {
+    this.setData({ loginModalVisible: false });
   },
 
   goBack() {
@@ -40,15 +103,20 @@ Page({
   },
 
   toggleFavorite() {
-    const favorite = !this.data.favorite;
-    this.setData({ favorite });
+    if (!this.ensureLogin()) return;
+    const app = getApp();
+    const userId = app.globalData.userId;
+    const result = toggleFavoriteForUser("apartment", this.data.apartment.id, userId);
+    if (!result.ok) return;
+    this.setData({ favorite: result.favorite });
     wx.showToast({
-      title: favorite ? "已收藏" : "已取消收藏",
+      title: result.favorite ? "已收藏" : "已取消收藏",
       icon: "none"
     });
   },
 
   openCommentSheet() {
+    if (!this.ensureLogin()) return;
     this.setData({ commentSheetOpen: true });
   },
 
@@ -75,17 +143,15 @@ Page({
       wx.showToast({ title: "5分钟内不能重复提交评价", icon: "none" });
       return;
     }
-    const comments = [
-      {
-        avatar: "我",
-        avatarClass: "ca-1",
-        name: "我",
-        time: "刚刚",
-        body: text,
-        likes: 0
-      },
-      ...this.data.apartment.comments
-    ];
+    const app = getApp();
+    const userId = app.globalData.userId;
+    const newComment = submitUserComment(
+      "apartment",
+      this.data.apartment.id,
+      userId,
+      text
+    );
+    const comments = [newComment, ...this.data.apartment.comments];
     this.setData({
       "apartment.comments": comments,
       commentDraft: "",
@@ -97,9 +163,16 @@ Page({
   },
 
   likeComment(e) {
+    if (!this.ensureLogin()) return;
     const index = Number(e.currentTarget.dataset.index);
+    const target = this.data.apartment.comments[index];
+    if (!target) return;
+    const app = getApp();
+    const userId = app.globalData.userId;
+    const result = toggleCommentLikeForUser(target.id, userId);
+    if (!result.ok) return;
     const comments = this.data.apartment.comments.map((comment, idx) => (
-      idx === index ? { ...comment, likes: comment.likes + 1 } : comment
+      idx === index ? { ...comment, likes: result.likes, liked: result.liked } : comment
     ));
     this.setData({ "apartment.comments": comments });
   },

@@ -1,5 +1,8 @@
 <view wx:if="{{activity}}" class="detail-page">
   <view class="hero {{activity.coverClass}}">
+    <image wx:if="{{activity.image}}" class="hero-img" src="{{activity.image}}" mode="aspectFill"></image>
+    <view wx:else class="hero-img grad-cover grad-{{(activity.id % 8) + 1}}"></view>
+    <view class="hero-shade"></view>
     <text class="hero-badge badge-{{activity.typeClass}}">{{activity.typeLabel}}</text>
     <view class="hero-date">{{activity.shortDate}}</view>
   </view>
@@ -49,7 +52,7 @@
     </button>
   </view>
 
-  <view wx:if="{{formOpen}}" class="sheet-mask" bindtap="closeRegister"></view>
+  <view wx:if="{{formOpen}}" class="sheet-mask" catchtap="closeRegister"></view>
   <view wx:if="{{formOpen}}" class="form-sheet">
     <view class="sheet-handle"></view>
     <view class="sheet-title">确认报名信息</view>
@@ -59,8 +62,14 @@
     </view>
     <view class="field">
       <text>手机号</text>
-      <input value="{{form.phone}}" data-field="phone" type="number" placeholder="用于活动联系" bindinput="handleInput" />
+      <input value="{{form.phone}}" data-field="phone" type="number" maxlength="11" placeholder="用于活动联系" bindinput="handleInput" />
     </view>
     <button class="submit-btn" bindtap="submitRegister">提交报名</button>
   </view>
 </view>
+
+<login-modal
+  visible="{{loginModalVisible}}"
+  bind:loginsuccess="onLoginSuccess"
+  bind:cancel="onLoginCancel"
+></login-modal>

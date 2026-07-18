@@ -1,9 +1,14 @@
 <view class="profile-page">
   <view class="user-header">
     <view class="user-card" bindtap="openProfileEdit">
-      <view class="user-avatar">{{user.avatarText}}</view>
+      <view class="user-avatar {{isAdmin ? 'admin-avatar' : ''}}">{{user.avatarText}}</view>
       <view class="user-info">
-        <view class="user-name">{{user.name}}</view>
+        <view class="user-name-row">
+          <text class="user-name">{{user.name}}</text>
+          <view wx:if="{{isAdmin}}" class="admin-badge">
+            <text>管理员</text>
+          </view>
+        </view>
         <view class="user-status-row">
           <view class="user-status-dot"></view>
           <text>{{user.status}}</text>
@@ -38,7 +43,7 @@
     </view>
   </view>
 
-  <view class="menu-section admin-section">
+  <view wx:if="{{isAdmin}}" class="menu-section admin-section">
     <button class="admin-toggle {{adminOpen ? 'open' : ''}}" bindtap="toggleAdmin">
       <text>管理员</text>
       <image src="/assets/icons/chevron-down-muted.svg" mode="aspectFit"></image>
@@ -64,7 +69,7 @@
     </view>
   </view>
 
-  <view wx:if="{{sheetOpen}}" class="profile-overlay" bindtap="closeBusiness"></view>
+  <view wx:if="{{sheetOpen}}" class="profile-overlay" catchtap="closeBusiness"></view>
   <view wx:if="{{sheetOpen}}" class="business-sheet">
     <view class="sheet-handle"></view>
     <view class="sheet-head">
@@ -102,4 +107,10 @@
       <view wx:else class="record-empty">{{sheetEmpty}}</view>
     </view>
   </view>
+
+  <login-modal
+    visible="{{loginModalVisible}}"
+    bind:loginsuccess="onLoginSuccess"
+    bind:cancel="onLoginCancel"
+  ></login-modal>
 </view>

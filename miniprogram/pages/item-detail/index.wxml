@@ -51,7 +51,7 @@
     </button>
   </view>
 
-  <view wx:if="{{requestOpen}}" class="sheet-mask" bindtap="closeRequest"></view>
+  <view wx:if="{{requestOpen}}" class="sheet-mask" catchtap="closeRequest"></view>
   <view wx:if="{{requestOpen}}" class="form-sheet">
     <view class="sheet-handle"></view>
     <view class="sheet-title">{{requestSheetTitle}}</view>
@@ -70,3 +70,9 @@
     <button class="submit-btn" bindtap="submitRequest">发送给物主</button>
   </view>
 </view>
+
+<login-modal
+  visible="{{loginModalVisible}}"
+  bind:loginsuccess="onLoginSuccess"
+  bind:cancel="onLoginCancel"
+></login-modal>

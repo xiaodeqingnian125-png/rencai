@@ -1,4 +1,4 @@
-const { apartments } = require("../../data/apartments");
+const { getApartments } = require("../../data/queries");
 
 const DEFAULT_CENTER = {
   latitude: 34.7466,
@@ -31,18 +31,29 @@ Page({
 
   onLoad(options) {
     this.initialApartmentId = Number(options.id) || 0;
+    this.loadApartments(this.initialApartmentId);
+  },
+
+  onShow() {
+    if (this.data.markers.length) {
+      this.loadApartments(this.data.activeId);
+    }
+  },
+
+  loadApartments(targetId) {
+    const apartments = getApartments();
     const markers = apartments.map((apartment) => ({
       ...apartment,
       locShort: getLocationShort(apartment),
       districtShort: getDistrictShort(apartment.district)
     }));
-    const activeApartment = markers.find((item) => item.id === this.initialApartmentId) || markers[0];
+    const activeApartment = markers.find((item) => item.id === targetId) || markers[0];
 
     this.setData({
       markers,
       activeApartment,
       activeId: activeApartment.id,
-      mapCenter: this.getApartmentCenter(activeApartment, this.initialApartmentId ? 13 : DEFAULT_CENTER.scale),
+      mapCenter: this.getApartmentCenter(activeApartment, targetId ? 13 : DEFAULT_CENTER.scale),
       mapMarkers: this.buildMapMarkers(markers, activeApartment.id)
     });
   },

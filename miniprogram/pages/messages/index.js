@@ -1,4 +1,4 @@
-const { messages: baseMessages } = require("../../data/business");
+const business = require("../../data/business");
 
 Page({
   data: {
@@ -10,7 +10,7 @@ Page({
       { value: "service", label: "服务" },
       { value: "comment", label: "评论" }
     ],
-    messages: JSON.parse(JSON.stringify(baseMessages)),
+    messages: [],
     filteredMessages: [],
     hasUnread: true,
     showDetail: false,
@@ -19,7 +19,20 @@ Page({
   },
 
   onLoad() {
-    this.applyType();
+    this.loadMessages();
+  },
+
+  onShow() {
+    this.loadMessages();
+  },
+
+  loadMessages() {
+    const messages = JSON.parse(JSON.stringify(business.messages));
+    this.setData({
+      messages,
+      filteredMessages: this.getFilteredMessages(messages, this.data.activeType),
+      hasUnread: messages.some((message) => message.unread)
+    });
   },
 
   selectType(e) {

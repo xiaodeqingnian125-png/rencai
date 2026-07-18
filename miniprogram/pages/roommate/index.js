@@ -1,3 +1,5 @@
+const { getRoommateData, createRoommatePostForUser } = require("../../data/queries");
+
 const priceOptions = [
   { label: "全部价格", min: 0, max: 999999 },
   { label: "¥800以下", min: 0, max: 800 },
@@ -52,14 +54,8 @@ Page({
     districtOptions,
     priceOptions,
     roomOptions,
-    posts: [
-      { id: 1, type: "has_room", badge: "有房找室友", confirmed: true, avatar: "李", avatarClass: "male", name: "小李", meta: "25岁 · 男", apartment: "郑东人才公寓", rooms: "1居室", district: "郑东新区", budget: "1200", moveIn: "7月中旬", desc: "主卧朝南有阳台，希望找作息稳定、爱干净的室友。", contact: "微信 xiaoli-room" },
-      { id: 2, type: "need_room", badge: "无房找合租", confirmed: false, avatar: "王", avatarClass: "female", name: "小王", meta: "23岁 · 女", apartment: "期望二七区/中原区", rooms: "合租两居优先", district: "二七区/中原区", budget: "800-1000", moveIn: "7月上旬", desc: "应届毕业生，安静爱干净，希望通勤地铁方便。", contact: "微信 xiaowang-0720" },
-      { id: 4, type: "need_room", badge: "无房找合租", confirmed: false, avatar: "赵", avatarClass: "female", name: "小赵", meta: "24岁 · 女", apartment: "经开区附近", rooms: "整租或合租均可", district: "经开区", budget: "1000-1500", moveIn: "8月", desc: "在经开区上班，想找附近合租，可以一起看房。", contact: "微信 zhao-rent" }
-    ],
-    reviewQueue: [
-      { title: "高新人才家园 · 2居室次卧", desc: "老张提交了有房找室友帖子，等待管理员审核后公开展示。" }
-    ],
+    posts: [],
+    reviewQueue: [],
     filteredPosts: [],
     detailSheetOpen: false,
     selectedPost: null,
@@ -77,11 +73,13 @@ Page({
       desc: "",
       contact: "",
       confirmed: false
-    }
+    },
+    loginModalVisible: false
   },
 
   onLoad() {
-    this.applyFilter();
+    const { posts, reviewQueue } = getRoommateData();
+    this.setData({ posts, reviewQueue }, () => this.applyFilter());
   },
 
   noop() {},
@@ -140,7 +138,29 @@ Page({
   },
 
   openPostSheet() {
+    const app = getApp();
+    if (!app.globalData.isLoggedIn) {
+      this.setData({ loginModalVisible: true });
+      return;
+    }
     this.setData({ postSheetOpen: true, detailSheetOpen: false });
+  },
+
+  ensureLogin() {
+    const app = getApp();
+    if (!app.globalData.isLoggedIn) {
+      this.setData({ loginModalVisible: true });
+      return false;
+    }
+    return true;
+  },
+
+  onLoginSuccess() {
+    this.setData({ loginModalVisible: false });
+  },
+
+  onLoginCancel() {
+    this.setData({ loginModalVisible: false });
   },
 
   closePostSheet() {
@@ -182,21 +202,37 @@ Page({
   submitPost() {
     const { form, publishMode } = this.data;
     if (!form.name || !form.budget || !form.moveIn || !form.contact) {
-      wx.showToast({ title: "请补充昵称、预算、入住时间和联系方式", icon: "none" });
+      wx.showToast({ title: "请完善必填信息", icon: "none" });
       return;
     }
     if (publishMode === "has_room" && (!form.apartment || !form.rooms || !form.confirmed)) {
       wx.showToast({ title: "有房帖子需确认房源信息", icon: "none" });
       return;
     }
-    const reviewQueue = [
-      {
-        title: publishMode === "has_room" ? `${form.apartment} · ${form.rooms}` : `${form.district || "期望区域"} · 找合租`,
-        desc: `${form.name} 提交了${publishMode === "has_room" ? "有房找室友" : "无房找合租"}帖子，等待管理员审核后公开展示。`
-      },
-      ...this.data.reviewQueue
-    ];
+    const app = getApp();
+    const userId = app.globalData.userId;
+    const result = createRoommatePostForUser(userId, {
+      type: publishMode,
+      name: form.name,
+      gender: form.gender,
+      age: form.age,
+      apartment: form.apartment,
+      rooms: form.rooms,
+      district: form.district,
+      budget: form.budget,
+      moveIn: form.moveIn,
+      desc: form.desc,
+      contact: form.contact,
+      confirmed: form.confirmed
+    });
+    if (!result.ok) {
+      wx.showToast({ title: "发布失败，请重试", icon: "none" });
+      return;
+    }
+    // 重新读取数据，拿到包含新帖子的审核队列
+    const { posts, reviewQueue } = getRoommateData();
     this.setData({
+      posts,
       reviewQueue,
       postSheetOpen: false,
       form: {

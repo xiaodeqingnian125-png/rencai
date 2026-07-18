@@ -1,4 +1,4 @@
-const { apartments } = require("../../data/apartments");
+const { getApartmentOptions } = require("../../data/queries");
 
 Page({
   data: {
@@ -10,7 +10,7 @@ Page({
       checkedIn: true
     },
     avatarText: "晓",
-    apartmentOptions: apartments.map((item) => item.name),
+    apartmentOptions: [],
     pickerOpen: false,
     modalOpen: false,
     modalField: "",
@@ -20,6 +20,14 @@ Page({
   },
 
   noop() {},
+
+  onLoad() {
+    this.setData({ apartmentOptions: getApartmentOptions() });
+  },
+
+  onShow() {
+    this.setData({ apartmentOptions: getApartmentOptions() });
+  },
 
   changeAvatar() {
     wx.showToast({ title: "静态版暂不上传头像", icon: "none" });
@@ -100,5 +108,23 @@ Page({
 
   saveProfile() {
     wx.showToast({ title: "个人信息已保存", icon: "none" });
+  },
+
+  exitApp() {
+    wx.showModal({
+      title: "退出小程序",
+      content: "确定要退出晓得青年小程序吗？",
+      confirmText: "退出",
+      confirmColor: "#e04a3a",
+      success: (res) => {
+        if (res.confirm) {
+          wx.exitMiniProgram({
+            fail: () => {
+              wx.showToast({ title: "退出失败，请稍后再试", icon: "none" });
+            }
+          });
+        }
+      }
+    });
   }
 });

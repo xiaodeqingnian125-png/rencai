@@ -16,8 +16,9 @@
       bindtap="goActivityDetail"
     >
       <view class="activity-cover {{item.coverClass}}">
-        <view class="cover-orb orb-a"></view>
-        <view class="cover-orb orb-b"></view>
+        <image wx:if="{{item.image}}" class="activity-cover-img" src="{{item.image}}" mode="aspectFill" lazy-load></image>
+        <view wx:else class="activity-cover-img grad-cover grad-{{(item.id % 8) + 1}}"></view>
+        <view class="activity-cover-shade"></view>
         <text class="activity-badge badge-{{item.typeClass}}">{{item.typeLabel}}</text>
       </view>
       <view class="activity-body">
@@ -63,14 +64,19 @@
       data-id="{{item.id}}"
       bindtap="goServiceDetail"
     >
-      <view class="service-icon">
-        <image src="/assets/icons/service-clock.svg" mode="aspectFit"></image>
+      <view class="service-cover {{item.coverClass}}">
+        <image wx:if="{{item.image}}" class="service-cover-img" src="{{item.image}}" mode="aspectFill" lazy-load></image>
+        <view wx:else class="service-cover-img grad-cover grad-{{(item.id % 8) + 1}}"></view>
+        <view class="service-cover-shade"></view>
+        <view class="service-cover-tag">{{item.category}}</view>
       </view>
-      <view class="service-info">
-        <view class="service-name">{{item.name}}</view>
-        <view class="service-desc">{{item.desc}}</view>
+      <view class="service-body">
+        <view class="service-info">
+          <view class="service-name">{{item.name}}</view>
+          <view class="service-desc">{{item.desc}}</view>
+        </view>
+        <view class="service-price">¥{{item.price}}<text>{{item.unit}}</text></view>
       </view>
-      <view class="service-price">¥{{item.price}}<text>{{item.unit}}</text></view>
     </view>
   </view>
 </view>

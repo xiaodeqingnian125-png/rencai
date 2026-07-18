@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "找室友"
+  "navigationBarTitleText": "找室友",
+  "usingComponents": {
+    "login-modal": "/components/login-modal/index"
+  }
 }
