@@ -1,0 +1,16 @@
+[
+  {"id": 1, "apartment_id": 1, "apartment_code": "A001", "name": "精致一居室", "area": "35㎡", "orient": "南向", "layout": "1室1卫", "floor": "3层 / 总8层", "price": 1200, "status": "active", "image": "room-1.jpg", "desc": "独立一居室户型，采光良好，适合单人居住"},
+  {"id": 2, "apartment_id": 1, "apartment_code": "A001", "name": "舒适两居室", "area": "55㎡", "orient": "东南向", "layout": "2室1厅1卫", "floor": "5层 / 总8层", "price": 1500, "status": "active", "image": "room-2.jpg", "desc": "两居室户型，双卧室设计，适合情侣或合租"},
+  {"id": 3, "apartment_id": 1, "apartment_code": "A001", "name": "阳光大单间", "area": "28㎡", "orient": "西向", "layout": "开间", "floor": "7层 / 总8层", "price": 1000, "status": "active", "image": "room-3.jpg", "desc": "大开间设计，空间利用率高"},
+  {"id": 4, "apartment_id": 2, "apartment_code": "A002", "name": "高新阳光单间", "area": "25㎡", "orient": "南向", "layout": "开间", "floor": "4层 / 总6层", "price": 800, "status": "active", "image": "room-4.jpg", "desc": "紧凑开间，南向采光"},
+  {"id": 5, "apartment_id": 2, "apartment_code": "A002", "name": "高新舒适一居", "area": "38㎡", "orient": "东向", "layout": "1室1卫", "floor": "2层 / 总6层", "price": 1000, "status": "active", "image": "room-5.jpg", "desc": "一居室户型，独立厨房"},
+  {"id": 6, "apartment_id": 2, "apartment_code": "A002", "name": "青年独立一居", "area": "42㎡", "orient": "南向", "layout": "1室1厅1卫", "floor": "5层 / 总6层", "price": 1200, "status": "active", "image": "room-6.jpg", "desc": "带独立客厅的一居室"},
+  {"id": 7, "apartment_id": 3, "apartment_code": "A003", "name": "经开标准一居", "area": "36㎡", "orient": "南向", "layout": "1室1卫", "floor": "3层 / 总10层", "price": 1100, "status": "active", "image": "room-7.jpg", "desc": "标准一居室，户型方正"},
+  {"id": 8, "apartment_id": 3, "apartment_code": "A003", "name": "经开舒适两居", "area": "58㎡", "orient": "东南向", "layout": "2室1厅1卫", "floor": "8层 / 总10层", "price": 1400, "status": "active", "image": "room-8.jpg", "desc": "两居室户型，主卧带阳台"},
+  {"id": 9, "apartment_id": 4, "apartment_code": "A004", "name": "港区经济单间", "area": "22㎡", "orient": "北向", "layout": "开间", "floor": "2层 / 总5层", "price": 700, "status": "active", "image": "room-9.jpg", "desc": "经济型开间，价格实惠"},
+  {"id": 10, "apartment_id": 4, "apartment_code": "A004", "name": "港区独立一居", "area": "40㎡", "orient": "南向", "layout": "1室1卫", "floor": "4层 / 总5层", "price": 950, "status": "active", "image": "room-10.jpg", "desc": "独立一居室，适合单人"},
+  {"id": 11, "apartment_id": 5, "apartment_code": "A005", "name": "二七舒适两居", "area": "60㎡", "orient": "南向", "layout": "2室1厅1卫", "floor": "6层 / 总12层", "price": 1300, "status": "active", "image": "room-11.jpg", "desc": "两居室户型，采光通风良好"},
+  {"id": 12, "apartment_id": 5, "apartment_code": "A005", "name": "二七通透三居", "area": "85㎡", "orient": "南北通透", "layout": "3室1厅1卫", "floor": "9层 / 总12层", "price": 1500, "status": "hidden", "image": "room-12.jpg", "desc": "三居室户型，南北通透，适合家庭"},
+  {"id": 13, "apartment_id": 6, "apartment_code": "A006", "name": "中原温馨一居", "area": "36㎡", "orient": "南向", "layout": "1室1卫", "floor": "4层 / 总8层", "price": 900, "status": "active", "image": "room-13.jpg", "desc": "温馨一居室，家电齐全"},
+  {"id": 14, "apartment_id": 6, "apartment_code": "A006", "name": "中原合租两居", "area": "52㎡", "orient": "东向", "layout": "2室1卫", "floor": "6层 / 总8层", "price": 1100, "status": "active", "image": "room-14.jpg", "desc": "两居室合租户型，性价比高"}
+]
