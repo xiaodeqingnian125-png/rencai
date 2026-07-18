@@ -94,6 +94,51 @@ function importAdminItems(type, rows) {
   return Promise.resolve(store.importAdminItems(type, rows));
 }
 
+// ========== 导入任务 ==========
+
+function createImportTask(targetType, fileName, csvContent, operator) {
+  if (isCloudMode()) {
+    return callCloud("createImportTask", { targetType, fileName, csvContent, operator });
+  }
+  // mock 模式暂不支持，返回错误提示
+  return Promise.resolve({ ok: false, error: "导入任务需云模式支持" });
+}
+
+function previewImport(taskId) {
+  if (isCloudMode()) {
+    return callCloud("previewImport", { taskId });
+  }
+  return Promise.resolve({ ok: false, error: "导入任务需云模式支持" });
+}
+
+function confirmImport(taskId) {
+  if (isCloudMode()) {
+    return callCloud("confirmImport", { taskId });
+  }
+  return Promise.resolve({ ok: false, error: "导入任务需云模式支持" });
+}
+
+function getImportTask(taskId) {
+  if (isCloudMode()) {
+    return callCloud("getImportTask", { taskId });
+  }
+  return Promise.resolve({ ok: false, error: "导入任务需云模式支持" });
+}
+
+function listImportTasks(targetType, page, pageSize) {
+  if (isCloudMode()) {
+    return callCloud("listImportTasks", { targetType, page, pageSize });
+  }
+  return Promise.resolve({ ok: false, error: "导入任务需云模式支持" });
+}
+
+function exportAdminItems(targetType, filters) {
+  if (isCloudMode()) {
+    return callCloud("exportAdminItems", { targetType, filters });
+  }
+  return Promise.resolve(queries.getAdminDataset(targetType));
+}
+
 // ========== 用户登录与身份 ==========
 
 function loginUser(openid, nickname, phone) {
@@ -199,6 +244,12 @@ module.exports = {
   deleteAdminItem,
   updateAdminItemStatus,
   importAdminItems,
+  createImportTask,
+  previewImport,
+  confirmImport,
+  getImportTask,
+  listImportTasks,
+  exportAdminItems,
   loginUser,
   getUserByOpenid,
   isUserAdmin,
