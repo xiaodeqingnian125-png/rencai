@@ -124,6 +124,7 @@ function getTargetComments(targetType, targetId, includeInactive = false) {
 function roomToPage(room) {
   return {
     id: room.id,
+    apartment_code: room.apartment_code || "",
     legacyRoomId: room.legacy_room_id,
     aptId: room.apartment_id,
     name: room.name,
@@ -145,6 +146,7 @@ function apartmentToDetail(apartment) {
   const rooms = getRoomsByApartmentId(apartment.id).map(roomToPage);
   return {
     id: apartment.id,
+    apartment_code: apartment.apartment_code || "",
     name: apartment.name,
     district: apartment.district,
     priceText: priceText(apartment),
