@@ -130,6 +130,15 @@
       </view>
     </view>
 
+    <view wx:if="{{isAdmin}}" class="admin-image-section">
+      <view class="admin-section-title">封面图管理</view>
+      <image-uploader
+        value="{{apartment.image}}"
+        cloud-path="covers/apartments"
+        bind:change="onImageChange"
+      ></image-uploader>
+    </view>
+
     <view class="scroll-spacer"></view>
   </scroll-view>
 
