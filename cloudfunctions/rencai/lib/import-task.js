@@ -87,24 +87,25 @@ async function previewImport(taskId) {
     });
   }
 
-  for (const obj of objects) {
-    const rowNum = obj.__rowNum;
-
-    if (targetType === "apartments") {
-      const result = await validateApartmentRow(obj);
+  // 分批并发校验，避免 20+ 行串行地理编码触发云函数 20s 超时
+  const GEOCODE_BATCH = 5;
+  for (let i = 0; i < objects.length; i += GEOCODE_BATCH) {
+    const batch = objects.slice(i, i + GEOCODE_BATCH);
+    const results = await Promise.all(
+      batch.map((obj) =>
+        targetType === "apartments"
+          ? validateApartmentRow(obj)
+          : validateRoomRow(obj, apartmentMap)
+      )
+    );
+    results.forEach((result, idx) => {
+      const rowNum = batch[idx].__rowNum;
       if (result.error) {
         errorLog.push({ row: rowNum, reason: result.error });
       } else {
         previewData.push(result.data);
       }
-    } else if (targetType === "room_types") {
-      const result = await validateRoomRow(obj, apartmentMap);
-      if (result.error) {
-        errorLog.push({ row: rowNum, reason: result.error });
-      } else {
-        previewData.push(result.data);
-      }
-    }
+    });
   }
 
   // 更新任务
@@ -112,6 +113,7 @@ async function previewImport(taskId) {
     data: {
       status: "previewing",
       total_count: objects.length,
+      success_count: previewData.length,
       preview_data: previewData,
       error_log: errorLog,
       fail_count: errorLog.length
@@ -197,6 +199,11 @@ async function validateRoomRow(row, apartmentMap) {
     return { error: `公寓不存在（code: ${code}, name: ${apartmentName}）` };
   }
 
+  // 去重：按 name + apartment_code 查已存在户型，命中则走 update 路径
+  const exist = await db.collection("room_types")
+    .where({ name: name, apartment_code: apartment.apartment_code }).get();
+  const existingId = exist.data.length > 0 ? exist.data[0]._id : null;
+
   const data = {
     name: name,
     apartment_code: apartment.apartment_code,
@@ -207,7 +214,8 @@ async function validateRoomRow(row, apartmentMap) {
     floor: (row["楼层"] || "").trim(),
     price: toInt(row["租金"]),
     status: (row["状态"] || "active").trim(),
-    image: (row["封面图文件名"] || "").trim()
+    image: (row["封面图文件名"] || "").trim(),
+    _existing_id: existingId
   };
 
   return { data };
@@ -296,8 +304,11 @@ async function getImportTask(taskId) {
     return { ok: false, error: "任务不存在" };
   }
   const task = tasks[0];
-  // 清理大字段
-  const { csv_content, preview_data, ...safeTask } = task;
+  // 只剥离 csv_content（体积大且无需返回前端），保留 preview_data 供预览页渲染
+  const { csv_content, ...safeTask } = task;
+  if (safeTask.preview_data && safeTask.preview_data.length > 20) {
+    safeTask.preview_data = safeTask.preview_data.slice(0, 20);
+  }
   return { ok: true, task: safeTask };
 }
 

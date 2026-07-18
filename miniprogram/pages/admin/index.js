@@ -856,7 +856,29 @@ Page({
     wx.showToast({ title: toast, icon: "none" });
   },
 
-  exportData() {
+  async exportData() {
+    // 公寓和户型使用专用 CSV 格式（含 apartment_code 列），
+    // 与 exportFiltered 保持一致，保证"导出→编辑→导入"往返不因缺少 apartment_code 报错
+    if (this.data.isApartment || this.data.isRoom) {
+      const exportType = this.data.type === "rooms" ? "room_types" : this.data.type;
+      wx.showLoading({ title: "导出中" });
+      try {
+        const res = await db.exportAdminItems(exportType, {});
+        const items = Array.isArray(res) ? res : (res && res.ok ? res.items : []);
+        if (items.length === 0 && res && !res.ok) {
+          wx.showToast({ title: res.error || "导出失败", icon: "none" });
+          return;
+        }
+        const csvText = this.generateCsvFromItems(this.data.type, items);
+        this.downloadCsv(this.data.type, csvText);
+      } catch (err) {
+        wx.showToast({ title: "导出失败", icon: "none" });
+      } finally {
+        wx.hideLoading();
+      }
+      return;
+    }
+    // 其他类型仍走原有 config 驱动的 CSV 路径
     const fileName = exportFileName(this.data.config);
     const tableText = toTableText(this.data.items, this.data.config);
     const csvText = toCsvText(this.data.items, this.data.config);
@@ -1184,15 +1206,23 @@ Page({
           const app = getApp();
           const operator = (app.globalData && app.globalData.userId) || "";
           const createRes = await db.createImportTask(type, fileName, csvContent, operator);
-          if (createRes && createRes.ok) {
-            wx.hideLoading();
-            wx.navigateTo({
-              url: `/pages/admin/import-preview/index?taskId=${createRes.taskId}`
-            });
-          } else {
+          if (!createRes || !createRes.ok) {
             wx.hideLoading();
             wx.showToast({ title: (createRes && createRes.error) || "创建失败", icon: "none" });
+            return;
           }
+          // 创建成功后立即触发预览（解析+校验+地理编码），
+          // 否则任务停留在 pending，预览页确认按钮不显示
+          wx.showLoading({ title: "解析预览中", mask: true });
+          const previewRes = await db.previewImport(createRes.taskId);
+          wx.hideLoading();
+          if (!previewRes || !previewRes.ok) {
+            wx.showToast({ title: (previewRes && previewRes.error) || "预览失败", icon: "none" });
+            return;
+          }
+          wx.navigateTo({
+            url: `/pages/admin/import-preview/index?taskId=${createRes.taskId}`
+          });
         } catch (err) {
           wx.hideLoading();
           wx.showToast({ title: "创建失败", icon: "none" });
