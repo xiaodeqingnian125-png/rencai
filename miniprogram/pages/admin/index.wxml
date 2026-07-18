@@ -12,6 +12,19 @@
         <view class="bulk-btn" bindtap="exportData">批量导出</view>
         <view class="bulk-btn primary" bindtap="openImport">批量导入</view>
       </view>
+      <view class="admin-action-row">
+        <button class="admin-btn" bindtap="goImportHistory" data-type="apartments">导入历史</button>
+      </view>
+      <view class="export-filter">
+        <view class="filter-label">按条件导出：</view>
+        <picker bindchange="onDistrictChange" value="{{exportDistrictIndex}}" range="{{districtOptions}}">
+          <view class="filter-picker">{{districtOptions[exportDistrictIndex] || '全部区域'}}</view>
+        </picker>
+        <picker bindchange="onStatusChange" value="{{exportStatusIndex}}" range="{{statusOptions}}">
+          <view class="filter-picker">{{statusOptions[exportStatusIndex] || '全部状态'}}</view>
+        </picker>
+        <button class="export-btn" bindtap="exportFiltered" data-type="apartments">导出</button>
+      </view>
 
       <scroll-view scroll-y class="apartment-scroll">
         <view wx:if="{{visibleItems.length}}" class="apartment-list">
@@ -59,6 +72,9 @@
       <view class="bulk-bar room-bulk-bar">
         <view class="bulk-btn" bindtap="exportData">批量导出</view>
         <view class="bulk-btn primary" bindtap="openImport">批量导入</view>
+      </view>
+      <view class="admin-action-row">
+        <button class="admin-btn" bindtap="goImportHistory" data-type="room_types">导入历史</button>
       </view>
 
       <scroll-view scroll-y class="room-scroll">

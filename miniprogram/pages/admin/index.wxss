@@ -1077,3 +1077,52 @@ button::after {
   background: #e04a3a;
   color: #ffffff;
 }
+
+/* ===== 任务 18：导入历史入口 + 按条件导出 UI ===== */
+.admin-action-row {
+  display: flex;
+  gap: 12rpx;
+  padding: 16rpx 32rpx;
+}
+
+.admin-btn {
+  flex: 1;
+  height: 64rpx;
+  line-height: 64rpx;
+  background: #fffdf7;
+  border: 1rpx solid #e8723c;
+  color: #e8723c;
+  font-size: 26rpx;
+  border-radius: 32rpx;
+}
+
+.export-filter {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 32rpx;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-size: 24rpx;
+  color: #8c7a68;
+}
+
+.filter-picker {
+  padding: 8rpx 20rpx;
+  background: #fffdf7;
+  border: 1rpx solid #f0eae0;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  color: #2d2318;
+}
+
+.export-btn {
+  padding: 8rpx 24rpx;
+  background: #e8723c;
+  color: #fff;
+  font-size: 24rpx;
+  border-radius: 8rpx;
+  line-height: 1.5;
+}
