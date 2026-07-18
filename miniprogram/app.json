@@ -38,7 +38,8 @@
     }
   },
   "requiredPrivateInfos": [
-    "getLocation"
+    "getLocation",
+    "chooseLocation"
   ],
   "tabBar": {
     "color": "#7C8580",

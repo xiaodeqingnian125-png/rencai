@@ -745,3 +745,31 @@
   color: #e8723c;
   margin-bottom: 20rpx;
 }
+
+/* 管理员经纬度修正区域 */
+.admin-location-section {
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid #f0eae0;
+}
+
+.location-display {
+  display: flex;
+  gap: 24rpx;
+  font-size: 24rpx;
+  color: #8c7a68;
+  margin-bottom: 16rpx;
+}
+
+.location-map {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid #f0eae0;
+}
+
+.location-tip {
+  text-align: center;
+  font-size: 22rpx;
+  color: #a69682;
+  margin-top: 12rpx;
+}

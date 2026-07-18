@@ -139,6 +139,23 @@
       ></image-uploader>
     </view>
 
+    <view wx:if="{{isAdmin}}" class="admin-location-section">
+      <view class="admin-section-title">经纬度修正</view>
+      <view class="location-display">
+        <text>经度：{{apartment.longitude || 0}}</text>
+        <text>纬度：{{apartment.latitude || 0}}</text>
+      </view>
+      <map
+        class="location-map"
+        longitude="{{apartment.longitude || 113.6}}"
+        latitude="{{apartment.latitude || 34.7}}"
+        scale="15"
+        markers="{{locationMarkers}}"
+        bindtap="onMapTap"
+      ></map>
+      <view class="location-tip">点击地图修正位置</view>
+    </view>
+
     <view class="scroll-spacer"></view>
   </scroll-view>
 

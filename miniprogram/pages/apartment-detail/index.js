@@ -20,7 +20,8 @@ Page({
     navHeight: "",
     navWidth: "",
     navRadius: "",
-    navIconSize: ""
+    navIconSize: "",
+    locationMarkers: []
   },
 
   onLoad(options) {
@@ -63,7 +64,44 @@ Page({
     this.setData({
       apartment,
       isAdmin,
-      favorite: isLoggedIn && apartment.favorite ? apartment.favorite : false
+      favorite: isLoggedIn && apartment.favorite ? apartment.favorite : false,
+      locationMarkers: [{
+        id: 0,
+        longitude: apartment.longitude,
+        latitude: apartment.latitude,
+        title: apartment.name
+      }]
+    });
+  },
+
+  onMapTap(e) {
+    // 使用 chooseLocation 让用户选择位置
+    wx.chooseLocation({
+      longitude: this.data.apartment.longitude || 113.6,
+      latitude: this.data.apartment.latitude || 34.7,
+      success: (res) => {
+        const { longitude, latitude } = res;
+        // 更新数据库
+        db.saveAdminItem("apartments", {
+          id: this.apartmentId,
+          longitude: longitude,
+          latitude: latitude
+        }).then(() => {
+          this.setData({
+            "apartment.longitude": longitude,
+            "apartment.latitude": latitude,
+            locationMarkers: [{
+              id: 0,
+              longitude,
+              latitude,
+              title: this.data.apartment.name
+            }]
+          });
+          wx.showToast({ title: "位置已更新", icon: "success" });
+        }).catch(() => {
+          wx.showToast({ title: "更新失败", icon: "none" });
+        });
+      }
     });
   },
 
