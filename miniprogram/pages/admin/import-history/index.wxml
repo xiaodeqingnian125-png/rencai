@@ -1,0 +1,25 @@
+<view class="import-history-page">
+  <view class="filter-bar">
+    <view class="filter-tab {{targetType === 'apartments' ? 'active' : ''}}" bindtap="switchType" data-type="apartments">公寓导入</view>
+    <view class="filter-tab {{targetType === 'room_types' ? 'active' : ''}}" bindtap="switchType" data-type="room_types">户型导入</view>
+  </view>
+
+  <view wx:if="{{tasks.length === 0}}" class="empty-state">
+    <text>暂无导入记录</text>
+  </view>
+
+  <view wx:else class="task-list">
+    <view wx:for="{{tasks}}" wx:key="task_id" class="task-card" bindtap="viewTask" data-id="{{item.task_id}}">
+      <view class="task-header">
+        <text class="task-file">{{item.file_name}}</text>
+        <text class="task-status status-{{item.status}}">{{statusText[item.status]}}</text>
+      </view>
+      <view class="task-meta">
+        <text>{{item.total_count}}条</text>
+        <text class="success">成功{{item.success_count}}</text>
+        <text wx:if="{{item.fail_count > 0}}" class="fail">失败{{item.fail_count}}</text>
+      </view>
+      <view class="task-time">{{item.create_time}}</view>
+    </view>
+  </view>
+</view>

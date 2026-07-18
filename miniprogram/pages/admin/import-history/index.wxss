@@ -1,0 +1,84 @@
+.import-history-page {
+  min-height: 100vh;
+  background: #fafaf6;
+  padding-bottom: 40rpx;
+}
+
+.filter-bar {
+  display: flex;
+  background: #fffdf7;
+  border-bottom: 1rpx solid #f0eae0;
+}
+
+.filter-tab {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 28rpx;
+  color: #8c7a68;
+}
+
+.filter-tab.active {
+  color: #e8723c;
+  font-weight: 600;
+  border-bottom: 3rpx solid #e8723c;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 120rpx 0;
+  color: #a69682;
+  font-size: 28rpx;
+}
+
+.task-list {
+  padding: 24rpx 32rpx;
+}
+
+.task-card {
+  background: #fffdf7;
+  border: 1rpx solid #f0eae0;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.task-file {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #2d2318;
+}
+
+.task-status {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+}
+
+.status-completed { background: #eef5ee; color: #5b9a6f; }
+.status-previewing { background: #fef8ef; color: #d4a04a; }
+.status-pending { background: #eef2f8; color: #5b8cb8; }
+.status-failed { background: #fdecea; color: #e04a3a; }
+
+.task-meta {
+  display: flex;
+  gap: 16rpx;
+  font-size: 24rpx;
+  color: #8c7a68;
+}
+
+.task-meta .success { color: #5b9a6f; }
+.task-meta .fail { color: #e04a3a; }
+
+.task-time {
+  font-size: 22rpx;
+  color: #a69682;
+  margin-top: 8rpx;
+}

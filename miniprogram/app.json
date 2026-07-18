@@ -21,6 +21,7 @@
     "pages/my-comments/index",
     "pages/profile-edit/index",
     "pages/admin/index",
+    "pages/admin/import-history/index",
     "pages/profile/index"
   ],
   "window": {
