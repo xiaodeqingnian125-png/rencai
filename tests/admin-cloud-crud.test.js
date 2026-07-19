@@ -25,6 +25,7 @@ function createHarness() {
     saveAdminItem: [],
     deleteAdminItem: [],
     updateAdminItemStatus: [],
+    createExportFile: [],
     legacyReads: [],
     legacyWrites: [],
     toasts: []
@@ -58,6 +59,17 @@ function createHarness() {
     async updateAdminItemStatus(type, id, status) {
       calls.updateAdminItemStatus.push({ type, id, status });
       return true;
+    },
+    async createExportFile(type, content) {
+      calls.createExportFile.push({ type, content });
+      return {
+        ok: true,
+        fileID: "cloud://env/exports/apartments-1.csv",
+        fileName: "公寓导出.csv"
+      };
+    },
+    async exportAdminItems() {
+      return { ok: true, items: cloudItems };
     }
   };
   const queries = {
@@ -99,7 +111,7 @@ function createHarness() {
     "../../data/db": db,
     "../../data/admin-adapter": adapter,
     "../../utils/floor-plans": floorPlans,
-    "../../utils/csv-share": { writeAndShareCsv() {} }
+    "../../utils/csv-share": { writeAndShareCsv() {}, downloadAndOpenCloudCsv() {} }
   }, {
     wx: wxApi,
     getApp: () => ({ globalData: { isAdmin: true } })
@@ -171,4 +183,14 @@ test("admin template exposes loading, retry and honest preview states", () => {
   assert.match(wxml, /bindtap="retryLoad"/);
   assert.match(wxml, /功能预览 · 即将开放/);
   assert.match(wxml, /\{\{formOpen && !previewOnly\}\}/);
+});
+
+test("apartment export creates a cloud CSV file instead of copying text", async () => {
+  const { page, calls } = createHarness();
+  await page.onLoad({ type: "apartments" });
+
+  await page.exportData();
+
+  assert.equal(calls.createExportFile[0].type, "apartments");
+  assert.match(calls.createExportFile[0].content, /公寓编号/);
 });

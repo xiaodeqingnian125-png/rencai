@@ -43,3 +43,21 @@ test("room adapter keeps apartment_code and numeric price", () => {
   assert.equal(cloud.apartment_code, "A001");
   assert.equal(cloud.price, 1200);
 });
+
+test("admin records discard legacy local image file names", () => {
+  const apartment = toAdminItem("apartments", {
+    id: 1,
+    apartment_code: "A001",
+    name: "郑东青年公寓",
+    image: "apt-1.jpg"
+  });
+  const room = toAdminItem("rooms", {
+    id: 2,
+    apartment_code: "A001",
+    name: "精致一居室",
+    image: "room-1.jpg"
+  });
+
+  assert.equal(apartment.image, "");
+  assert.equal(room.image, "");
+});

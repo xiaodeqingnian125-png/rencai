@@ -28,6 +28,7 @@ const {
 } = require("./lib/import-task");
 const { geocodeAddress, isInRange } = require("./lib/geocode");
 const { validateApartmentIdentity, attachRoomApartment } = require("./lib/admin-record");
+const { createExportFile } = require("./lib/export-file");
 
 // 全部业务集合清单（含 import_tasks 共 15 个）
 const ALL_COLLECTIONS = [
@@ -1171,6 +1172,7 @@ exports.main = async (event, context) => {
       case "migrateApartments":
       case "migrateRoomTypes":
       case "exportAdminItems":
+      case "createExportFile":
       case "initCloud":
       case "createImportTask":
       case "previewImport":
@@ -1191,6 +1193,7 @@ exports.main = async (event, context) => {
           case "migrateApartments": return await migrateApartments();
           case "migrateRoomTypes": return await migrateRoomTypes();
           case "exportAdminItems": return await exportAdminItems(event.targetType, event.filters || {});
+          case "createExportFile": return await createExportFile(cloud, event.targetType, event.csvContent);
           case "initCloud": return await initCloud();
           case "createImportTask": return await createImportTask(event.targetType, event.fileName, event.csvContent, operator);
           case "previewImport": return await previewImport(event.taskId);

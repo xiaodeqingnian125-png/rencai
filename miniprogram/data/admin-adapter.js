@@ -22,6 +22,7 @@ function toAdminItem(type, record, apartmentMap = {}) {
       ...source,
       rent: `¥${priceMin}-${priceMax}/月`,
       rooms: source.room_summary || "",
+      image: isStoredImagePath(source.image) ? source.image : "",
       floor_plans: normalizeFloorPlans(source.floor_plans)
     };
   }
@@ -31,7 +32,8 @@ function toAdminItem(type, record, apartmentMap = {}) {
       ...source,
       apartment: source.apartment_name || apartmentMap[source.apartment_code] || source.apartment_code || "",
       rent: `¥${numberOr(source.price)}/月起`,
-      rooms: source.layout || ""
+      rooms: source.layout || "",
+      image: isStoredImagePath(source.image) ? source.image : ""
     };
   }
 
@@ -96,4 +98,4 @@ module.exports = {
   toAdminItem,
   toCloudItem
 };
-const { normalizeFloorPlans } = require("../utils/floor-plans");
+const { isStoredImagePath, normalizeFloorPlans } = require("../utils/floor-plans");

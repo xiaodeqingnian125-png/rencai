@@ -139,6 +139,13 @@ function exportAdminItems(targetType, filters) {
   return Promise.resolve(queries.getAdminDataset(targetType));
 }
 
+function createExportFile(targetType, csvContent) {
+  if (!isCloudMode()) {
+    return Promise.resolve({ ok: false, code: "cloud_required", message: "导出文件需在云模式下生成" });
+  }
+  return callCloud("createExportFile", { targetType, csvContent });
+}
+
 // ========== 用户登录与身份 ==========
 
 function loginUser(openid, nickname, phone) {
@@ -341,6 +348,7 @@ module.exports = {
   getImportTask,
   listImportTasks,
   exportAdminItems,
+  createExportFile,
   loginUser,
   getUserByOpenid,
   isUserAdmin,

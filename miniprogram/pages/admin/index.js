@@ -5,7 +5,7 @@ const { toAdminItem, toCloudItem } = require("../../data/admin-adapter");
 const { encodeFloorPlans, decodeFloorPlans } = require("../../utils/floor-plans");
 
 // CSV 文件生成与分享工具（模板下载、错误报告下载复用）
-const { writeAndShareCsv } = require("../../utils/csv-share");
+const { writeAndShareCsv, downloadAndOpenCloudCsv } = require("../../utils/csv-share");
 
 const configs = {
   apartments: {
@@ -1063,7 +1063,7 @@ Page({
           return;
         }
         const csvText = this.generateCsvFromItems(this.data.type, items);
-        this.downloadCsv(this.data.type, csvText);
+        await this.downloadCsv(this.data.type, csvText);
       } catch (err) {
         wx.showToast({ title: "导出失败", icon: "none" });
       } finally {
@@ -1318,7 +1318,7 @@ Page({
         return;
       }
       const csvText = this.generateCsvFromItems(type, items);
-      this.downloadCsv(type, csvText);
+      await this.downloadCsv(type, csvText);
     } catch (err) {
       wx.showToast({ title: "导出失败", icon: "none" });
     } finally {
@@ -1346,11 +1346,17 @@ Page({
     return toCsvTextFromRows(headers, rows);
   },
 
-  // 下载 CSV：优先调用 wx.shareFileMessage 发送给好友/文件助手
-  // 失败兜底复制到剪贴板
-  downloadCsv(type, csvText) {
-    const fileName = type === "apartments" ? "公寓导出.csv" : "户型导出.csv";
-    writeAndShareCsv({ fileName, content: csvText });
+  async downloadCsv(type, csvText) {
+    const exportType = type === "rooms" ? "room_types" : type;
+    const created = await db.createExportFile(exportType, csvText);
+    if (!created || !created.ok || !created.fileID) {
+      wx.showToast({
+        title: (created && created.message) || "导出文件生成失败，请重试",
+        icon: "none"
+      });
+      return;
+    }
+    downloadAndOpenCloudCsv({ fileID: created.fileID, fileName: created.fileName });
   },
 
   // 下载标准 CSV 模板（仅表头，无示例数据，避免误导入）

@@ -178,8 +178,50 @@ function writeAndShareCsv({ fileName, content, complete } = {}) {
   });
 }
 
+function downloadAndOpenCloudCsv({ fileID, complete } = {}) {
+  const finish = (result) => {
+    if (typeof complete === "function") complete({ result });
+  };
+
+  if (!fileID || !wx.cloud || typeof wx.cloud.downloadFile !== "function") {
+    wx.showToast({ title: "导出文件下载失败，请重试", icon: "none" });
+    finish("download_failed");
+    return;
+  }
+
+  wx.cloud.downloadFile({
+    fileID,
+    success(downloaded) {
+      const filePath = downloaded && downloaded.tempFilePath;
+      if (!filePath || typeof wx.openDocument !== "function") {
+        wx.showToast({ title: "文件已生成，请在微信文件中查看", icon: "none" });
+        finish("open_failed");
+        return;
+      }
+      wx.openDocument({
+        filePath,
+        fileType: "csv",
+        showMenu: true,
+        success() {
+          wx.showToast({ title: "文件已打开，可转发或保存", icon: "none" });
+          finish("opened");
+        },
+        fail() {
+          wx.showToast({ title: "文件已生成，请在微信文件中查看", icon: "none" });
+          finish("open_failed");
+        }
+      });
+    },
+    fail() {
+      wx.showToast({ title: "导出文件下载失败，请重试", icon: "none" });
+      finish("download_failed");
+    }
+  });
+}
+
 module.exports = {
   writeAndShareCsv,
+  downloadAndOpenCloudCsv,
   csvCell,
   cleanTableCell,
   escapeFormulaInjection,
