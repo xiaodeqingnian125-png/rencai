@@ -46,13 +46,18 @@ const ALL_COLLECTIONS = [
   "import_tasks"
 ];
 
-// 管理员判定配置
-// 优先级：env.ADMIN_OPENIDS（OPENID 白名单）> users.role 持久化字段 > 兜底（nickname+phone，仅首次设置 admin 时使用）
-const localEnv = require("./env");
-const ADMIN_OPENIDS = (localEnv && Array.isArray(localEnv.ADMIN_OPENIDS)) ? localEnv.ADMIN_OPENIDS : [];
-// 仅当 ADMIN_OPENIDS 为空时，回退到 nickname+phone 兜底判定（带 warning）
-const ADMIN_NICKNAME_FALLBACK = "晓邱";
-const ADMIN_PHONE_FALLBACK = "17739768562";
+// 身份与权限校验模块
+// 管理员身份只根据当前 OPENID 对应的 users 记录中的 role 字段判断
+// 不接受前端传入的 openid / userId 决定当前用户身份
+// 不根据昵称、手机号判定管理员
+// 不把管理员 OPENID 或手机号硬编码到仓库文件
+const {
+  ADMIN_OPENIDS,
+  getCurrentUser,
+  isAdmin,
+  requireAdmin,
+  requireUser
+} = require("./lib/auth");
 
 // 手机号脱敏：保留后 4 位
 function maskPhone(phone) {
@@ -68,26 +73,6 @@ function maskOpenid(openid) {
   const s = openid.trim();
   if (s.length <= 8) return "****";
   return s.slice(0, 4) + "..." + s.slice(-4);
-}
-
-// 判定是否为管理员（服务端权威判定）
-// 1. ADMIN_OPENIDS 包含 openid → admin
-// 2. 已有用户记录的 role === "admin" → admin（持久化角色）
-// 3. 兜底：ADMIN_OPENIDS 为空且 nickname+phone 匹配 → admin（首次设置）
-function resolveAdminRole(openid, existingUser, nickname, phone) {
-  if (ADMIN_OPENIDS.length > 0) {
-    if (ADMIN_OPENIDS.indexOf(openid) >= 0) return true;
-    // OPENID 白名单已配置但当前 openid 不在白名单 → 强制非 admin（即使老数据是 admin 也覆盖）
-    if (existingUser && existingUser.role === "admin") return false;
-    return false;
-  }
-  // 兜底：仅当 ADMIN_OPENIDS 未配置时使用
-  if (existingUser && existingUser.role === "admin") return true;
-  if (nickname === ADMIN_NICKNAME_FALLBACK && phone === ADMIN_PHONE_FALLBACK) {
-    console.warn("[rencai] ADMIN_OPENIDS 未配置，使用 nickname+phone 兜底判定管理员，建议配置后重新部署");
-    return true;
-  }
-  return false;
 }
 
 // ========== 工具函数 ==========
@@ -213,9 +198,17 @@ async function loginUser(openid, nickname, phone) {
     };
   }
 
-  const isAdmin = resolveAdminRole(openid, existing, nickname, phone);
-  const role = isAdmin ? "admin" : "tenant";
-  const roleLabel = isAdmin ? "管理员" : "住户";
+  // 管理员角色判定（仅用于写入 users.role，不用于身份校验）：
+  // - 已有用户：保留现有 role（不覆盖，防止前端伪造管理员）
+  // - 新用户：默认 "tenant"，仅当 openid 在 ADMIN_OPENIDS（env.js，gitignored）中时引导为 "admin"
+  // 管理员身份校验（requireAdmin）只依据 users.role，不依赖此处的判定
+  let role = "tenant";
+  if (existing) {
+    role = existing.role || "tenant";
+  } else if (ADMIN_OPENIDS.indexOf(openid) >= 0) {
+    role = "admin";
+  }
+  const roleLabel = role === "admin" ? "管理员" : "住户";
 
   console.log("[rencai] loginUser openid(脱敏):", maskOpenid(openid),
     "phone(脱敏):", maskPhone(phone), "role:", role);
@@ -342,12 +335,6 @@ async function getPhoneByCode(code) {
     console.error("[rencai] getPhoneByCode exception:", err);
     return { ok: false, error: err.message || String(err) };
   }
-}
-
-async function isUserAdmin(userId) {
-  const { data } = await db.collection("users").where({ id: Number(userId) }).get();
-  if (!data.length) return false;
-  return data[0].role === "admin";
 }
 
 // ========== 管理员数据集 ==========
@@ -692,6 +679,7 @@ exports.main = async (event, context) => {
 
   try {
     switch (action) {
+      // ========== 公开 action（无需鉴权） ==========
       case "loginUser":
         // 强制使用 wxContext.OPENID，忽略前端传入的 openid 防止身份伪造
         return await loginUser(wxContext.OPENID, params.nickname, params.phone);
@@ -700,61 +688,80 @@ exports.main = async (event, context) => {
         return await getUserByOpenid(wxContext.OPENID);
       case "getPhoneByCode":
         return await getPhoneByCode(params.code);
-      case "isUserAdmin":
-        return await isUserAdmin(params.userId);
-      case "getAdminDataset":
-        return await getAdminDataset(params.type);
-      case "getNextAdminId":
-        return await getNextAdminId(params.type);
-      case "saveAdminItem":
-        return await saveAdminItem(params.type, params.item);
-      case "deleteAdminItem":
-        return await deleteAdminItem(params.type, params.id);
-      case "updateAdminItemStatus":
-        return await updateAdminItemStatus(params.type, params.id, params.status);
-      case "importAdminItems":
-        return await importAdminItems(params.type, params.rows);
+
+      // ========== 用户身份 action（需登录，用服务端 userId 覆盖前端传入值） ==========
+      case "isUserAdmin": {
+        // 身份查询：用 OPENID 查 users.role，不信任前端传入的 userId
+        const user = await getCurrentUser(wxContext);
+        return { ok: true, isAdmin: isAdmin(user) };
+      }
       case "registerActivity":
-        return await registerActivity(params);
       case "submitComment":
-        return await submitComment(params);
       case "toggleFavorite":
-        return await toggleFavorite(params);
       case "toggleCommentLike":
-        return await toggleCommentLike(params);
       case "createBorrowRequest":
-        return await createBorrowRequest(params);
       case "createBorrowItem":
-        return await createBorrowItem(params);
       case "createRoommatePost":
-        return await createRoommatePost(params);
       case "createServiceOrder":
-        return await createServiceOrder(params);
-      case "isActivityRegistered":
-        return await isActivityRegistered(params);
+      case "isActivityRegistered": {
+        const auth = await requireUser(wxContext);
+        if (!auth.ok) return auth;
+        // 用服务端权威 userId 覆盖前端传入值，防止身份伪造
+        const secureParams = { ...params, userId: auth.user.id };
+        switch (action) {
+          case "registerActivity": return await registerActivity(secureParams);
+          case "submitComment": return await submitComment(secureParams);
+          case "toggleFavorite": return await toggleFavorite(secureParams);
+          case "toggleCommentLike": return await toggleCommentLike(secureParams);
+          case "createBorrowRequest": return await createBorrowRequest(secureParams);
+          case "createBorrowItem": return await createBorrowItem(secureParams);
+          case "createRoommatePost": return await createRoommatePost(secureParams);
+          case "createServiceOrder": return await createServiceOrder(secureParams);
+          case "isActivityRegistered": return await isActivityRegistered(secureParams);
+          default: return { ok: false, code: "unknown_action", message: `未知 action: ${action}`, action };
+        }
+      }
+
+      // ========== 管理员 action（需 admin 角色） ==========
+      case "getAdminDataset":
+      case "getNextAdminId":
+      case "saveAdminItem":
+      case "deleteAdminItem":
+      case "updateAdminItemStatus":
+      case "importAdminItems":
       case "migrateApartments":
-        return await migrateApartments();
       case "migrateRoomTypes":
-        return await migrateRoomTypes();
-      case "createImportTask":
-        return await createImportTask(
-          event.targetType,
-          event.fileName,
-          event.csvContent,
-          event.operator
-        );
-      case "previewImport":
-        return await previewImport(event.taskId);
-      case "confirmImport":
-        return await confirmImport(event.taskId);
-      case "getImportTask":
-        return await getImportTask(event.taskId);
-      case "listImportTasks":
-        return await listImportTasks(event.targetType, event.page, event.pageSize);
       case "exportAdminItems":
-        return await exportAdminItems(event.targetType, event.filters || {});
       case "initCloud":
-        return await initCloud();
+      case "createImportTask":
+      case "previewImport":
+      case "confirmImport":
+      case "getImportTask":
+      case "listImportTasks": {
+        const auth = await requireAdmin(wxContext);
+        if (!auth.ok) return auth;
+        // 用服务端权威身份覆盖操作人字段
+        const operator = auth.user.id;
+        switch (action) {
+          case "getAdminDataset": return await getAdminDataset(params.type);
+          case "getNextAdminId": return await getNextAdminId(params.type);
+          case "saveAdminItem": return await saveAdminItem(params.type, params.item);
+          case "deleteAdminItem": return await deleteAdminItem(params.type, params.id);
+          case "updateAdminItemStatus": return await updateAdminItemStatus(params.type, params.id, params.status);
+          case "importAdminItems": return await importAdminItems(params.type, params.rows);
+          case "migrateApartments": return await migrateApartments();
+          case "migrateRoomTypes": return await migrateRoomTypes();
+          case "exportAdminItems": return await exportAdminItems(event.targetType, event.filters || {});
+          case "initCloud": return await initCloud();
+          case "createImportTask": return await createImportTask(event.targetType, event.fileName, event.csvContent, operator);
+          case "previewImport": return await previewImport(event.taskId);
+          case "confirmImport": return await confirmImport(event.taskId);
+          case "getImportTask": return await getImportTask(event.taskId);
+          case "listImportTasks": return await listImportTasks(event.targetType, event.page, event.pageSize);
+          default: return { ok: false, code: "unknown_action", message: `未知 action: ${action}`, action };
+        }
+      }
+
       default:
         return { ok: false, code: "unknown_action", message: `未知 action: ${action}`, action };
     }
