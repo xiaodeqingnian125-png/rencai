@@ -21,3 +21,6 @@ yarn-error.log*
 
 # Cloud function local secrets (deployed with function, not committed)
 cloudfunctions/rencai/env.js
+
+# gstack (local-only install per user preference; CLAUDE.md is committed separately)
+.claude/skills/

@@ -27,9 +27,68 @@ const {
   listImportTasks
 } = require("./lib/import-task");
 
-// 管理员判定条件
-const ADMIN_NICKNAME = "晓邱";
-const ADMIN_PHONE = "17739768562";
+// 全部业务集合清单（含 import_tasks 共 15 个）
+const ALL_COLLECTIONS = [
+  "users",
+  "apartments",
+  "room_types",
+  "activities",
+  "services",
+  "borrow_items",
+  "borrow_requests",
+  "comments",
+  "comment_likes",
+  "favorites",
+  "activity_registrations",
+  "service_orders",
+  "roommate_posts",
+  "messages",
+  "import_tasks"
+];
+
+// 管理员判定配置
+// 优先级：env.ADMIN_OPENIDS（OPENID 白名单）> users.role 持久化字段 > 兜底（nickname+phone，仅首次设置 admin 时使用）
+const localEnv = require("./env");
+const ADMIN_OPENIDS = (localEnv && Array.isArray(localEnv.ADMIN_OPENIDS)) ? localEnv.ADMIN_OPENIDS : [];
+// 仅当 ADMIN_OPENIDS 为空时，回退到 nickname+phone 兜底判定（带 warning）
+const ADMIN_NICKNAME_FALLBACK = "晓邱";
+const ADMIN_PHONE_FALLBACK = "17739768562";
+
+// 手机号脱敏：保留后 4 位
+function maskPhone(phone) {
+  if (!phone || typeof phone !== "string") return "";
+  const s = phone.trim();
+  if (s.length < 4) return "****";
+  return "****" + s.slice(-4);
+}
+
+// openid 脱敏：仅保留前 4 和后 4 位，中间用 ... 代替（用于日志输出）
+function maskOpenid(openid) {
+  if (!openid || typeof openid !== "string") return "";
+  const s = openid.trim();
+  if (s.length <= 8) return "****";
+  return s.slice(0, 4) + "..." + s.slice(-4);
+}
+
+// 判定是否为管理员（服务端权威判定）
+// 1. ADMIN_OPENIDS 包含 openid → admin
+// 2. 已有用户记录的 role === "admin" → admin（持久化角色）
+// 3. 兜底：ADMIN_OPENIDS 为空且 nickname+phone 匹配 → admin（首次设置）
+function resolveAdminRole(openid, existingUser, nickname, phone) {
+  if (ADMIN_OPENIDS.length > 0) {
+    if (ADMIN_OPENIDS.indexOf(openid) >= 0) return true;
+    // OPENID 白名单已配置但当前 openid 不在白名单 → 强制非 admin（即使老数据是 admin 也覆盖）
+    if (existingUser && existingUser.role === "admin") return false;
+    return false;
+  }
+  // 兜底：仅当 ADMIN_OPENIDS 未配置时使用
+  if (existingUser && existingUser.role === "admin") return true;
+  if (nickname === ADMIN_NICKNAME_FALLBACK && phone === ADMIN_PHONE_FALLBACK) {
+    console.warn("[rencai] ADMIN_OPENIDS 未配置，使用 nickname+phone 兜底判定管理员，建议配置后重新部署");
+    return true;
+  }
+  return false;
+}
 
 // ========== 工具函数 ==========
 
@@ -49,57 +108,216 @@ function getNextId(collection) {
     });
 }
 
+// 分页拉取全量数据，规避单次 get 100 条限制
+// 云函数端单次 get 默认 100 条，最大 limit 1000，这里按 100 一页循环拉取
+async function getAll(collection, whereClause) {
+  const PAGE_SIZE = 100;
+  let all = [];
+  let skip = 0;
+  // 安全上限：单集合最多拉 5000 条，避免异常集合卡死云函数
+  const MAX_ROWS = 5000;
+  while (skip < MAX_ROWS) {
+    let query = collection.orderBy("id", "desc").skip(skip).limit(PAGE_SIZE);
+    if (whereClause) {
+      query = collection.where(whereClause).orderBy("id", "desc").skip(skip).limit(PAGE_SIZE);
+    }
+    const { data } = await query.get(); // eslint-disable-line no-await-in-loop
+    all = all.concat(data);
+    if (data.length < PAGE_SIZE) break;
+    skip += PAGE_SIZE;
+  }
+  return all;
+}
+
+// ========== 云环境初始化 ==========
+
+// 一键创建全部业务集合并导入种子数据
+// 已存在的集合跳过，已存在的种子记录按 code 查重跳过
+async function initCloud() {
+  const created = [];
+  const existed = [];
+  const errors = [];
+
+  // 1. 创建集合（已存在会返回 errCode -501001，忽略）
+  for (const name of ALL_COLLECTIONS) {
+    try {
+      await db.createCollection(name); // eslint-disable-line no-await-in-loop
+      created.push(name);
+    } catch (err) {
+      const errCode = err && (err.errCode || (err.result && err.result.errCode));
+      // -501001 = 集合已存在；其他错误记录
+      if (errCode === -501001 || /already exists/i.test(err.message || "")) {
+        existed.push(name);
+      } else {
+        errors.push({ collection: name, errCode, message: err.message || String(err) });
+      }
+    }
+  }
+
+  // 2. 导入 apartments/room_types 种子数据（已存在记录会跳过）
+  const aptResult = await migrateApartments();
+  const roomResult = await migrateRoomTypes();
+
+  return {
+    ok: true,
+    collections: { created, existed, errors },
+    seed: {
+      apartments: aptResult.results,
+      room_types: roomResult.results
+    }
+  };
+}
+
 // ========== 用户登录 ==========
 
-async function loginUser(openid, nickname, phone) {
-  const userCol = db.collection("users");
-  const { data } = await userCol.where({ openid }).get();
+// 判断错误是否为「集合不存在」
+// wx-server-sdk 在集合未创建时返回 errCode -502003 或 -501001，message 含 "collection not exists"
+function isCollectionMissingError(err) {
+  if (!err) return false;
+  const errCode = err.errCode || (err.result && err.result.errCode);
+  const errMsg = err.message || (err.result && err.result.errMsg) || "";
+  if (errCode === -502003 || errCode === -501001) return true;
+  return /collection.*not.*exists|collection.*does.*not.*exist|数据库.*不存在|集合.*不存在/i.test(errMsg);
+}
 
-  const isAdmin = nickname === ADMIN_NICKNAME && phone === ADMIN_PHONE;
+// 用户登录 / 注册
+// 仅使用 cloud.getWXContext().OPENID 作为身份标识，不信任前端传入的 openid
+// 统一返回 { ok, code, message, user?, isNew? }
+async function loginUser(openid, nickname, phone) {
+  // openid 必须来自 wxContext，前端传入的 openid 参数被忽略
+  if (!openid) {
+    return { ok: false, code: "no_openid", message: "无法获取用户身份（OPENID）" };
+  }
+  if (!nickname || !phone) {
+    return { ok: false, code: "invalid_params", message: "昵称和手机号不能为空" };
+  }
+
+  const userCol = db.collection("users");
+  let existing = null;
+  try {
+    const { data } = await userCol.where({ openid }).get();
+    existing = data.length > 0 ? data[0] : null;
+  } catch (err) {
+    console.error("[rencai] loginUser query users failed:", err);
+    if (isCollectionMissingError(err)) {
+      return {
+        ok: false,
+        code: "users_collection_missing",
+        message: "用户数据库尚未初始化，请联系管理员"
+      };
+    }
+    return {
+      ok: false,
+      code: "users_query_failed",
+      message: "查询用户失败：" + (err.message || String(err))
+    };
+  }
+
+  const isAdmin = resolveAdminRole(openid, existing, nickname, phone);
   const role = isAdmin ? "admin" : "tenant";
   const roleLabel = isAdmin ? "管理员" : "住户";
 
-  if (data.length > 0) {
-    // 已有用户，更新信息
-    const user = data[0];
-    await userCol.doc(user._id).update({
-      data: {
-        nickname,
-        phone,
-        avatar_text: nickname.charAt(0),
-        role,
-        role_label: roleLabel,
-        updated_at: db.serverDate()
-      }
-    });
-    return { ok: true, user: { ...user, nickname, phone, role, role_label: roleLabel, avatar_text: nickname.charAt(0) }, isNew: false };
-  }
+  console.log("[rencai] loginUser openid(脱敏):", maskOpenid(openid),
+    "phone(脱敏):", maskPhone(phone), "role:", role);
 
-  // 新用户
-  const nextId = await getNextId(userCol);
-  const newUser = {
-    id: nextId,
-    openid,
-    nickname,
-    avatar_text: nickname.charAt(0),
-    avatar_class: "ca-1",
-    phone,
-    role,
-    role_label: roleLabel,
-    apartment_id: 0,
-    room_label: "未入住",
-    status: "active",
-    note: "",
-    created_at: db.serverDate(),
-    updated_at: db.serverDate()
-  };
-  await userCol.add({ data: newUser });
-  return { ok: true, user: newUser, isNew: true };
+  try {
+    if (existing) {
+      // 已有用户，更新昵称/手机号/角色（角色由服务端权威判定，不接受前端篡改）
+      await userCol.doc(existing._id).update({
+        data: {
+          nickname,
+          phone,
+          avatar_text: nickname.charAt(0),
+          role,
+          role_label: roleLabel,
+          updated_at: db.serverDate()
+        }
+      });
+      const user = { ...existing, nickname, phone, role, role_label: roleLabel, avatar_text: nickname.charAt(0) };
+      return { ok: true, user, isNew: false };
+    }
+
+    // 新用户
+    const nextId = await getNextId(userCol);
+    const newUser = {
+      id: nextId,
+      openid,
+      nickname,
+      avatar_text: nickname.charAt(0),
+      avatar_class: "ca-1",
+      phone,
+      role,
+      role_label: roleLabel,
+      apartment_id: 0,
+      room_label: "未入住",
+      status: "active",
+      note: "",
+      created_at: db.serverDate(),
+      updated_at: db.serverDate()
+    };
+    await userCol.add({ data: newUser });
+    // 返回给前端的 user 对象不能包含 db.serverDate() 命令对象，
+    // 否则 wx.cloud.callFunction 序列化时会导致 result 异常（前端拿到 undefined）。
+    // 写入成功后用普通对象返回，时间戳字段由数据库服务端填充。
+    const safeUser = {
+      id: nextId,
+      openid,
+      nickname,
+      avatar_text: nickname.charAt(0),
+      avatar_class: "ca-1",
+      phone,
+      role,
+      role_label: roleLabel,
+      apartment_id: 0,
+      room_label: "未入住",
+      status: "active",
+      note: ""
+    };
+    return { ok: true, user: safeUser, isNew: true };
+  } catch (err) {
+    console.error("[rencai] loginUser write failed:", err);
+    if (isCollectionMissingError(err)) {
+      return {
+        ok: false,
+        code: "users_collection_missing",
+        message: "用户数据库尚未初始化，请联系管理员"
+      };
+    }
+    return {
+      ok: false,
+      code: "login_user_failed",
+      message: "登录写入失败：" + (err.message || String(err))
+    };
+  }
 }
 
+// 通过 OPENID 查询用户（用于恢复登录态）
+// 统一返回 { ok, code, message, user? }
 async function getUserByOpenid(openid) {
-  const { data } = await db.collection("users").where({ openid }).get();
-  return data.length > 0 ? data[0] : null;
+  if (!openid) {
+    return { ok: false, code: "no_openid", message: "无法获取用户身份（OPENID）" };
+  }
+  try {
+    const { data } = await db.collection("users").where({ openid }).get();
+    if (data.length === 0) {
+      return { ok: false, code: "user_not_found", message: "用户不存在，请重新登录" };
+    }
+    return { ok: true, user: data[0] };
+  } catch (err) {
+    console.error("[rencai] getUserByOpenid failed:", err);
+    if (isCollectionMissingError(err)) {
+      return {
+        ok: false,
+        code: "users_collection_missing",
+        message: "用户数据库尚未初始化，请联系管理员"
+      };
+    }
+    return {
+      ok: false,
+      code: "user_query_failed",
+      message: "查询用户失败：" + (err.message || String(err))
+    };
+  }
 }
 
 // 通过 getPhoneNumber 回调的 code 换取真实手机号
@@ -147,7 +365,7 @@ const ADMIN_COLLECTION_MAP = {
 async function getAdminDataset(type) {
   const colName = ADMIN_COLLECTION_MAP[type];
   if (!colName) return [];
-  const { data } = await db.collection(colName).orderBy("id", "desc").get();
+  const data = await getAll(db.collection(colName));
   return data;
 }
 
@@ -240,16 +458,12 @@ async function importAdminItems(type, rows) {
 
 async function exportAdminItems(targetType, filters = {}) {
   const col = db.collection(targetType);
-  let query = col;
+  // 合并筛选条件
+  const whereClause = {};
+  if (filters.district) whereClause.district = filters.district;
+  if (filters.status) whereClause.status = filters.status;
 
-  if (filters.district) {
-    query = query.where({ district: filters.district });
-  }
-  if (filters.status) {
-    query = query.where({ status: filters.status });
-  }
-
-  const { data } = await query.get();
+  const data = await getAll(col, Object.keys(whereClause).length > 0 ? whereClause : null);
   return { ok: true, items: data };
 }
 
@@ -479,9 +693,11 @@ exports.main = async (event, context) => {
   try {
     switch (action) {
       case "loginUser":
-        return await loginUser(params.openid || wxContext.OPENID, params.nickname, params.phone);
+        // 强制使用 wxContext.OPENID，忽略前端传入的 openid 防止身份伪造
+        return await loginUser(wxContext.OPENID, params.nickname, params.phone);
       case "getUserByOpenid":
-        return await getUserByOpenid(params.openid || wxContext.OPENID);
+        // 恢复登录态：使用 wxContext.OPENID 查询当前用户
+        return await getUserByOpenid(wxContext.OPENID);
       case "getPhoneByCode":
         return await getPhoneByCode(params.code);
       case "isUserAdmin":
@@ -537,11 +753,13 @@ exports.main = async (event, context) => {
         return await listImportTasks(event.targetType, event.page, event.pageSize);
       case "exportAdminItems":
         return await exportAdminItems(event.targetType, event.filters || {});
+      case "initCloud":
+        return await initCloud();
       default:
-        return { ok: false, error: "unknown_action", action };
+        return { ok: false, code: "unknown_action", message: `未知 action: ${action}`, action };
     }
   } catch (err) {
     console.error(`[rencai] action=${action} error:`, err);
-    return { ok: false, error: err.message || String(err), action };
+    return { ok: false, code: "cloud_action_failed", message: err.message || String(err), action };
   }
 };

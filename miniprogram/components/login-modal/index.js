@@ -97,7 +97,8 @@ Component({
       const handleResult = (res) => {
         this.setData({ loading: false });
         if (!res || !res.ok) {
-          wx.showToast({ title: "登录失败，请重试", icon: "none" });
+          const toast = this.mapLoginErrorToToast(res);
+          wx.showToast({ title: toast, icon: "none" });
           return;
         }
         this.setData({ nickname: "", phone: "", phoneInputMode: "wechat" });
@@ -105,12 +106,46 @@ Component({
       };
 
       if (result && typeof result.then === "function") {
-        result.then(handleResult).catch(() => {
+        result.then(handleResult).catch((err) => {
           this.setData({ loading: false });
-          wx.showToast({ title: "登录失败，请重试", icon: "none" });
+          console.error("[login-modal] 未捕获的异常:", err);
+          wx.showToast({ title: "登录异常，请重试", icon: "none" });
         });
       } else {
         handleResult(result);
+      }
+    },
+
+    // 将登录错误映射为用户可理解的提示文案
+    mapLoginErrorToToast(res) {
+      if (!res) return "登录失败，请重试";
+      const code = res.code;
+      const msg = res.message || "";
+      switch (code) {
+        case "cloud_not_initialized":
+          return "云开发未初始化，请联系管理员";
+        case "function_call_failed":
+          return "云函数未部署，请先部署 rencai";
+        case "users_collection_missing":
+          return "用户数据库未初始化，请联系管理员";
+        case "login_user_failed":
+          return msg || "登录失败，请重试";
+        case "wx_login_failed":
+          return "微信登录失败，请重试";
+        case "invalid_result":
+        case "empty_cloud_result":
+          return msg || "云函数返回异常，请重试";
+        case "cloud_action_failed":
+          return msg || "云函数执行异常，请重试";
+        case "no_openid":
+          return "无法获取身份，请重试";
+        case "invalid_params":
+          return "请填写完整信息";
+        case "users_query_failed":
+        case "user_query_failed":
+          return msg || "查询用户失败，请重试";
+        default:
+          return msg || "登录失败，请重试";
       }
     },
 

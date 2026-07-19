@@ -111,19 +111,26 @@ Page({
   },
 
   exitApp() {
+    // 已废弃：原实现调用 wx.exitMiniProgram 不会清除登录态，且在开发者工具/预览环境常失败
+    // 保留空函数避免历史引用报错；实际退出逻辑见 logoutAccount
+    this.logoutAccount();
+  },
+
+  // 退出登录：清除登录态并回到个人中心 tab
+  // 仅清除 auth_info 缓存与 globalData 登录字段，不动其他业务缓存
+  logoutAccount() {
     wx.showModal({
-      title: "退出小程序",
-      content: "确定要退出晓得青年小程序吗？",
+      title: "退出登录",
+      content: "确定退出当前账号吗？",
       confirmText: "退出",
       confirmColor: "#e04a3a",
       success: (res) => {
-        if (res.confirm) {
-          wx.exitMiniProgram({
-            fail: () => {
-              wx.showToast({ title: "退出失败，请稍后再试", icon: "none" });
-            }
-          });
-        }
+        if (!res.confirm) return;
+        const app = getApp();
+        app.logout();
+        // 清除确认：app.logout 内部已清空 globalData.openid/userInfo/userId/isLoggedIn/isAdmin
+        // 并移除本地 auth_info 缓存
+        wx.switchTab({ url: "/pages/profile/index" });
       }
     });
   }

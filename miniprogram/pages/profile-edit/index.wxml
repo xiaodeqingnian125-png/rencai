@@ -46,7 +46,7 @@
 
     <view class="save-section">
       <button class="save-btn" bindtap="saveProfile">保存</button>
-      <button class="exit-btn" bindtap="exitApp">退出小程序</button>
+      <button class="exit-btn" bindtap="logoutAccount">退出登录</button>
     </view>
   </scroll-view>
 

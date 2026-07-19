@@ -101,6 +101,10 @@ Page({
         }).catch(() => {
           wx.showToast({ title: "更新失败", icon: "none" });
         });
+      },
+      fail: (err) => {
+        // 用户取消选择时不报错，仅打日志
+        console.log("[chooseLocation] cancel or fail:", err.errMsg || err);
       }
     });
   },
