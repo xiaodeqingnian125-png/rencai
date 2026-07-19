@@ -5,6 +5,52 @@
 > 起点：main 1d3ae89
 > 范围：仅公寓/户型读取链路云端化，不扩展到活动/服务/借物/评论/收藏/地图/消息
 
+## 最终状态摘要
+
+**当前状态：本阶段已完成并通过人工验收，代码已提交并推送至 `feat/cloud-apartment-read` 分支，未合并 main。**
+
+### 已完成事项
+
+- 第一条真实云数据读取链路已接通：首页公寓列表 → 公寓详情 → 该公寓户型列表 → 户型详情
+- 云函数已部署（`cloudfunctions/rencai`，含 4 个公开只读 action）
+- 小程序已重新编译，前端 db.js 封装与页面改动生效
+- 人工验收通过，运行正常
+
+### 人工验收通过项
+
+- 首页显示 6 条云数据库公寓
+- 价格字段正常（priceMin/priceMax 为 number）
+- 公寓详情正常
+- 公寓费用、配套设施、公共设施正常（含图标与文案）
+- 户型列表正常
+- 户型详情正常
+- 户型费用和配套设施正常
+- 字符串/数字 id 已兼容（数据库存在 `id:1` 与 `id:"1"` 两种）
+- 缺失图片使用渐变占位图（`cloud://` 与 `https://` 以外的本地文件名置空）
+- 下拉刷新和页面生命周期保护正常（`_isAlive` 守卫，`onShow` 防重复请求）
+
+### 关键实现要点（最终版）
+
+- 云函数分页参数使用 `page` + `pageSize`（默认 20，上限 100），返回结构含 `page`/`pageSize`/`hasMore`；不再使用单 `limit` 参数
+- 图片路径仅允许 `cloud://` 与 `https://` 开头，本地文件名（如 `apt-1.jpg`）置空，由前端走渐变占位图
+- `status` 兼容查询使用 `_.in(["active", null])`，一次性匹配 `status === "active"` 与字段缺失的旧数据，不再使用 fallback 查询
+- 输入校验：`isValidApartmentCode`（字母数字下划线，≤32 字符）+ `isValidNumericId`（正整数，<1e8）
+- 设施列表通过 `normalizeFacilityList` 兼容字符串数组与对象数组；费用列表通过 `normalizeCostList` 规范化 `active` 字段
+- 户型的 `costs`/`facilities` 由所属公寓填充（`room_types` 表无此字段）
+
+### 未执行事项（按任务边界保留）
+
+- 未合并 main
+- 未继续开发其他模块（活动/服务/借物/室友/收藏/评论/消息/地图等）
+- 未修改云数据库记录
+- 未创建索引（当前数据量小，无需索引）
+
+### 历史排查过程说明
+
+> **后面各章节（一至十三）是开发与排查过程的真实记录，保留用于追溯。最终实现以本"最终状态摘要"为准；若历史章节与摘要不一致，以摘要为准。**
+
+---
+
 ## 一、任务目标
 
 完成第一条真实云数据读取链路：
@@ -13,25 +59,28 @@
 
 ## 二、修改文件清单
 
-### 修改文件（8 个）
+### 修改文件（最终清单，共 10 个）
 
 | 文件 | 修改内容 |
 |---|---|
-| `cloudfunctions/rencai/index.js` | 新增 4 个公开只读 action 实现函数 + 4 个 switch 分支 + 图片路径校验函数 `isValidImagePath` |
+| `cloudfunctions/rencai/index.js` | 新增 4 个公开只读 action 实现函数 + 4 个 switch 分支 + 图片路径校验函数 `isValidImagePath` + 字段映射函数 `toApartmentPage`/`toRoomPage`/`toApartmentCard` + 规范化函数 `normalizeFacilityList`/`normalizeCostList` + 输入校验函数 `isValidApartmentCode`/`isValidNumericId` + 分页函数 `parsePaging` |
 | `miniprogram/data/db.js` | 新增 `getApartmentList` / `getApartmentDetail` / `getRoomListByApartment` / `getRoomDetail` 4 个封装，cloud 模式调云函数，mock 模式走 queries 兜底 |
-| `miniprogram/pages/index/index.js` | 移除 `require("../../data/queries")`，改为 `require("../../data/db")`；`loadApartments` 改为异步调 `db.getApartmentList`；新增 loading/error/empty 状态；新增 `_isAlive` 防卸载后 setData；新增 `retryLoad`；`onShow` 仅在已加载过一次后重新拉取 |
-| `miniprogram/pages/index/index.wxml` | 新增 loading/error/empty 三种状态视图 |
-| `miniprogram/pages/apartment-detail/index.js` | 移除 `require("../../data/apartments")` 和顶层 `require("../../data/queries")`；`loadApartment` 改为异步调 `db.getApartmentDetail`；新增 `loadRooms` 异步调 `db.getRoomListByApartment`；字段映射 `mapApartmentToPage`；新增 loading/error/notFound 状态；`goRoomDetail` 传 `apartment_code`；`toggleFavorite/submitComment/likeComment` 云模式提示"功能云端化中" |
-| `miniprogram/pages/apartment-detail/index.wxml` | 新增 loading/error/notFound 状态视图；户型卡片新增 `data-apartment-code` |
-| `miniprogram/pages/room-detail/index.js` | 移除 `require("../../data/apartments")` 和顶层 `require("../../data/queries")`；`loadRoom` 改为异步调 `db.getRoomDetail`；字段映射 `mapRoomToPage`/`mapApartmentToPage`；新增 loading/error/notFound 状态；云模式缺 `apartment_code` 时提示参数不完整；`toggleFavorite/submitComment/likeComment` 云模式提示"功能云端化中" |
-| `miniprogram/pages/room-detail/index.wxml` | 新增 loading/error/notFound 状态视图 |
+| `miniprogram/pages/index/index.js`（首页） | 移除 `require("../../data/queries")`，改为 `require("../../data/db")`；`loadApartments` 改为异步调 `db.getApartmentList`；新增 loading/error/empty 状态；新增 `_isAlive` 防卸载后 setData；新增 `retryLoad`；`onShow` 仅在已加载过一次后重新拉取；`applyFilters` 价格字段强制 `Number()` 转换 |
+| `miniprogram/pages/index/index.wxml`（首页） | 新增 loading/error/empty 三种状态视图 |
+| `miniprogram/pages/apartment-detail/index.js`（公寓详情） | 移除 `require("../../data/apartments")` 和顶层 `require("../../data/queries")`；`loadApartment` 改为异步调 `db.getApartmentDetail`；新增 `loadRooms` 异步调 `db.getRoomListByApartment`；字段映射 `mapApartmentToPage`；新增 loading/error/notFound 状态；`goRoomDetail` 传 `apartment_code`；`toggleFavorite/submitComment/likeComment` 云模式提示"功能云端化中" |
+| `miniprogram/pages/apartment-detail/index.wxml`（公寓详情） | 新增 loading/error/notFound 状态视图；户型卡片新增 `data-apartment-code` |
+| `miniprogram/pages/room-detail/index.js`（户型详情） | 移除 `require("../../data/apartments")` 和顶层 `require("../../data/queries")`；`loadRoom` 改为异步调 `db.getRoomDetail`；字段映射 `mapRoomToPage`/`mapApartmentToPage` 明确保留 `costs`/`facilities`；新增 loading/error/notFound 状态；云模式缺 `apartment_code` 时提示参数不完整；`toggleFavorite/submitComment/likeComment` 云模式提示"功能云端化中" |
+| `miniprogram/pages/room-detail/index.wxml`（户型详情） | 新增 loading/error/notFound 状态视图；费用/设施区域新增空状态视图 |
+| `miniprogram/pages/room-detail/index.wxss`（户型详情） | 新增 `.empty-block` 样式（费用/设施空状态） |
+| `logs/2026-07-19-cloud-apartment-read.md`（本任务日志） | 本文件，记录任务目标、实现细节、修复过程、验收清单与最终状态摘要 |
 
 ### 未修改
 
-- 管理员鉴权（`lib/auth.js`）保持不变
+- 管理员鉴权（`lib/auth.js`、`requireAdmin`/`requireUser`/`getCurrentUser`）保持不变
 - 登录链路（`loginUser`/`getUserByOpenid`/`getPhoneByCode`）保持不变
 - `initCloud` 与数据库初始化代码保持不变
 - CSV 导入导出逻辑保持不变
+- `env.js`、`envList.js` 保持不变（未提交敏感配置）
 - 其他页面（活动/服务/借物/室友/收藏/评论/消息/地图/个人中心/管理后台）保持不变
 - `queries.js` / `mock-store.js` / `apartments.js` / `tables.js` 保持不变（mock 模式仍可用）
 
@@ -41,9 +90,9 @@
 
 | action | 用途 | 入参 | 返回 |
 |---|---|---|---|
-| `getApartmentList` | 公寓列表 | `limit`（可选，默认 20，上限 100） | `{ ok: true, data: [apartmentCard] }` |
+| `getApartmentList` | 公寓列表 | `page`（默认 1）, `pageSize`（默认 20，上限 100） | `{ ok: true, data: [apartmentCard], page, pageSize, hasMore }` |
 | `getApartmentDetail` | 单个公寓详情 | `id`（必填，正整数） | `{ ok: true, data: apartment }` 或 `{ ok: false, code: "not_found" }` |
-| `getRoomListByApartment` | 某公寓的户型列表 | `apartmentCode`（必填，字母数字下划线，≤32 字符）, `limit`（可选） | `{ ok: true, data: [room] }` |
+| `getRoomListByApartment` | 某公寓的户型列表 | `apartmentCode`（必填，字母数字下划线，≤32 字符）, `page`, `pageSize` | `{ ok: true, data: [room], page, pageSize, hasMore }` |
 | `getRoomDetail` | 单个户型详情 | `apartmentCode`（必填）, `id`（必填，正整数） | `{ ok: true, data: { room, apartment } }` 或 `{ ok: false, code: "not_found" }` |
 
 ### 安全特性
@@ -52,12 +101,12 @@
 - **不信任前端传入 collection**：action 内部硬编码集合名，不接受 `collection` 参数
 - **不复用管理员接口**：与管理员 `getAdminDataset` 完全独立
 - **输入校验**：`isValidApartmentCode`（字母数字下划线，≤32 字符）+ `isValidNumericId`（正整数，<1e8）
-- **status 过滤**：默认只返回 `status === "active"` 的数据；兼容旧数据无 status 字段（fallback 查全量）
-- **分页安全上限**：limit 默认 20，上限 100
+- **status 过滤（最终兼容逻辑）**：使用 `_.in(["active", null])` 一次性匹配 `status === "active"` 与字段缺失的旧数据，不再使用 fallback 查询
+- **分页安全上限**：`page` 默认 1（正整数），`pageSize` 默认 20，上限 100；返回结构含 `page`/`pageSize`/`hasMore`
 - **not_found 明确返回**：数据不存在时返回 `{ ok: false, code: "not_found", message: "..." }`
 - **统一返回格式**：成功 `{ ok: true, data }`，失败 `{ ok: false, code, message }`
 - **无 db 命令对象**：所有返回数据经过 `toApartmentPage`/`toRoomPage`/`toApartmentCard` 映射，剥离 `_id` 和内部字段
-- **图片路径校验**：`isValidImagePath` 仅保留 `cloud://`/`http://`/`https://` 开头的图片，本地文件名（如 `apt-1.jpg`）置空，由前端走占位图
+- **图片路径校验（最终版）**：`isValidImagePath` 仅保留 `cloud://` 与 `https://` 开头的图片；本地文件名（如 `apt-1.jpg`）与 `http://` 明文链接置空，由前端走渐变占位图
 
 ## 四、数据链路对比
 
@@ -140,12 +189,12 @@ pages/room-detail → db.getRoomDetail(code, id) → queries.getRoomById() → t
 
 ### 游客未登录场景
 
-- [ ] 1. 清除本地缓存 → 重新编译 → 进入首页 → 显示 6 条公寓数据（来自云数据库）
+- [x] 1. 清除本地缓存 → 重新编译 → 进入首页 → 显示 6 条公寓数据（来自云数据库）
 - [ ] 2. 首页显示加载中状态（短暂）→ 数据加载完成
-- [ ] 3. 下拉刷新 → 重新拉取公寓列表
-- [ ] 4. 点击某公寓 → 进入公寓详情 → 显示该公寓完整信息（名称/地址/价格/设施等）
-- [ ] 5. 公寓详情页显示该公寓的户型列表（按 `apartment_code` 关联）
-- [ ] 6. 点击某户型 → 进入户型详情 → 显示该户型完整信息 + 所属公寓名称
+- [x] 3. 下拉刷新 → 重新拉取公寓列表
+- [x] 4. 点击某公寓 → 进入公寓详情 → 显示该公寓完整信息（名称/地址/价格/设施等）
+- [x] 5. 公寓详情页显示该公寓的户型列表（按 `apartment_code` 关联）
+- [x] 6. 点击某户型 → 进入户型详情 → 显示该户型完整信息 + 所属公寓名称
 - [ ] 7. 返回首页 → 再次点击同一公寓 → 数据正常显示（不重复叠加）
 
 ### 数据一致性场景
@@ -163,9 +212,9 @@ pages/room-detail → db.getRoomDetail(code, id) → queries.getRoomById() → t
 
 ### 图片处理场景
 
-- [ ] 15. 首页公寓卡片显示渐变占位图（无 broken image 图标）
-- [ ] 16. 公寓详情 hero 区域显示渐变占位图
-- [ ] 17. 户型详情 gallery 显示渐变占位图
+- [x] 15. 首页公寓卡片显示渐变占位图（无 broken image 图标）
+- [x] 16. 公寓详情 hero 区域显示渐变占位图
+- [x] 17. 户型详情 gallery 显示渐变占位图
 
 ### 不影响其他功能
 
@@ -181,6 +230,8 @@ pages/room-detail → db.getRoomDetail(code, id) → queries.getRoomById() → t
 - [ ] 24. 未登录游客调 `getApartmentDetail({id:1})` → 正常返回公寓详情（公开接口）
 - [ ] 25. **使用普通非管理员微信账号**（在云数据库 users 集合中 role 不是 admin 的账号）调 `getAdminDataset({type:"apartments"})` → 返回 `{ ok: false, code: "forbidden" }`（管理员鉴权未受影响）
 - [ ] 26. 管理员在前端退出登录后，云函数仍能通过 OPENID 识别其管理员身份（这是当前 OPENID 鉴权机制的正常结果：前端退出登录只清除 `app.globalData`，不改变 users.role；管理员调 `getAdminDataset` 仍返回数据，普通用户仍返回 forbidden）
+
+> 验收勾选说明：仅勾选本次实际人工验收通过的项（首页 6 条数据、下拉刷新、公寓详情、户型列表、户型详情、渐变占位图）；其他项未实际执行测试，保留未勾选状态。
 
 ## 九、当前 git diff 和 git status
 
@@ -441,7 +492,7 @@ function toApartmentCard(apt) {
 
 ---
 
-## 十三、户型详情费用/设施空白修复（2026-07-19 追加）
+## 十二、户型详情费用/设施空白修复（2026-07-19 追加）
 
 ### 真实测试证据
 
@@ -578,7 +629,7 @@ function mapRoomToPage(room, apartment) {
 
 ---
 
-## 十二、设施数据规范化（2026-07-19 追加）
+## 十三、设施数据规范化（2026-07-19 追加）
 
 ### 真实测试证据
 
