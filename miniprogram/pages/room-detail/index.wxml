@@ -1,3 +1,23 @@
+<view wx:if="{{loading}}" class="state-empty">
+  <text class="empty-mark">⏳</text>
+  <text class="empty-title">正在加载户型详情...</text>
+  <text class="empty-copy">请稍候</text>
+</view>
+
+<view wx:elif="{{notFound}}" class="state-empty">
+  <text class="empty-mark">⌕</text>
+  <text class="empty-title">户型不存在</text>
+  <text class="empty-copy">该户型可能已下架</text>
+  <button class="reset-link" bindtap="goBack">返回</button>
+</view>
+
+<view wx:elif="{{error}}" class="state-empty">
+  <text class="empty-mark">⚠️</text>
+  <text class="empty-title">{{error}}</text>
+  <text class="empty-copy">请检查网络或稍后重试</text>
+  <button class="reset-link" bindtap="retryLoad">重新加载</button>
+</view>
+
 <view wx:if="{{apartment && room}}" class="room-page">
   <scroll-view class="gallery" scroll-x enhanced show-scrollbar="{{false}}">
     <image wx:if="{{room.image}}" class="gallery-img" src="{{room.image}}" mode="aspectFill"></image>
@@ -35,22 +55,24 @@
 
     <view class="info-block">
       <view class="info-block-title">费用信息</view>
-      <view class="cost-grid">
+      <view wx:if="{{room.costs.length}}" class="cost-grid">
         <view wx:for="{{room.costs}}" wx:key="label" class="cost-cell {{item.active ? 'active' : 'inactive'}}">
           <text class="cost-label">{{item.label}}</text>
           <view class="cost-value">{{item.value}}</view>
         </view>
       </view>
+      <view wx:else class="empty-block">暂无费用信息</view>
     </view>
 
     <view class="info-block">
       <view class="info-block-title">配套设施</view>
-      <view class="fac-grid">
+      <view wx:if="{{room.facilities.length}}" class="fac-grid">
         <view wx:for="{{room.facilities}}" wx:key="label" class="fac-cell {{item.active ? 'active' : 'inactive'}}">
           <view class="fac-icon">{{item.icon}}</view>
           <text>{{item.label}}</text>
         </view>
       </view>
+      <view wx:else class="empty-block">暂无配套设施</view>
     </view>
 
     <view class="info-block">

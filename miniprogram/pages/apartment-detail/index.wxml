@@ -1,3 +1,23 @@
+<view wx:if="{{loading}}" class="state-empty">
+  <text class="empty-mark">⏳</text>
+  <text class="empty-title">正在加载公寓详情...</text>
+  <text class="empty-copy">请稍候</text>
+</view>
+
+<view wx:elif="{{notFound}}" class="state-empty">
+  <text class="empty-mark">⌕</text>
+  <text class="empty-title">公寓不存在</text>
+  <text class="empty-copy">该公寓可能已下架</text>
+  <button class="reset-link" bindtap="goBack">返回首页</button>
+</view>
+
+<view wx:elif="{{error}}" class="state-empty">
+  <text class="empty-mark">⚠️</text>
+  <text class="empty-title">{{error}}</text>
+  <text class="empty-copy">请检查网络或稍后重试</text>
+  <button class="reset-link" bindtap="retryLoad">重新加载</button>
+</view>
+
 <view wx:if="{{apartment}}" class="detail-page">
   <view class="detail-hero {{apartment.heroClass}}">
     <image wx:if="{{apartment.image}}" class="hero-cover" src="{{apartment.image}}" mode="aspectFill"></image>
@@ -95,6 +115,7 @@
           class="room-card"
           data-apt-id="{{apartment.id}}"
           data-room-id="{{item.id}}"
+          data-apartment-code="{{item.apartment_code}}"
           bindtap="goRoomDetail"
         >
           <view class="room-img {{item.imageClass}}">

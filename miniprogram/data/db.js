@@ -234,6 +234,97 @@ function getMode() {
   return DATA_MODE;
 }
 
+// ========== 公开只读接口（公寓/户型，游客可访问） ==========
+
+// 首页公寓列表
+// 支持真分页：page 默认 1，pageSize 默认 20 上限 100
+// 云函数返回 { ok, data, page, pageSize, hasMore }
+// mock 模式返回与云函数相同的分页结构（仅返回第一页，hasMore:false）
+function getApartmentList(options) {
+  const opts = options || {};
+  const page = Number(opts.page) || 1;
+  const pageSize = Number(opts.pageSize) || 20;
+  if (isCloudMode()) {
+    return callCloud("getApartmentList", { page, pageSize });
+  }
+  // mock 模式：从 queries 读取，包装为分页结构
+  const cards = queries.getHomeApartmentCards();
+  const start = (page - 1) * pageSize;
+  const slice = cards.slice(start, start + pageSize);
+  return Promise.resolve({
+    ok: true,
+    data: slice,
+    page,
+    pageSize,
+    hasMore: start + pageSize < cards.length
+  });
+}
+
+// 公寓详情（按 id）
+function getApartmentDetail(id) {
+  if (isCloudMode()) {
+    return callCloud("getApartmentDetail", { id });
+  }
+  // mock 模式：返回与云函数相同的 { ok, data } 结构
+  const apartment = queries.getApartmentById(id);
+  return Promise.resolve({ ok: true, data: apartment });
+}
+
+// 某公寓的户型列表（按 apartment_code）
+// 支持真分页：page 默认 1，pageSize 默认 20 上限 100
+function getRoomListByApartment(apartmentCode, options) {
+  const opts = options || {};
+  const page = Number(opts.page) || 1;
+  const pageSize = Number(opts.pageSize) || 20;
+  if (isCloudMode()) {
+    return callCloud("getRoomListByApartment", { apartmentCode, page, pageSize });
+  }
+  // mock 模式：从 mock-store 读取，包装为分页结构
+  const store = require("./mock-store");
+  const tables = store.getTables();
+  const allRooms = tables.roomTypes
+    .filter((room) => room.apartment_code === apartmentCode && (room.status === "active" || !room.status))
+    .map((room) => ({
+      id: room.id,
+      apartment_id: room.apartment_id,
+      apartment_code: room.apartment_code || "",
+      name: room.name,
+      area: room.area,
+      orient: room.orient,
+      layout: room.layout,
+      floor: room.floor,
+      price: room.price,
+      status: room.status,
+      image: room.image,
+      desc: room.desc
+    }));
+  const start = (page - 1) * pageSize;
+  const slice = allRooms.slice(start, start + pageSize);
+  return Promise.resolve({
+    ok: true,
+    data: slice,
+    page,
+    pageSize,
+    hasMore: start + pageSize < allRooms.length
+  });
+}
+
+// 单个户型详情（按 apartment_code + id）
+function getRoomDetail(apartmentCode, id) {
+  if (isCloudMode()) {
+    return callCloud("getRoomDetail", { apartmentCode, id });
+  }
+  // mock 模式：返回与云函数相同的 { ok, data: { room, apartment } } 结构
+  const result = queries.getRoomById(0, id); // aptId 在 mock 模式不重要，按 roomId 查
+  return Promise.resolve({
+    ok: true,
+    data: {
+      room: result.room,
+      apartment: result.apartment
+    }
+  });
+}
+
 module.exports = {
   isCloudMode,
   getMode,
@@ -261,5 +352,10 @@ module.exports = {
   createBorrowItemForUser,
   createRoommatePostForUser,
   createServiceOrderForUser,
-  isActivityRegisteredByUser
+  isActivityRegisteredByUser,
+  // 公开只读接口（公寓/户型）
+  getApartmentList,
+  getApartmentDetail,
+  getRoomListByApartment,
+  getRoomDetail
 };

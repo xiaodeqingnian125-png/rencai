@@ -454,6 +454,372 @@ async function exportAdminItems(targetType, filters = {}) {
   return { ok: true, items: data };
 }
 
+// ========== 公开只读接口（公寓/户型，游客可访问） ==========
+
+// 校验图片路径：仅 cloud:// / https:// 开头视为有效
+// 本地文件名（如 apt-1.jpg）和 http:// 明文链接视为无图
+function isValidImagePath(path) {
+  if (!path || typeof path !== "string") return false;
+  const s = path.trim();
+  if (!s) return false;
+  return /^cloud:\/\/|^https:\/\//i.test(s);
+}
+
+// 设施图标映射表（label → icon）
+const FACILITY_ICON_MAP = {
+  "独立卫浴": "卫",
+  "空调": "空",
+  "热水器": "热",
+  "宽带": "网",
+  "衣柜": "柜",
+  "书桌": "桌",
+  "自助洗衣房": "衣",
+  "洗衣房": "衣",
+  "公共厨房": "厨",
+  "健身区": "健",
+  "健身房": "健",
+  "快递柜": "柜",
+  "休闲区": "休",
+  "充电桩": "电",
+  "自习室": "习"
+};
+
+// 规范化设施列表：兼容字符串数组和对象数组
+// 字符串 "空调" → { label:"空调", icon:"空", active:true }
+// 对象 { label, icon, active } → 清洗后保留
+// 规则：
+// - 非数组返回 []
+// - 空字符串/无有效 label 的项过滤
+// - active 缺失默认 true，明确 false 保留 false
+// - icon 缺失时先查映射表，再取 label 第一个汉字
+// - 不允许返回 undefined 的 label
+function normalizeFacilityList(input) {
+  if (!Array.isArray(input)) return [];
+  const result = [];
+  for (const item of input) {
+    if (item == null) continue;
+    let label = "";
+    let icon = "";
+    let active = true;
+    if (typeof item === "string") {
+      label = item.trim();
+    } else if (typeof item === "object") {
+      label = String(item.label || "").trim();
+      icon = String(item.icon || "").trim();
+      // active 缺失默认 true，明确 false 保留 false
+      active = item.active === false ? false : true;
+    } else {
+      continue;
+    }
+    if (!label) continue; // 无有效 label 的项过滤
+    // icon 缺失时从映射表获取，再 fallback 到 label 第一个汉字
+    if (!icon) {
+      icon = FACILITY_ICON_MAP[label] || label.charAt(0) || "?";
+    }
+    result.push({ label, icon, active });
+  }
+  return result;
+}
+
+// 规范化费用列表：兼容缺失的 active 字段
+// costs 项可能是 { label, value } 或 { label, value, active }
+// 规则：
+// - 非数组返回 []
+// - 无有效 label 的项过滤
+// - active 缺失默认 true，明确 false 保留 false
+// - 保留 label 和 value
+function normalizeCostList(input) {
+  if (!Array.isArray(input)) return [];
+  const result = [];
+  for (const item of input) {
+    if (!item || typeof item !== "object") continue;
+    const label = String(item.label || "").trim();
+    if (!label) continue;
+    const value = String(item.value || "").trim();
+    const active = item.active === false ? false : true;
+    result.push({ label, value, active });
+  }
+  return result;
+}
+
+// 公寓详情页字段安全映射：剥离 _id / 内部字段，避免 db 命令对象
+// 兼容 snake_case（数据库）和 camelCase（旧 mock）两套字段名
+// 无效图片路径（如本地文件名 apt-1.jpg）置为空字符串，由前端走占位图
+// id 统一转为 number；无效 id 返回 null
+function toApartmentPage(apt) {
+  if (!apt) return null;
+  const id = Number(apt.id);
+  if (!Number.isInteger(id) || id <= 0) return null;
+  const priceMin = Number(apt.price_min ?? apt.priceMin);
+  const priceMax = Number(apt.price_max ?? apt.priceMax);
+  const longitude = Number(apt.longitude);
+  const latitude = Number(apt.latitude);
+  return {
+    id,
+    apartment_code: apt.apartment_code ?? apt.apartmentCode ?? "",
+    name: apt.name || "",
+    district: apt.district || "",
+    address: apt.address ?? apt.location ?? "",
+    longitude: Number.isFinite(longitude) ? longitude : 0,
+    latitude: Number.isFinite(latitude) ? latitude : 0,
+    location_meta: apt.location_meta ?? apt.locationMeta ?? "",
+    price_min: Number.isFinite(priceMin) ? priceMin : 0,
+    price_max: Number.isFinite(priceMax) ? priceMax : 0,
+    room_summary: apt.room_summary ?? apt.rooms ?? "",
+    status: apt.status || "active",
+    image: isValidImagePath(apt.image) ? apt.image : "",
+    hero_class: apt.hero_class ?? apt.heroClass ?? "",
+    image_class: apt.image_class ?? apt.imageClass ?? "",
+    tags: Array.isArray(apt.tags) ? apt.tags : [],
+    costs: normalizeCostList(apt.costs),
+    private_facilities: normalizeFacilityList(apt.private_facilities),
+    public_facilities: normalizeFacilityList(apt.public_facilities),
+    nearby: Array.isArray(apt.nearby) ? apt.nearby : []
+  };
+}
+
+// 户型详情页字段安全映射
+// id 统一转为 number；无效 id 返回 null
+// price 强制转为 number
+// costs/facilities 来自所属公寓（room_types 表无此字段），使用 normalize 规范化
+function toRoomPage(room, apartment) {
+  if (!room) return null;
+  const id = Number(room.id);
+  if (!Number.isInteger(id) || id <= 0) return null;
+  const apartmentId = Number(room.apartment_id ?? room.apartmentId);
+  const price = Number(room.price);
+  // 户型的 facilities 来自所属公寓的 private_facilities
+  // 户型的 costs 来自所属公寓的 costs
+  const facilities = apartment
+    ? normalizeFacilityList(apartment.private_facilities ?? apartment.privateFacilities)
+    : [];
+  const costs = apartment
+    ? normalizeCostList(apartment.costs)
+    : [];
+  return {
+    id,
+    apartment_id: Number.isFinite(apartmentId) ? apartmentId : 0,
+    apartment_code: room.apartment_code ?? room.apartmentCode ?? "",
+    name: room.name || "",
+    area: room.area || "",
+    orient: room.orient || "",
+    layout: room.layout || "",
+    floor: room.floor || "",
+    price: Number.isFinite(price) ? price : 0,
+    status: room.status || "active",
+    image: isValidImagePath(room.image) ? room.image : "",
+    desc: room.desc || "",
+    costs,
+    facilities
+  };
+}
+
+// 公寓列表项字段（精简，用于首页卡片）
+// 输出 camelCase 以匹配页面数据契约
+// 兼容 snake_case（数据库）和 camelCase（旧 mock）两套字段名
+// id 统一转为 number；无效 id（非正整数）返回 null，由调用方跳过
+function toApartmentCard(apt) {
+  if (!apt) return null;
+  const id = Number(apt.id);
+  if (!Number.isInteger(id) || id <= 0) return null;
+  const priceMin = Number(apt.price_min ?? apt.priceMin);
+  const priceMax = Number(apt.price_max ?? apt.priceMax);
+  return {
+    id,
+    apartmentCode: apt.apartment_code ?? apt.apartmentCode ?? "",
+    name: apt.name || "",
+    district: apt.district || "",
+    priceMin: Number.isFinite(priceMin) ? priceMin : 0,
+    priceMax: Number.isFinite(priceMax) ? priceMax : 0,
+    rooms: apt.room_summary ?? apt.rooms ?? "",
+    location: apt.address ?? apt.location ?? "",
+    tags: Array.isArray(apt.tags) ? apt.tags : [],
+    imageClass: apt.image_class ?? apt.imageClass ?? "",
+    image: isValidImagePath(apt.image) ? apt.image : "",
+    favorite: false
+  };
+}
+
+// 校验 apartment_code：必须为非空字符串，且只允许字母数字与下划线，长度 ≤ 32
+function isValidApartmentCode(code) {
+  if (!code || typeof code !== "string") return false;
+  const trimmed = code.trim();
+  if (!trimmed || trimmed.length > 32) return false;
+  return /^[A-Za-z0-9_]+$/.test(trimmed);
+}
+
+// 校验数字 ID：必须为正整数
+function isValidNumericId(id) {
+  const num = Number(id);
+  return Number.isInteger(num) && num > 0 && num < 1e8;
+}
+
+// 校验分页参数：page 正整数默认 1，pageSize 默认 20 上限 100
+function parsePaging(params) {
+  let page = Number(params.page);
+  if (!Number.isInteger(page) || page < 1) page = 1;
+  let pageSize = Number(params.pageSize);
+  if (!Number.isInteger(pageSize) || pageSize < 1) pageSize = 20;
+  if (pageSize > 100) pageSize = 100;
+  return { page, pageSize, skip: (page - 1) * pageSize };
+}
+
+// 公开读取：公寓列表
+// 默认同时返回 status === "active" 和无 status 字段的旧数据（不使用 active 为空才查旧数据的 fallback）
+// 支持真分页：page + pageSize，返回 hasMore
+// 注意：where 使用 _.in(["active", null]) 需在 apartments 集合上创建 status 字段索引（见报告）
+async function publicGetApartmentList(params) {
+  const { page, pageSize, skip } = parsePaging(params);
+  const col = db.collection("apartments");
+  try {
+    // 同时匹配 status === "active" 和 status 不存在的旧数据
+    // 微信云数据库 where({ status: _.in(["active", null]) }) 会匹配 active 或字段缺失的记录
+    const query = col.where({
+      status: _.in(["active", null])
+    }).orderBy("id", "asc").skip(skip).limit(pageSize);
+    const { data } = await query.get();
+    // 查询总数（仅查当前页是否还有更多）
+    // 为避免 count 性能问题，用 limit+1 方式判断 hasMore
+    const probeQuery = col.where({
+      status: _.in(["active", null])
+    }).orderBy("id", "asc").skip(skip + pageSize).limit(1);
+    const probe = await probeQuery.get();
+    const hasMore = probe.data.length > 0;
+    // 过滤无效 id 的记录（toApartmentCard 返回 null）
+    const cards = data.map(toApartmentCard).filter((card) => card !== null);
+    // 按 id 正序排序（字符串和数字 id 混用时统一按数字比较）
+    cards.sort((a, b) => a.id - b.id);
+    return {
+      ok: true,
+      data: cards,
+      page,
+      pageSize,
+      hasMore
+    };
+  } catch (err) {
+    console.error("[rencai] publicGetApartmentList failed:", err);
+    if (isCollectionMissingError(err)) {
+      return { ok: false, code: "collection_missing", message: "公寓数据未初始化" };
+    }
+    return { ok: false, code: "query_failed", message: "查询公寓列表失败" };
+  }
+}
+
+// 公开读取：单个公寓详情（按 id）
+// 兼容数字和字符串 id（数据库可能存在 id=1 或 id="1"）
+// 返回给前端的 id 统一为 number
+async function publicGetApartmentDetail(params) {
+  const id = Number(params.id);
+  if (!isValidNumericId(id)) {
+    return { ok: false, code: "invalid_params", message: "公寓 ID 非法" };
+  }
+  try {
+    const col = db.collection("apartments");
+    // 同时匹配数字 id 和字符串 id
+    const { data } = await col.where({ id: _.in([id, String(id)]) }).limit(1).get();
+    if (data.length === 0) {
+      return { ok: false, code: "not_found", message: "公寓不存在" };
+    }
+    const apartment = toApartmentPage(data[0]);
+    if (!apartment) {
+      return { ok: false, code: "invalid_record", message: "公寓记录数据非法" };
+    }
+    return { ok: true, data: apartment };
+  } catch (err) {
+    console.error("[rencai] publicGetApartmentDetail failed:", err);
+    if (isCollectionMissingError(err)) {
+      return { ok: false, code: "collection_missing", message: "公寓数据未初始化" };
+    }
+    return { ok: false, code: "query_failed", message: "查询公寓详情失败" };
+  }
+}
+
+// 公开读取：某公寓的户型列表（按 apartment_code 关联）
+// 默认同时返回 status === "active" 和无 status 字段的旧数据
+// 支持真分页：page + pageSize，返回 hasMore
+// 注意：where 使用 _.in(["active", null]) 需在 room_types 集合上创建 (apartment_code, status) 组合索引（见报告）
+async function publicGetRoomListByApartment(params) {
+  const code = params.apartmentCode;
+  if (!isValidApartmentCode(code)) {
+    return { ok: false, code: "invalid_params", message: "公寓编号非法" };
+  }
+  const { page, pageSize, skip } = parsePaging(params);
+  try {
+    const col = db.collection("room_types");
+    // 同时匹配 status === "active" 和 status 不存在的旧数据
+    const query = col.where({
+      apartment_code: code.trim(),
+      status: _.in(["active", null])
+    }).orderBy("id", "asc").skip(skip).limit(pageSize);
+    const { data } = await query.get();
+    // 用 limit+1 方式判断 hasMore
+    const probeQuery = col.where({
+      apartment_code: code.trim(),
+      status: _.in(["active", null])
+    }).orderBy("id", "asc").skip(skip + pageSize).limit(1);
+    const probe = await probeQuery.get();
+    const hasMore = probe.data.length > 0;
+    return {
+      ok: true,
+      data: data.map(toRoomPage),
+      page,
+      pageSize,
+      hasMore
+    };
+  } catch (err) {
+    console.error("[rencai] publicGetRoomListByApartment failed:", err);
+    if (isCollectionMissingError(err)) {
+      return { ok: false, code: "collection_missing", message: "户型数据未初始化" };
+    }
+    return { ok: false, code: "query_failed", message: "查询户型列表失败" };
+  }
+}
+
+// 公开读取：单个户型详情（按 apartment_code + id）
+// 兼容数字和字符串 id（数据库可能存在 id=1 或 id="1"）
+// 返回给前端的 id 统一为 number
+async function publicGetRoomDetail(params) {
+  const code = params.apartmentCode;
+  const id = Number(params.id);
+  if (!isValidApartmentCode(code)) {
+    return { ok: false, code: "invalid_params", message: "公寓编号非法" };
+  }
+  if (!isValidNumericId(id)) {
+    return { ok: false, code: "invalid_params", message: "户型 ID 非法" };
+  }
+  try {
+    const col = db.collection("room_types");
+    // 同时匹配数字 id 和字符串 id
+    const { data } = await col.where({
+      apartment_code: code.trim(),
+      id: _.in([id, String(id)])
+    }).limit(1).get();
+    if (data.length === 0) {
+      return { ok: false, code: "not_found", message: "户型不存在" };
+    }
+    // 先拉取所属公寓原始记录（toRoomPage 需要 apartment 来填充 facilities/costs）
+    let apartmentRaw = null;
+    const aptRes = await db.collection("apartments").where({ apartment_code: code.trim() }).limit(1).get();
+    if (aptRes.data.length > 0) {
+      apartmentRaw = aptRes.data[0];
+    }
+    // toRoomPage 用原始 apartment 数据填充 facilities/costs（内部会做 normalize）
+    const room = toRoomPage(data[0], apartmentRaw);
+    if (!room) {
+      return { ok: false, code: "invalid_record", message: "户型记录数据非法" };
+    }
+    // 返回给前端的 apartment 用 toApartmentPage 规范化
+    const apartment = apartmentRaw ? toApartmentPage(apartmentRaw) : null;
+    return { ok: true, data: { room, apartment } };
+  } catch (err) {
+    console.error("[rencai] publicGetRoomDetail failed:", err);
+    if (isCollectionMissingError(err)) {
+      return { ok: false, code: "collection_missing", message: "户型数据未初始化" };
+    }
+    return { ok: false, code: "query_failed", message: "查询户型详情失败" };
+  }
+}
+
 // ========== 用户侧写操作 ==========
 
 async function registerActivity(params) {
@@ -688,6 +1054,16 @@ exports.main = async (event, context) => {
         return await getUserByOpenid(wxContext.OPENID);
       case "getPhoneByCode":
         return await getPhoneByCode(params.code);
+
+      // ========== 公开只读 action（游客可访问，公寓/户型） ==========
+      case "getApartmentList":
+        return await publicGetApartmentList(params);
+      case "getApartmentDetail":
+        return await publicGetApartmentDetail(params);
+      case "getRoomListByApartment":
+        return await publicGetRoomListByApartment(params);
+      case "getRoomDetail":
+        return await publicGetRoomDetail(params);
 
       // ========== 用户身份 action（需登录，用服务端 userId 覆盖前端传入值） ==========
       case "isUserAdmin": {

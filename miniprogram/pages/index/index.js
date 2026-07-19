@@ -1,4 +1,4 @@
-const { getHomeApartmentCards } = require("../../data/queries");
+const db = require("../../data/db");
 
 const priceRanges = [
   { label: "全部价格", min: 0, max: 99999 },
@@ -46,26 +46,98 @@ Page({
     priceOptions: priceRanges.map((item) => item.label),
     roomOptions: ["全部", "一居室", "二居室", "三居室", "四居室"],
     apartments: [],
-    filteredApartments: []
+    filteredApartments: [],
+    loading: true,
+    error: "",
+    empty: false
   },
 
   onLoad() {
+    this._isAlive = true;
     this.loadApartments();
   },
 
   onShow() {
-    this.loadApartments();
+    // 仅在已加载过一次后才在 onShow 重新拉取，避免 onLoad + onShow 双重请求
+    if (this._loadedOnce) {
+      this.loadApartments();
+    }
+  },
+
+  onUnload() {
+    this._isAlive = false;
   },
 
   onPullDownRefresh() {
-    this.loadApartments();
-    wx.stopPullDownRefresh();
+    this.loadApartments(() => {
+      wx.stopPullDownRefresh();
+    });
   },
 
-  loadApartments() {
-    this.setData({ apartments: getHomeApartmentCards() }, () => {
-      this.applyFilters();
+  loadApartments(callback) {
+    this.setData({ loading: true, error: "" });
+    // 首页加载第一页，pageSize 100 覆盖当前 6 条数据
+    db.getApartmentList({ page: 1, pageSize: 100 }).then((res) => {
+      if (!this._isAlive) {
+        if (typeof callback === "function") callback();
+        return;
+      }
+      if (!res || !res.ok) {
+        const message = (res && res.message) || "加载公寓失败";
+        console.error("[index] loadApartments failed:", res);
+        this.setData({
+          loading: false,
+          error: message,
+          apartments: [],
+          filteredApartments: [],
+          empty: false
+        });
+        if (typeof callback === "function") callback();
+        return;
+      }
+      // 兼容分页结构：res.data 是当前页数组，res.hasMore 标识是否有更多
+      const apartments = Array.isArray(res.data) ? res.data : [];
+      this._paging = {
+        page: res.page || 1,
+        pageSize: res.pageSize || 20,
+        hasMore: !!res.hasMore
+      };
+      // 首页卡片字段适配：云函数返回的 cards 已含 location / rooms 字段，但缺少 favorite
+      // favorite 状态由用户登录态决定，游客默认 false
+      const normalized = apartments.map((item) => ({
+        ...item,
+        favorite: !!item.favorite
+      }));
+      this._loadedOnce = true;
+      this.setData({
+        loading: false,
+        error: "",
+        apartments: normalized,
+        empty: normalized.length === 0
+      }, () => {
+        this.applyFilters();
+        if (typeof callback === "function") callback();
+      });
+    }).catch((err) => {
+      console.error("[index] loadApartments exception:", err);
+      if (!this._isAlive) {
+        // 页面已卸载，仍需停止下拉刷新（避免卡住），但不再 setData
+        if (typeof callback === "function") callback();
+        return;
+      }
+      this.setData({
+        loading: false,
+        error: "网络异常，请稍后重试",
+        apartments: [],
+        filteredApartments: [],
+        empty: false
+      });
+      if (typeof callback === "function") callback();
     });
+  },
+
+  retryLoad() {
+    this.loadApartments();
   },
 
   handleSearchInput(e) {
@@ -130,6 +202,7 @@ Page({
       "四居室": 4
     };
 
+    const isAllPrice = activePrice === "全部价格";
     const filteredApartments = apartments.filter((apartment) => {
       const matchKeyword = !keyword || [
         apartment.name,
@@ -138,7 +211,22 @@ Page({
         apartment.rooms
       ].join(" ").toLowerCase().includes(keyword);
       const matchDistrict = activeDistrict === "全部区域" || apartment.district === activeDistrict;
-      const matchPrice = apartment.priceMax >= priceRange.min && apartment.priceMin <= priceRange.max;
+      // 价格筛选防御：强制转 number，无效值按 0 处理
+      // "全部价格"时即使价格异常也保留记录（不因单条异常导致全列表消失）
+      // 选择具体价格区间时，价格无效（0）的记录不参与匹配
+      const aptPriceMin = Number(apartment.priceMin) || 0;
+      const aptPriceMax = Number(apartment.priceMax) || 0;
+      let matchPrice;
+      if (isAllPrice) {
+        matchPrice = true;
+      } else {
+        // 价格无效的记录在具体区间筛选时不参与匹配
+        if (aptPriceMax <= 0 && aptPriceMin <= 0) {
+          matchPrice = false;
+        } else {
+          matchPrice = aptPriceMax >= priceRange.min && aptPriceMin <= priceRange.max;
+        }
+      }
       const targetRoom = roomNumberMap[activeRoom];
       const matchRoom = !targetRoom || this.matchRoom(apartment.rooms, targetRoom);
       return matchKeyword && matchDistrict && matchPrice && matchRoom;
