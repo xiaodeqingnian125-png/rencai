@@ -229,7 +229,7 @@
             value="{{item.image}}"
             label="上传平面图"
             cloud-path="floor-plans/apartments"
-            data-index="{{index}}"
+            index="{{index}}"
             bind:change="onFloorPlanImageChange"
           ></image-uploader>
           <view class="floor-plan-editor-actions">

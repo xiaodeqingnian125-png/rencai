@@ -26,6 +26,11 @@ Component({
     cloudPath: {
       type: String,
       value: "covers"
+    },
+    // 父级列表中的行号；上传完成时随 change 事件显式返回，避免依赖组件事件 dataset。
+    index: {
+      type: Number,
+      value: -1
     }
   },
 
@@ -79,7 +84,7 @@ Component({
           success: (res) => {
             wx.hideLoading();
             this.setData({ uploading: false, imageUrl: res.fileID, previousImageUrl: res.fileID });
-            this.triggerEvent("change", { value: res.fileID });
+            this.triggerEvent("change", { value: res.fileID, index: this.data.index });
             wx.showToast({ title: "上传成功", icon: "none" });
           },
           fail: (err) => {
@@ -95,14 +100,14 @@ Component({
         // 但 base64 过大会撑爆 Storage，mock 模式下直接用临时路径
         wx.hideLoading();
         this.setData({ uploading: false, imageUrl: tempPath, previousImageUrl: tempPath });
-        this.triggerEvent("change", { value: tempPath });
+        this.triggerEvent("change", { value: tempPath, index: this.data.index });
         wx.showToast({ title: "已选择图片", icon: "none" });
       }
     },
 
     clearImage() {
       this.setData({ imageUrl: "", previousImageUrl: "" });
-      this.triggerEvent("change", { value: "" });
+      this.triggerEvent("change", { value: "", index: this.data.index });
     }
   }
 });

@@ -219,3 +219,18 @@ test("floor plan upload assigns a default name only when the name is blank", asy
   assert.equal(page.data.form.floor_plans[0].name, "平面图 1");
   assert.equal(page.data.form.floor_plans[1].name, "项目总平面图");
 });
+
+test("floor plan upload uses the index returned by the uploader component", async () => {
+  const { page } = createHarness();
+  await page.onLoad({ type: "apartments" });
+  page.setData({
+    form: { floor_plans: [{ name: "项目总平面图", image: "" }] }
+  });
+
+  page.onFloorPlanImageChange({
+    currentTarget: { dataset: {} },
+    detail: { index: 0, value: "cloud://env/floor-1.jpg" }
+  });
+
+  assert.equal(page.data.form.floor_plans[0].image, "cloud://env/floor-1.jpg");
+});

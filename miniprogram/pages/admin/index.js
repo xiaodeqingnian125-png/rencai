@@ -917,7 +917,9 @@ Page({
   },
 
   onFloorPlanImageChange(e) {
-    const index = Number(e.currentTarget.dataset.index);
+    const eventIndex = e && e.detail && e.detail.index;
+    const datasetIndex = e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.index;
+    const index = Number(eventIndex !== undefined && eventIndex !== null ? eventIndex : datasetIndex);
     const floorPlans = clone(this.data.form.floor_plans || []);
     const floorPlan = floorPlans[index];
     if (!floorPlan) return;
