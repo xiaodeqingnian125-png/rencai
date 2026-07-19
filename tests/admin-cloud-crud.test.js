@@ -194,3 +194,28 @@ test("apartment export creates a cloud CSV file instead of copying text", async 
   assert.equal(calls.createExportFile[0].type, "apartments");
   assert.match(calls.createExportFile[0].content, /公寓编号/);
 });
+
+test("floor plan upload assigns a default name only when the name is blank", async () => {
+  const { page } = createHarness();
+  await page.onLoad({ type: "apartments" });
+  page.setData({
+    form: {
+      floor_plans: [
+        { name: "", image: "" },
+        { name: "项目总平面图", image: "" }
+      ]
+    }
+  });
+
+  page.onFloorPlanImageChange({
+    currentTarget: { dataset: { index: 0 } },
+    detail: { value: "cloud://env/floor-1.jpg" }
+  });
+  page.onFloorPlanImageChange({
+    currentTarget: { dataset: { index: 1 } },
+    detail: { value: "cloud://env/floor-2.jpg" }
+  });
+
+  assert.equal(page.data.form.floor_plans[0].name, "平面图 1");
+  assert.equal(page.data.form.floor_plans[1].name, "项目总平面图");
+});

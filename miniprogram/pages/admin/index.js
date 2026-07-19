@@ -918,7 +918,14 @@ Page({
 
   onFloorPlanImageChange(e) {
     const index = Number(e.currentTarget.dataset.index);
-    this.setData({ [`form.floor_plans.${index}.image`]: e.detail.value });
+    const floorPlans = clone(this.data.form.floor_plans || []);
+    const floorPlan = floorPlans[index];
+    if (!floorPlan) return;
+    floorPlan.image = e.detail.value || "";
+    if (!String(floorPlan.name || "").trim() && floorPlan.image) {
+      floorPlan.name = `平面图 ${index + 1}`;
+    }
+    this.setData({ "form.floor_plans": floorPlans });
   },
 
   moveFloorPlan(e) {
