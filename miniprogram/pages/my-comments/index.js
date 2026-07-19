@@ -1,4 +1,5 @@
 const { getMyComments } = require("../../data/queries");
+const { showPreviewNotice } = require("../../utils/preview-mode");
 
 Page({
   data: {
@@ -14,10 +15,6 @@ Page({
   },
 
   deleteComment(e) {
-    const id = Number(e.currentTarget.dataset.id);
-    this.setData({
-      comments: this.data.comments.filter((comment) => comment.id !== id)
-    });
-    wx.showToast({ title: "已删除", icon: "none" });
+    showPreviewNotice();
   }
 });

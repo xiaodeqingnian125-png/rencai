@@ -1,4 +1,5 @@
-const { getRoommateData, createRoommatePostForUser } = require("../../data/queries");
+const { getRoommateData } = require("../../data/queries");
+const { showPreviewNotice } = require("../../utils/preview-mode");
 
 const priceOptions = [
   { label: "全部价格", min: 0, max: 999999 },
@@ -138,12 +139,7 @@ Page({
   },
 
   openPostSheet() {
-    const app = getApp();
-    if (!app.globalData.isLoggedIn) {
-      this.setData({ loginModalVisible: true });
-      return;
-    }
-    this.setData({ postSheetOpen: true, detailSheetOpen: false });
+    showPreviewNotice();
   },
 
   ensureLogin() {
@@ -200,56 +196,6 @@ Page({
   },
 
   submitPost() {
-    const { form, publishMode } = this.data;
-    if (!form.name || !form.budget || !form.moveIn || !form.contact) {
-      wx.showToast({ title: "请完善必填信息", icon: "none" });
-      return;
-    }
-    if (publishMode === "has_room" && (!form.apartment || !form.rooms || !form.confirmed)) {
-      wx.showToast({ title: "有房帖子需确认房源信息", icon: "none" });
-      return;
-    }
-    const app = getApp();
-    const userId = app.globalData.userId;
-    const result = createRoommatePostForUser(userId, {
-      type: publishMode,
-      name: form.name,
-      gender: form.gender,
-      age: form.age,
-      apartment: form.apartment,
-      rooms: form.rooms,
-      district: form.district,
-      budget: form.budget,
-      moveIn: form.moveIn,
-      desc: form.desc,
-      contact: form.contact,
-      confirmed: form.confirmed
-    });
-    if (!result.ok) {
-      wx.showToast({ title: "发布失败，请重试", icon: "none" });
-      return;
-    }
-    // 重新读取数据，拿到包含新帖子的审核队列
-    const { posts, reviewQueue } = getRoommateData();
-    this.setData({
-      posts,
-      reviewQueue,
-      postSheetOpen: false,
-      form: {
-        name: "",
-        gender: "女",
-        age: "",
-        apartment: "",
-        rooms: "",
-        district: "",
-        budget: "",
-        moveIn: "",
-        desc: "",
-        contact: "",
-        confirmed: false
-      }
-    });
-    this.applyFilter();
-    wx.showToast({ title: "已提交审核", icon: "none" });
+    showPreviewNotice();
   }
 });

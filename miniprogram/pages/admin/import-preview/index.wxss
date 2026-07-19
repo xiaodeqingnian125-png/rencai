@@ -156,3 +156,87 @@
   font-size: 28rpx;
   font-weight: 600;
 }
+
+/* 状态横幅：复用现有颜色体系 */
+.status-banner {
+  padding: 20rpx 32rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.status-banner .status-text {
+  display: block;
+}
+
+.status-banner.pending {
+  background: #f0eae0;
+  color: #8c7a68;
+}
+
+.status-banner.previewing {
+  background: #fef3e8;
+  color: #e8723c;
+}
+
+.status-banner.processing {
+  background: #fef3e8;
+  color: #d4a04a;
+}
+
+.status-banner.completed {
+  background: #eef5ee;
+  color: #5b9a6f;
+}
+
+.status-banner.partial_failed {
+  background: #fdf5e6;
+  color: #d4a04a;
+}
+
+.status-banner.failed {
+  background: #fdecea;
+  color: #e04a3a;
+}
+
+/* 完成统计明细 */
+.summary-detail {
+  display: flex;
+  gap: 24rpx;
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #f0eae0;
+}
+
+.detail-item {
+  flex: 1;
+  text-align: center;
+  font-size: 24rpx;
+  color: #5c4a38;
+}
+
+/* 错误报告下载按钮：复用次按钮风格 */
+.btn-download-errors {
+  margin-top: 16rpx;
+  width: 100%;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  border-radius: 36rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  background: #f0eae0;
+  color: #5c4a38;
+  border: 1rpx solid #e8e0d4;
+}
+
+/* 部分成功 / 失败状态条 */
+.completed-bar.partial {
+  background: #fdf5e6;
+  color: #d4a04a;
+}
+
+.completed-bar.failed {
+  background: #fdecea;
+  color: #e04a3a;
+}

@@ -1,29 +1,34 @@
 <view class="admin-page {{isApartment ? 'apartment-mode' : ''}}">
-  <block wx:if="{{isApartment}}">
+  <view wx:if="{{loading}}" class="admin-state">
+    <view class="admin-state-title">正在加载{{config.title}}</view>
+    <text>请稍候</text>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="admin-state error">
+    <view class="admin-state-title">数据加载失败</view>
+    <text>{{loadError}}</text>
+    <button bindtap="retryLoad">重新加载</button>
+  </view>
+
+  <view wx:elif="{{previewOnly}}" class="admin-state preview">
+    <view class="preview-badge">功能预览 · 即将开放</view>
+    <view class="admin-state-title">{{config.title}}暂未开放</view>
+    <text>当前版本优先上线公寓和户型管理，本模块保留入口供后续迭代。</text>
+  </view>
+
+  <block wx:elif="{{isApartment}}">
     <view class="apartment-admin">
       <view class="apartment-toolbar">
         <view class="apartment-search">
           <image src="/assets/icons/search.svg" mode="aspectFit"></image>
           <input value="{{keyword}}" placeholder="{{config.search}}" bindinput="handleSearch" />
         </view>
-        <view class="apartment-add" bindtap="openForm">{{config.addText}}</view>
+        <view class="add-icon-btn" bindtap="openForm">＋</view>
       </view>
       <view class="bulk-bar">
-        <view class="bulk-btn" bindtap="exportData">批量导出</view>
+        <view class="bulk-btn" bindtap="openExportPanel">批量导出</view>
         <view class="bulk-btn primary" bindtap="openImport">批量导入</view>
-      </view>
-      <view class="admin-action-row">
-        <button class="admin-btn" bindtap="goImportHistory" data-type="apartments">导入历史</button>
-      </view>
-      <view class="export-filter">
-        <view class="filter-label">按条件导出：</view>
-        <picker bindchange="onDistrictChange" value="{{exportDistrictIndex}}" range="{{districtOptions}}">
-          <view class="filter-picker">{{districtOptions[exportDistrictIndex] || '全部区域'}}</view>
-        </picker>
-        <picker bindchange="onStatusChange" value="{{exportStatusIndex}}" range="{{statusOptions}}">
-          <view class="filter-picker">{{statusOptions[exportStatusIndex] || '全部状态'}}</view>
-        </picker>
-        <button class="export-btn" bindtap="exportFiltered" data-type="apartments">导出</button>
+        <view class="bulk-btn" bindtap="goImportHistory" data-type="apartments">导入历史</view>
       </view>
 
       <scroll-view scroll-y class="apartment-scroll">
@@ -54,27 +59,17 @@
 
   <block wx:elif="{{isRoom}}">
     <view class="room-admin">
-      <scroll-view scroll-x class="room-filter-scroll" show-scrollbar="{{false}}">
-        <view class="room-filter-row">
-          <view
-            wx:for="{{config.filters}}"
-            wx:key="value"
-            class="room-filter-chip {{activeFilter === item.value ? 'active' : ''}}"
-            data-value="{{item.value}}"
-            bindtap="setFilter"
-          >{{item.label}}</view>
-        </view>
-      </scroll-view>
-
       <view class="room-toolbar">
-        <view class="room-add" bindtap="openForm">{{config.addText}}</view>
+        <view class="room-search">
+          <image src="/assets/icons/search.svg" mode="aspectFit"></image>
+          <input value="{{keyword}}" placeholder="{{config.search}}" bindinput="handleSearch" />
+        </view>
+        <view class="add-icon-btn" bindtap="openForm">＋</view>
       </view>
-      <view class="bulk-bar room-bulk-bar">
-        <view class="bulk-btn" bindtap="exportData">批量导出</view>
+      <view class="bulk-bar">
+        <view class="bulk-btn" bindtap="openExportPanel">批量导出</view>
         <view class="bulk-btn primary" bindtap="openImport">批量导入</view>
-      </view>
-      <view class="admin-action-row">
-        <button class="admin-btn" bindtap="goImportHistory" data-type="room_types">导入历史</button>
+        <view class="bulk-btn" bindtap="goImportHistory" data-type="room_types">导入历史</view>
       </view>
 
       <scroll-view scroll-y class="room-scroll">
@@ -178,8 +173,8 @@
     </view>
   </block>
 
-  <view wx:if="{{formOpen}}" class="modal-mask" catchtap="closeForm"></view>
-  <view wx:if="{{formOpen}}" class="modal-card">
+  <view wx:if="{{formOpen && !previewOnly}}" class="modal-mask" catchtap="closeForm"></view>
+  <view wx:if="{{formOpen && !previewOnly}}" class="modal-card">
     <view class="modal-head">
       <view class="modal-title">{{editingId ? config.editTitle : config.addTitle}}</view>
       <view class="modal-subtitle">{{config.title}} · {{editingId ? '更新当前内容' : '创建新记录'}}</view>
@@ -211,6 +206,39 @@
           bind:change="onImageChange"
         ></image-uploader>
       </view>
+      <view wx:if="{{isApartment}}" class="floor-plan-editor">
+        <view class="floor-plan-editor-head">
+          <view>
+            <text class="floor-plan-editor-title">平面图</text>
+            <text class="floor-plan-editor-tip">按当前顺序展示，详情页显示前3张</text>
+          </view>
+          <view class="floor-plan-add" bindtap="addFloorPlan">＋ 添加</view>
+        </view>
+        <view wx:if="{{!form.floor_plans.length}}" class="floor-plan-editor-empty">暂未添加平面图</view>
+        <view wx:for="{{form.floor_plans}}" wx:key="index" class="floor-plan-editor-item">
+          <view class="floor-plan-editor-row">
+            <text>图片名称</text>
+            <input
+              value="{{item.name}}"
+              placeholder="如：项目总平面图"
+              data-index="{{index}}"
+              bindinput="handleFloorPlanNameInput"
+            />
+          </view>
+          <image-uploader
+            value="{{item.image}}"
+            label="上传平面图"
+            cloud-path="floor-plans/apartments"
+            data-index="{{index}}"
+            bind:change="onFloorPlanImageChange"
+          ></image-uploader>
+          <view class="floor-plan-editor-actions">
+            <view data-index="{{index}}" data-direction="-1" bindtap="moveFloorPlan">上移</view>
+            <view data-index="{{index}}" data-direction="1" bindtap="moveFloorPlan">下移</view>
+            <view class="danger" data-index="{{index}}" bindtap="removeFloorPlan">删除</view>
+          </view>
+        </view>
+      </view>
       <view class="modal-field">
         <text>状态</text>
         <view class="status-options">
@@ -225,9 +253,9 @@
       </view>
     </scroll-view>
     <view class="modal-actions">
-      <button class="modal-btn cancel" bindtap="closeForm">取消</button>
-      <button wx:if="{{editingId}}" class="modal-btn delete" data-id="{{editingId}}" bindtap="deleteItem">删除</button>
-      <button class="modal-btn confirm" bindtap="saveItem">保存</button>
+      <button class="modal-btn cancel" bindtap="closeForm" disabled="{{operationPending}}">取消</button>
+      <button wx:if="{{editingId}}" class="modal-btn delete" data-id="{{editingId}}" bindtap="deleteItem" disabled="{{operationPending}}">删除</button>
+      <button class="modal-btn confirm" bindtap="saveItem" loading="{{operationPending}}" disabled="{{operationPending}}">保存</button>
     </view>
   </view>
 
@@ -248,6 +276,26 @@
     <view class="modal-actions">
       <button class="modal-btn cancel" bindtap="closeImport">取消</button>
       <button class="modal-btn confirm" bindtap="confirmImport">导入</button>
+    </view>
+  </view>
+
+  <view wx:if="{{exportPanelOpen}}" class="modal-mask" catchtap="closeExportPanel"></view>
+  <view wx:if="{{exportPanelOpen}}" class="export-card">
+    <view class="modal-head">
+      <view class="modal-title">批量导出</view>
+      <view class="modal-subtitle">按条件筛选后导出公寓数据</view>
+    </view>
+    <view class="export-panel-body">
+      <view class="export-panel-row">
+        <text>区域</text>
+        <picker bindchange="onDistrictChange" value="{{exportDistrictIndex}}" range="{{districtOptions}}">
+          <view class="filter-picker">{{districtOptions[exportDistrictIndex] || '全部区域'}}</view>
+        </picker>
+      </view>
+    </view>
+    <view class="modal-actions">
+      <button class="modal-btn cancel" bindtap="closeExportPanel">取消</button>
+      <button class="modal-btn confirm" bindtap="exportFiltered" data-type="apartments">导出</button>
     </view>
   </view>
 </view>

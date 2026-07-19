@@ -14,6 +14,54 @@ button::after {
   overflow: hidden;
 }
 
+.admin-state {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 70vh;
+  padding: 64rpx 56rpx;
+  color: #8c7a68;
+  text-align: center;
+}
+
+.admin-state-title {
+  margin-bottom: 16rpx;
+  color: #2d2318;
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.admin-state text {
+  max-width: 560rpx;
+  font-size: 27rpx;
+  line-height: 1.7;
+}
+
+.admin-state button {
+  width: 240rpx;
+  height: 72rpx;
+  margin-top: 32rpx;
+  border-radius: 999rpx;
+  background: #e8723c;
+  color: #fff;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 72rpx;
+}
+
+.preview-badge {
+  margin-bottom: 24rpx;
+  padding: 10rpx 22rpx;
+  border-radius: 999rpx;
+  background: #fff0e7;
+  color: #d4622c;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
 .apartment-admin {
   display: flex;
   flex-direction: column;
@@ -277,20 +325,54 @@ button::after {
 }
 
 .room-toolbar {
-  padding: 0 32rpx 16rpx;
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx 32rpx;
   flex-shrink: 0;
 }
 
-.room-add {
+.room-search {
+  display: flex;
+  flex: 1;
+  width: 0;
+  align-items: center;
+  min-width: 0;
+  height: 76rpx;
+  padding: 0 24rpx;
+  border: 1rpx solid #e8e0d4;
+  border-radius: 24rpx;
+  background: #fffdf7;
+}
+
+.room-search image {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  opacity: 0.78;
+}
+
+.room-search input {
+  flex: 1;
+  min-width: 0;
+  height: 76rpx;
+  color: #2d2318;
+  font-size: 28rpx;
+}
+
+.add-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 72rpx;
+  flex: 0 0 auto;
+  width: 76rpx;
+  height: 76rpx;
+  margin-left: 16rpx;
+  padding: 0;
   border-radius: 24rpx;
   background: #e8723c;
   color: #ffffff;
-  font-size: 26rpx;
+  font-size: 36rpx;
   font-weight: 700;
   line-height: 1;
 }
@@ -1125,4 +1207,148 @@ button::after {
   font-size: 24rpx;
   border-radius: 8rpx;
   line-height: 1.5;
+}
+
+/* ===== 批量导出弹窗（按条件导出并入弹窗） ===== */
+.export-card {
+  position: fixed;
+  left: 32rpx;
+  right: 32rpx;
+  top: 14vh;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  padding: 32rpx;
+  border-radius: 32rpx;
+  background: #fffdf7;
+  box-shadow: 0 28rpx 90rpx rgba(45, 35, 24, 0.18);
+}
+
+.export-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 16rpx;
+}
+
+.export-panel-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.export-panel-row text {
+  flex: 0 0 auto;
+  width: 80rpx;
+  color: #8c7a68;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.export-panel-row .filter-picker {
+  flex: 1;
+  height: 64rpx;
+  line-height: 64rpx;
+  padding: 0 24rpx;
+  border-radius: 18rpx;
+  font-size: 26rpx;
+}
+
+.floor-plan-editor {
+  margin-top: 28rpx;
+  padding-top: 28rpx;
+  border-top: 1rpx solid #f0eae0;
+}
+
+.floor-plan-editor-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.floor-plan-editor-title,
+.floor-plan-editor-tip {
+  display: block;
+}
+
+.floor-plan-editor-title {
+  color: #2d2318;
+  font-size: 28rpx;
+  font-weight: 750;
+}
+
+.floor-plan-editor-tip {
+  margin-top: 6rpx;
+  color: #a08d79;
+  font-size: 22rpx;
+}
+
+.floor-plan-add {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: #fff0e7;
+  color: #d4622c;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.floor-plan-editor-empty {
+  padding: 32rpx 20rpx;
+  border: 1rpx dashed #e8e0d4;
+  border-radius: 20rpx;
+  color: #a08d79;
+  font-size: 24rpx;
+  text-align: center;
+}
+
+.floor-plan-editor-item {
+  margin-bottom: 20rpx;
+  padding: 22rpx;
+  border: 1rpx solid #eee5da;
+  border-radius: 22rpx;
+  background: #fffaf2;
+}
+
+.floor-plan-editor-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.floor-plan-editor-row text {
+  flex: 0 0 auto;
+  margin-right: 16rpx;
+  color: #6e5b48;
+  font-size: 24rpx;
+}
+
+.floor-plan-editor-row input {
+  flex: 1;
+  height: 64rpx;
+  padding: 0 18rpx;
+  border-radius: 16rpx;
+  background: #fff;
+  color: #2d2318;
+  font-size: 25rpx;
+}
+
+.floor-plan-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.floor-plan-editor-actions view {
+  padding: 9rpx 18rpx;
+  border: 1rpx solid #e8e0d4;
+  border-radius: 999rpx;
+  color: #6e5b48;
+  font-size: 23rpx;
+}
+
+.floor-plan-editor-actions .danger {
+  border-color: rgba(224, 74, 58, 0.3);
+  color: #e04a3a;
 }

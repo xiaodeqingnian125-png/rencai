@@ -1,3 +1,5 @@
+const { showPreviewNotice } = require("../../utils/preview-mode");
+
 Page({
   data: {
     qrDots: [],
@@ -27,18 +29,10 @@ Page({
   },
 
   saveQr() {
-    wx.showToast({
-      title: "二维码已保存到相册",
-      icon: "none"
-    });
+    showPreviewNotice();
   },
 
   copyWechat() {
-    wx.setClipboardData({
-      data: this.data.wechatId,
-      success: () => {
-        wx.showToast({ title: "已复制微信号", icon: "none" });
-      }
-    });
+    showPreviewNotice();
   }
 });

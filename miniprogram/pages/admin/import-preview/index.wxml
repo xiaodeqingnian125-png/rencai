@@ -1,4 +1,14 @@
 <view class="import-preview-page">
+  <!-- 状态横幅：根据任务状态显示不同颜色和文案 -->
+  <view class="status-banner {{task.status}}">
+    <text class="status-text" wx:if="{{task.status === 'pending'}}">等待解析</text>
+    <text class="status-text" wx:if="{{task.status === 'previewing'}}">待确认导入</text>
+    <text class="status-text" wx:if="{{task.status === 'processing'}}">正在导入，请勿重复操作</text>
+    <text class="status-text" wx:if="{{task.status === 'completed'}}">导入完成</text>
+    <text class="status-text" wx:if="{{task.status === 'partial_failed'}}">部分导入成功</text>
+    <text class="status-text" wx:if="{{task.status === 'failed'}}">导入失败</text>
+  </view>
+
   <view class="task-summary">
     <view class="summary-row">
       <text class="summary-label">文件</text>
@@ -18,17 +28,38 @@
         <text class="stat-label">失败</text>
       </view>
     </view>
+
+    <!-- 导入完成统计：新增/更新/跳过 -->
+    <view wx:if="{{task.status === 'completed' || task.status === 'partial_failed'}}" class="summary-detail">
+      <text class="detail-item">新增 {{task.created_count || 0}}</text>
+      <text class="detail-item">更新 {{task.updated_count || 0}}</text>
+      <text class="detail-item">跳过 {{task.skipped_count || 0}}</text>
+    </view>
   </view>
 
-  <!-- 错误报告 -->
+  <!-- 错误报告区域 -->
   <view wx:if="{{task.error_log && task.error_log.length > 0}}" class="error-section">
     <view class="section-title">错误报告（{{task.error_log.length}}条）</view>
     <view class="error-list">
-      <view wx:for="{{task.error_log}}" wx:key="row" class="error-item">
+      <view wx:for="{{task.error_log}}" wx:key="_view_key" class="error-item">
         <text class="error-row">第{{item.row}}行</text>
         <text class="error-reason">{{item.reason}}</text>
       </view>
     </view>
+    <!-- 错误报告下载按钮：previewing/completed/partial_failed/failed 状态下有错误均可下载 -->
+    <button class="btn-download-errors" bindtap="downloadErrors">下载错误报告</button>
+  </view>
+
+  <!-- 写入阶段错误（write_errors）-->
+  <view wx:if="{{task.write_errors && task.write_errors.length > 0}}" class="error-section">
+    <view class="section-title">写入错误（{{task.write_errors.length}}条）</view>
+    <view class="error-list">
+      <view wx:for="{{task.write_errors}}" wx:key="_view_key" class="error-item">
+        <text class="error-row">{{item.item}}</text>
+        <text class="error-reason">{{item.error}}</text>
+      </view>
+    </view>
+    <button class="btn-download-errors" bindtap="downloadErrors">下载错误报告</button>
   </view>
 
   <!-- 预览数据 -->
@@ -42,15 +73,36 @@
     </view>
   </view>
 
-  <!-- 操作按钮 -->
+  <!-- 操作按钮区：根据状态显示不同操作 -->
+  <!-- pending：不显示确认按钮 -->
   <view wx:if="{{task.status === 'previewing'}}" class="action-bar">
     <button class="btn-cancel" bindtap="cancel">取消</button>
-    <button class="btn-confirm" bindtap="confirmImport" loading="{{importing}}">
+    <button
+      class="btn-confirm"
+      bindtap="confirmImport"
+      loading="{{importing}}"
+      disabled="{{submitting || task.success_count === 0}}">
       确认导入（{{task.success_count}}条）
     </button>
   </view>
 
+  <!-- processing：禁用按钮，提示等待 -->
+  <view wx:if="{{task.status === 'processing'}}" class="action-bar">
+    <button class="btn-confirm" disabled>正在导入，请勿重复操作</button>
+  </view>
+
+  <!-- completed：显示完成信息 -->
   <view wx:if="{{task.status === 'completed'}}" class="completed-bar">
     <text>导入已完成</text>
+  </view>
+
+  <!-- partial_failed：显示部分成功提示 -->
+  <view wx:if="{{task.status === 'partial_failed'}}" class="completed-bar partial">
+    <text>部分导入成功，请查看错误报告</text>
+  </view>
+
+  <!-- failed：显示失败提示，引导新建任务 -->
+  <view wx:if="{{task.status === 'failed'}}" class="completed-bar failed">
+    <text>导入失败，请新建任务重新导入</text>
   </view>
 </view>

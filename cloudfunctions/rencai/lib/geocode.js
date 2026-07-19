@@ -42,7 +42,7 @@ async function geocodeByTencent(address) {
   try {
     const fullAddress = "郑州" + address;
     const url = `https://apis.map.qq.com/ws/geocoder/v1/?address=${encodeURIComponent(fullAddress)}&key=${key}`;
-    const res = await axios.get(url, { timeout: 5000 });
+    const res = await axios.get(url, { timeout: 3000 });
 
     if (res.data && res.data.status === 0 && res.data.result) {
       const { lng, lat } = res.data.result.location;
@@ -67,7 +67,7 @@ async function geocodeByAmap(address) {
   try {
     const fullAddress = "郑州" + address;
     const url = `https://restapi.amap.com/v3/geocode/geo?address=${encodeURIComponent(fullAddress)}&key=${key}`;
-    const res = await axios.get(url, { timeout: 5000 });
+    const res = await axios.get(url, { timeout: 3000 });
 
     if (res.data && res.data.status === "1" && res.data.geocodes && res.data.geocodes.length > 0) {
       const location = res.data.geocodes[0].location; // "lng,lat"

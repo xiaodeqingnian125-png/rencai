@@ -1,4 +1,5 @@
 <view wx:if="{{service}}" class="detail-page">
+  <view class="preview-banner">功能预览 · 即将开放｜当前为示例内容，不会生成订单</view>
   <view class="service-hero {{service.coverClass}}">
     <image wx:if="{{service.image}}" class="service-hero-img" src="{{service.image}}" mode="aspectFill"></image>
     <view wx:else class="service-hero-img grad-cover grad-{{(service.id % 8) + 1}}"></view>

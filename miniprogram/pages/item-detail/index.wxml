@@ -1,4 +1,5 @@
 <view wx:if="{{item}}" class="item-detail-page">
+  <view class="preview-banner">功能预览 · 即将开放｜当前为示例内容，不会提交申请</view>
   <view class="item-hero {{item.thumbClass}}">
     <image src="/assets/icons/item-generic.svg" mode="aspectFit"></image>
     <text class="item-tag">{{item.categoryLabel}}</text>

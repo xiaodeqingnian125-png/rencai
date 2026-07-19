@@ -13,7 +13,7 @@
       show-compass="{{true}}"
       bindmarkertap="selectMarkerFromMap"
     >
-      <cover-view class="map-topbar">
+      <cover-view wx:if="{{!loading && !error && validApartments.length > 0}}" class="map-topbar">
         <cover-view class="map-title-group">
           <cover-view class="map-kicker">{{locationLabel}}</cover-view>
           <cover-view class="map-title">地图选房</cover-view>
@@ -21,7 +21,7 @@
         <cover-view class="map-count">{{markers.length}} 处房源</cover-view>
       </cover-view>
 
-      <cover-view class="locate-btn {{locating ? 'locating' : ''}}" bindtap="locate" aria-label="定位到当前位置">
+      <cover-view wx:if="{{!loading && !error && validApartments.length > 0}}" class="locate-btn {{locating ? 'locating' : ''}}" bindtap="locate" aria-label="定位到当前位置">
         <cover-view class="locate-icon">
           <cover-view class="locate-line locate-line-v"></cover-view>
           <cover-view class="locate-line locate-line-h"></cover-view>
@@ -44,10 +44,31 @@
           <cover-view class="map-info-detail" data-id="{{activeApartment.id}}" catchtap="goDetail">详情</cover-view>
         </cover-view>
       </cover-view>
+
+      <!-- 加载状态 -->
+      <cover-view wx:if="{{loading}}" class="map-status">
+        <cover-view class="map-status-text">正在加载公寓位置</cover-view>
+      </cover-view>
+
+      <!-- 错误状态 -->
+      <cover-view wx:elif="{{error}}" class="map-status">
+        <cover-view class="map-status-text">{{error}}</cover-view>
+        <cover-view class="map-status-btn" bindtap="retryLoad">重新加载</cover-view>
+      </cover-view>
+
+      <!-- 空状态：云端没有公寓 -->
+      <cover-view wx:elif="{{loaded && apartments.length === 0}}" class="map-status">
+        <cover-view class="map-status-text">暂无公寓数据</cover-view>
+      </cover-view>
+
+      <!-- 无可导航状态：有公寓但都没有有效坐标 -->
+      <cover-view wx:elif="{{loaded && validApartments.length === 0}}" class="map-status">
+        <cover-view class="map-status-text">暂无可导航的公寓</cover-view>
+      </cover-view>
     </map>
   </view>
 
-  <scroll-view class="apt-strip" scroll-y enhanced show-scrollbar="{{false}}">
+  <scroll-view wx:if="{{!loading && !error && validApartments.length > 0}}" class="apt-strip" scroll-y enhanced show-scrollbar="{{false}}">
     <view
       wx:for="{{markers}}"
       wx:key="id"

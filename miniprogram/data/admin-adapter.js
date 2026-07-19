@@ -13,16 +13,6 @@ function text(value, fallback = "") {
   return String(value).trim();
 }
 
-function normalizeFloorPlans(value) {
-  if (!Array.isArray(value)) return [];
-  return value
-    .map((item) => ({
-      name: text(item && item.name),
-      image: text(item && item.image)
-    }))
-    .filter((item) => item.name && item.image);
-}
-
 function toAdminItem(type, record, apartmentMap = {}) {
   const source = record || {};
   if (type === "apartments") {
@@ -106,3 +96,4 @@ module.exports = {
   toAdminItem,
   toCloudItem
 };
+const { normalizeFloorPlans } = require("../utils/floor-plans");

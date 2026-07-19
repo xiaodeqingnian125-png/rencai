@@ -1,17 +1,11 @@
-const {
-  getAdminDataset,
-  getAdminRoomFilters,
-  getNextAdminId,
-  saveAdminRuntimeItem,
-  deleteAdminRuntimeItem,
-  updateAdminRuntimeStatus,
-  importAdminRuntimeItems
-} = require("../../data/queries");
-
 // 任务 13 新增的异步接口（createImportTask / exportAdminItems 等）
 // 云模式走云函数，mock 模式回退到 queries 本地数据
 const db = require("../../data/db");
 const { toAdminItem, toCloudItem } = require("../../data/admin-adapter");
+const { encodeFloorPlans, decodeFloorPlans } = require("../../utils/floor-plans");
+
+// CSV 文件生成与分享工具（模板下载、错误报告下载复用）
+const { writeAndShareCsv } = require("../../utils/csv-share");
 
 const configs = {
   apartments: {
@@ -46,6 +40,7 @@ const configs = {
       { value: "hidden", label: "停用" }
     ],
     fields: [
+      { key: "apartment_code", label: "公寓编号", placeholder: "如：A001（唯一）" },
       { key: "name", label: "公寓名称", placeholder: "如：郑东人才公寓" },
       { key: "district", label: "区域", placeholder: "如：郑东新区" },
       { key: "address", label: "地址", placeholder: "详细地址" },
@@ -79,13 +74,13 @@ const configs = {
       { label: "户型", key: "desc" }
     ],
     chipKeys: ["apartment", "area", "orient"],
-    filters: getAdminRoomFilters(),
+    filters: [{ value: "all", label: "全部" }],
     statusOptions: [
       { value: "active", label: "启用" },
       { value: "hidden", label: "停用" }
     ],
     fields: [
-      { key: "apartment", label: "所属公寓", placeholder: "如：郑东人才公寓" },
+      { key: "apartment_code", label: "所属公寓编号", placeholder: "如：A001" },
       { key: "name", label: "户型名称", placeholder: "如：精致一居室" },
       { key: "area", label: "面积", placeholder: "如：35㎡" },
       { key: "orient", label: "朝向", placeholder: "如：南向" },
@@ -304,6 +299,30 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function isCoreAdminType(type) {
+  return type === "apartments" || type === "rooms";
+}
+
+function isFailedResult(result) {
+  return result === false || Boolean(result && typeof result === "object" && result.ok === false);
+}
+
+function resultMessage(result, fallback) {
+  return result && (result.message || result.error) || fallback;
+}
+
+function roomFilters(items) {
+  const seen = {};
+  const filters = [{ value: "all", label: "全部" }];
+  (items || []).forEach((item) => {
+    const value = item.apartment || item.apartment_code;
+    if (!value || seen[value]) return;
+    seen[value] = true;
+    filters.push({ value, label: value });
+  });
+  return filters;
+}
+
 function statusInfo(status, config) {
   const map = {
     active: { label: "已上线", className: "status-on" },
@@ -443,12 +462,29 @@ function toTableText(items, config) {
   return [header, ...rows].join("\n");
 }
 
-function csvCell(value) {
-  const text = cleanTableCell(value);
-  if (/[",\r\n]/.test(text)) {
-    return `"${text.replace(/"/g, '""')}"`;
+// CSV 公式注入防护：以 = + - @ 开头的文本前置单引号转义
+// 仅对字符串值生效，number/boolean 等非字符串原样返回（csvCell 会做类型判断）
+function escapeFormulaInjection(text) {
+  if (typeof text !== "string") return text;
+  const s = text.trim();
+  if (!s) return text;
+  const head = s.charAt(0);
+  if (head === "=" || head === "+" || head === "-" || head === "@") {
+    return "'" + text;
   }
   return text;
+}
+
+function csvCell(value) {
+  // number/boolean 等真实非字符串值不做公式注入防护，避免 -100 被改坏为 '-100
+  const isNonStringPrimitive = typeof value === "number" || typeof value === "boolean";
+  const text = cleanTableCell(value);
+  // 公式注入防护：仅对字符串值执行（非字符串原值跳过）
+  const safe = isNonStringPrimitive ? text : escapeFormulaInjection(text);
+  if (/[",\r\n]/.test(safe)) {
+    return `"${safe.replace(/"/g, '""')}"`;
+  }
+  return safe;
 }
 
 function toCsvText(items, config) {
@@ -553,57 +589,104 @@ function fileExt(name) {
 // 经纬度由后续地理编码模块自动生成，CSV 不再承载 longitude/latitude
 // apartment_code 作为外键（关联户型），由管理员维护唯一性
 
-// 公寓 CSV 表头（10 列：删除经纬度，新增 apartment_code）
+// 公寓 CSV 表头（21 列完整字段，含业务 id、封面路径和平面图）
+// 业务ID 对应 apartments.id，导出时输出数据库数字 id；导入时可留空由服务端生成
+// 经纬度可选，为空时云函数自动地理编码；非空直接使用不调地图 API
+// tags/costs/private_facilities/public_facilities/nearby 使用 JSON 字符串
 const APARTMENT_CSV_HEADERS = [
-  "公寓编号", "公寓名称", "区域", "地址", "位置摘要",
-  "最低租金", "最高租金", "居室类型", "状态", "封面图文件名"
+  "业务ID", "公寓编号", "公寓名称", "区域", "地址", "经度", "纬度",
+  "位置摘要", "最低租金", "最高租金", "居室类型",
+  "状态", "封面图路径", "平面图", "渐变背景类", "备用图片类",
+  "标签", "费用项", "私人设施", "公共设施", "周边配套"
 ];
 
 // 公寓对象 → CSV 行
+// JSON 字段统一 stringify，空数组输出空字符串
+// id 输出为字符串以避免公式注入；空值输出空字符串
 function apartmentToCsvRow(apt) {
   return [
+    apt.id !== undefined && apt.id !== null ? String(apt.id) : "",
     apt.apartment_code || "",
     apt.name || "",
     apt.district || "",
     apt.address || "",
+    apt.longitude || "",
+    apt.latitude || "",
     apt.location_meta || "",
     apt.price_min || "",
     apt.price_max || "",
     apt.room_summary || "",
     apt.status || "",
-    apt.image || ""
+    apt.image || "",
+    encodeFloorPlans(apt.floor_plans),
+    apt.hero_class || "",
+    apt.image_class || "",
+    safeStringify(apt.tags),
+    safeStringify(apt.costs),
+    safeStringify(apt.private_facilities),
+    safeStringify(apt.public_facilities),
+    safeStringify(apt.nearby)
   ];
 }
 
-// CSV 行 → 公寓对象（导入用）
+// 安全 JSON 字符串化：空数组/空对象/null 输出空字符串，非空输出 JSON
+function safeStringify(value) {
+  if (value === null || value === undefined) return "";
+  if (Array.isArray(value) && value.length === 0) return "";
+  if (typeof value === "object" && Object.keys(value).length === 0) return "";
+  try {
+    return JSON.stringify(value);
+  } catch (err) {
+    return "";
+  }
+}
+
+// CSV 行 → 公寓对象（导入用，仅作前端展示，真正校验在云函数）
+// 业务ID 留空时由服务端生成；非空时由云函数校验是否被其他公寓占用
 function csvRowToApartment(row) {
   return {
+    id: row["业务ID"] || "",
     apartment_code: row["公寓编号"] || "",
     name: row["公寓名称"] || "",
     district: row["区域"] || "",
     address: row["地址"] || "",
+    longitude: row["经度"] || "",
+    latitude: row["纬度"] || "",
     location_meta: row["位置摘要"] || "",
     price_min: parseInt(row["最低租金"]) || 0,
     price_max: parseInt(row["最高租金"]) || 0,
     room_summary: row["居室类型"] || "",
     status: row["状态"] || "active",
-    image: row["封面图文件名"] || ""
+    image: row["封面图路径"] || row["封面图文件名"] || "",
+    floor_plans: decodeFloorPlans(row["平面图"] || ""),
+    hero_class: row["渐变背景类"] || "",
+    image_class: row["备用图片类"] || "",
+    tags: row["标签"] || "",
+    costs: row["费用项"] || "",
+    private_facilities: row["私人设施"] || "",
+    public_facilities: row["公共设施"] || "",
+    nearby: row["周边配套"] || ""
   };
 }
 
-// ========== 户型专用 CSV 字段映射（任务 8） ==========
-// apartment_code 作为外键关联公寓（与任务 7 公寓 CSV 的 apartment_code 对齐）
+// ========== 户型专用 CSV 字段映射 ==========
+// apartment_code 作为外键关联公寓
 // apartment_name 仅作人工阅读便利，导入时以 apartment_code 为准
+// apartment_id 由云函数自动从所属公寓的数字 id 生成，不要求用户填写
+// costs 和 facilities 不写入 room_types，由云函数从所属公寓继承
 
-// 户型 CSV 表头（10列，apartment_code + apartment_name 替代 apartment_id）
+// 户型 CSV 表头（12列，包含业务 id 和 desc 描述字段）
+// 房源ID 对应 room_types.id，导出时输出数据库数字 id；导入时可留空由服务端生成
 const ROOM_CSV_HEADERS = [
-  "户型名称", "公寓编号", "所属公寓名称", "面积", "朝向",
-  "居室", "楼层", "租金", "状态", "封面图文件名"
+  "房源ID", "户型名称", "公寓编号", "所属公寓名称", "面积", "朝向",
+  "居室", "楼层", "租金", "状态", "封面图路径", "描述"
 ];
 
 // 户型对象 → CSV 行
+// id 输出为字符串以避免公式注入；空值输出空字符串
 function roomToCsvRow(room, apartmentName) {
   return [
+    room.id !== undefined && room.id !== null ? String(room.id) : "",
     room.name || "",
     room.apartment_code || "",
     apartmentName || "",
@@ -613,13 +696,16 @@ function roomToCsvRow(room, apartmentName) {
     room.floor || "",
     room.price || "",
     room.status || "",
-    room.image || ""
+    room.image || "",
+    room.desc || ""
   ];
 }
 
-// CSV 行 → 户型对象（导入用）
+// CSV 行 → 户型对象（导入用，仅作前端展示，真正校验在云函数）
+// 房源ID 留空时由服务端生成；非空时由云函数校验是否被其他户型占用
 function csvRowToRoom(row) {
   return {
+    id: row["房源ID"] || "",
     name: row["户型名称"] || "",
     apartment_code: row["公寓编号"] || "",
     apartment_name: row["所属公寓名称"] || "",
@@ -629,7 +715,8 @@ function csvRowToRoom(row) {
     floor: row["楼层"] || "",
     price: parseInt(row["租金"]) || 0,
     status: row["状态"] || "active",
-    image: row["封面图文件名"] || ""
+    image: row["封面图路径"] || row["封面图文件名"] || "",
+    desc: row["描述"] || ""
   };
 }
 
@@ -676,15 +763,19 @@ Page({
     importError: "",
     importHint: "",
     nextId: 100,
+    loading: true,
+    loadError: "",
+    previewOnly: false,
+    operationPending: false,
     // 任务 19：按条件导出筛选条件（picker 索引）
     exportDistrictIndex: 0,
-    exportStatusIndex: 0,
     // picker 选项列表（索引 0 为"全部"，不参与筛选）
     districtOptions: ["全部区域", "郑东新区", "高新区", "经开区", "航空港区", "二七区", "中原区"],
-    statusOptions: ["全部状态", "active", "hidden"]
+    // 批量导出弹窗（按条件导出并入弹窗）
+    exportPanelOpen: false
   },
 
-  onLoad(options) {
+  async onLoad(options) {
     // 权限校验：仅管理员可访问
     const app = getApp();
     if (!app.globalData.isAdmin) {
@@ -694,40 +785,74 @@ Page({
     }
     const type = configs[options.type] ? options.type : "activities";
     const config = clone(configs[type]);
-    if (type === "rooms") {
-      config.filters = getAdminRoomFilters();
-    }
-    const items = getAdminDataset(type);
     config.statusOptions = config.statusOptions || config.filters.filter((item) => item.value !== "all");
     this.setData({
       type,
       config,
-      items,
       isApartment: type === "apartments",
       isRoom: type === "rooms",
       activeFilter: "all",
-      nextId: getNextAdminId(type),
-      summary: buildSummary(items, config)
-    }, () => this.applyFilters());
+      items: [],
+      visibleItems: [],
+      previewOnly: !isCoreAdminType(type),
+      loading: isCoreAdminType(type),
+      loadError: "",
+      summary: buildSummary([], config)
+    });
     wx.setNavigationBarTitle({ title: config.title });
+    if (!isCoreAdminType(type)) return;
+    await this.loadAdminItems();
   },
 
-  isRuntimeManagedType() {
-    return true;
+  async loadAdminItems() {
+    if (!isCoreAdminType(this.data.type)) return false;
+    this.setData({ loading: true, loadError: "" });
+    try {
+      const type = this.data.type;
+      const requests = [db.getAdminDataset(type), db.getNextAdminId(type)];
+      if (type === "rooms") requests.push(db.getAdminDataset("apartments"));
+      const [datasetResult, nextIdResult, apartmentResult] = await Promise.all(requests);
+      if (isFailedResult(datasetResult) || !Array.isArray(datasetResult)) {
+        throw new Error(resultMessage(datasetResult, "数据格式不正确"));
+      }
+      if (isFailedResult(nextIdResult)) {
+        throw new Error(resultMessage(nextIdResult, "无法生成下一条编号"));
+      }
+      const apartmentMap = {};
+      if (type === "rooms") {
+        if (isFailedResult(apartmentResult) || !Array.isArray(apartmentResult)) {
+          throw new Error(resultMessage(apartmentResult, "无法读取所属公寓"));
+        }
+        apartmentResult.forEach((apartment) => {
+          if (apartment.apartment_code) apartmentMap[apartment.apartment_code] = apartment.name || apartment.apartment_code;
+        });
+      }
+      const items = datasetResult.map((record) => toAdminItem(type, record, apartmentMap));
+      const updates = {
+        items,
+        nextId: Number(nextIdResult) || 1,
+        loading: false,
+        loadError: "",
+        summary: buildSummary(items, this.data.config)
+      };
+      if (type === "rooms") updates["config.filters"] = roomFilters(items);
+      this.setData(updates, () => this.applyFilters());
+      return true;
+    } catch (error) {
+      this.setData({
+        loading: false,
+        loadError: error && error.message || "加载失败，请稍后重试"
+      });
+      return false;
+    }
   },
 
   reloadAdminItems() {
-    const type = this.data.type;
-    const items = getAdminDataset(type);
-    const updates = {
-      items,
-      nextId: getNextAdminId(type),
-      summary: buildSummary(items, this.data.config)
-    };
-    if (type === "rooms") {
-      updates["config.filters"] = getAdminRoomFilters();
-    }
-    this.setData(updates, () => this.applyFilters());
+    return this.loadAdminItems();
+  },
+
+  retryLoad() {
+    return this.loadAdminItems();
   },
 
   handleSearch(e) {
@@ -757,6 +882,7 @@ Page({
   },
 
   openForm(e) {
+    if (this.data.previewOnly || this.data.loading || this.data.operationPending) return;
     const id = e && e.currentTarget.dataset.id ? Number(e.currentTarget.dataset.id) : null;
     const item = id ? this.data.items.find((row) => row.id === id) : null;
     const form = {};
@@ -765,11 +891,53 @@ Page({
     });
     form.status = item ? item.status : this.defaultStatus();
     form.image = item ? item.image || "" : "";
+    if (this.data.isApartment) {
+      form.floor_plans = item && Array.isArray(item.floor_plans) ? clone(item.floor_plans) : [];
+    }
     this.setData({ formOpen: true, editingId: id, form });
   },
 
   onImageChange(e) {
     this.setData({ "form.image": e.detail.value });
+  },
+
+  addFloorPlan() {
+    const floorPlans = Array.isArray(this.data.form.floor_plans) ? clone(this.data.form.floor_plans) : [];
+    if (floorPlans.length >= 20) {
+      wx.showToast({ title: "每个公寓最多上传20张平面图", icon: "none" });
+      return;
+    }
+    floorPlans.push({ name: "", image: "" });
+    this.setData({ "form.floor_plans": floorPlans });
+  },
+
+  handleFloorPlanNameInput(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    this.setData({ [`form.floor_plans.${index}.name`]: e.detail.value });
+  },
+
+  onFloorPlanImageChange(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    this.setData({ [`form.floor_plans.${index}.image`]: e.detail.value });
+  },
+
+  moveFloorPlan(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    const direction = Number(e.currentTarget.dataset.direction);
+    const targetIndex = index + direction;
+    const floorPlans = clone(this.data.form.floor_plans || []);
+    if (targetIndex < 0 || targetIndex >= floorPlans.length) return;
+    const current = floorPlans[index];
+    floorPlans[index] = floorPlans[targetIndex];
+    floorPlans[targetIndex] = current;
+    this.setData({ "form.floor_plans": floorPlans });
+  },
+
+  removeFloorPlan(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    const floorPlans = clone(this.data.form.floor_plans || []);
+    floorPlans.splice(index, 1);
+    this.setData({ "form.floor_plans": floorPlans });
   },
 
   defaultStatus() {
@@ -789,32 +957,45 @@ Page({
     this.setData({ "form.status": e.currentTarget.dataset.value });
   },
 
-  saveItem() {
+  async saveItem() {
+    if (this.data.previewOnly || this.data.operationPending) return false;
     const form = this.data.form;
     if (!String(form[this.data.config.requiredKey] || "").trim()) {
       wx.showToast({ title: `请填写${this.data.config.requiredLabel}`, icon: "none" });
-      return;
+      return false;
+    }
+    if (!String(form.apartment_code || "").trim()) {
+      wx.showToast({ title: this.data.isRoom ? "请填写所属公寓编号" : "请填写公寓编号", icon: "none" });
+      return false;
     }
     const isEditing = Boolean(this.data.editingId);
-    const nextItem = { id: isEditing ? this.data.editingId : this.data.nextId, ...form };
-    if (this.isRuntimeManagedType()) {
-      saveAdminRuntimeItem(this.data.type, nextItem);
-      this.setData({ formOpen: false, editingId: null, form: {} }, () => this.reloadAdminItems());
-      wx.showToast({ title: isEditing ? "已同步修改" : "已新增并同步", icon: "none" });
-      return;
+    const original = isEditing
+      ? this.data.items.find((item) => item.id === this.data.editingId) || {}
+      : {};
+    const nextItem = toCloudItem(this.data.type, {
+      id: isEditing ? this.data.editingId : this.data.nextId,
+      ...form
+    }, original);
+    this.setData({ operationPending: true });
+    try {
+      const result = await db.saveAdminItem(this.data.type, nextItem);
+      if (isFailedResult(result)) {
+        throw new Error(resultMessage(result, "保存失败"));
+      }
+      this.setData({ formOpen: false, editingId: null, form: {} });
+      await this.loadAdminItems();
+      wx.showToast({ title: isEditing ? "修改已保存" : "新增已保存", icon: "success" });
+      return true;
+    } catch (error) {
+      wx.showToast({ title: error && error.message || "保存失败，请重试", icon: "none" });
+      return false;
+    } finally {
+      this.setData({ operationPending: false });
     }
-    let items;
-    if (isEditing) {
-      items = this.data.items.map((item) => item.id === this.data.editingId ? { ...item, ...form } : item);
-    } else {
-      items = [nextItem, ...this.data.items];
-      this.setData({ nextId: this.data.nextId + 1 });
-    }
-    this.setData({ items, formOpen: false, editingId: null, form: {} }, () => this.applyFilters());
-    wx.showToast({ title: isEditing ? "已保存修改" : "已新增", icon: "none" });
   },
 
   deleteItem(e) {
+    if (this.data.previewOnly || this.data.operationPending) return;
     const id = Number(e.currentTarget.dataset.id || this.data.editingId);
     if (!id) return;
     const itemLabel = this.data.config.singularLabel || this.data.config.title || "记录";
@@ -822,42 +1003,53 @@ Page({
       title: "确认删除",
       content: `删除后不可恢复，确定删除该${itemLabel}吗？`,
       confirmColor: "#e04a3a",
-      success: (res) => {
+      success: async (res) => {
         if (!res.confirm) return;
-        if (this.isRuntimeManagedType()) {
-          deleteAdminRuntimeItem(this.data.type, id);
-          this.setData({ formOpen: false, editingId: null, form: {} }, () => this.reloadAdminItems());
-          wx.showToast({ title: "已删除并同步", icon: "none" });
-          return;
+        this.setData({ operationPending: true });
+        try {
+          const result = await db.deleteAdminItem(this.data.type, id);
+          if (isFailedResult(result)) {
+            throw new Error(resultMessage(result, "删除失败"));
+          }
+          this.setData({ formOpen: false, editingId: null, form: {} });
+          await this.loadAdminItems();
+          wx.showToast({ title: "已删除", icon: "success" });
+        } catch (error) {
+          wx.showToast({ title: error && error.message || "删除失败，请重试", icon: "none" });
+        } finally {
+          this.setData({ operationPending: false });
         }
-        this.setData({
-          items: this.data.items.filter((item) => item.id !== id),
-          formOpen: false,
-          editingId: null,
-          form: {}
-        }, () => this.applyFilters());
-        wx.showToast({ title: "已删除", icon: "none" });
       }
     });
   },
 
-  updateStatus(e) {
+  async updateStatus(e) {
+    if (this.data.previewOnly || this.data.operationPending) return false;
     const id = Number(e.currentTarget.dataset.id);
     const status = e.currentTarget.dataset.status;
     const toast = e.currentTarget.dataset.toast || "状态已更新";
-    if (this.isRuntimeManagedType()) {
-      updateAdminRuntimeStatus(this.data.type, id, status);
-      this.reloadAdminItems();
+    this.setData({ operationPending: true });
+    try {
+      const result = await db.updateAdminItemStatus(this.data.type, id, status);
+      if (isFailedResult(result)) {
+        throw new Error(resultMessage(result, "状态更新失败"));
+      }
+      await this.loadAdminItems();
       wx.showToast({ title: toast, icon: "none" });
-      return;
+      return true;
+    } catch (error) {
+      wx.showToast({ title: error && error.message || "状态更新失败，请重试", icon: "none" });
+      return false;
+    } finally {
+      this.setData({ operationPending: false });
     }
-    this.setData({
-      items: this.data.items.map((item) => item.id === id ? { ...item, status } : item)
-    }, () => this.applyFilters());
-    wx.showToast({ title: toast, icon: "none" });
   },
 
   async exportData() {
+    if (this.data.previewOnly) {
+      wx.showToast({ title: "该管理模块暂未开放", icon: "none" });
+      return;
+    }
     // 公寓和户型使用专用 CSV 格式（含 apartment_code 列），
     // 与 exportFiltered 保持一致，保证"导出→编辑→导入"往返不因缺少 apartment_code 报错
     if (this.data.isApartment || this.data.isRoom) {
@@ -925,11 +1117,26 @@ Page({
   },
 
   openImport() {
+    if (this.data.previewOnly) {
+      wx.showToast({ title: "该管理模块暂未开放", icon: "none" });
+      return;
+    }
     // 公寓和户型接入任务制导入流程（任务 19）
     // admin 页内部 type 为 "apartments"/"rooms"，导入任务 targetType 对应 "apartments"/"room_types"
     if (this.data.isApartment || this.data.isRoom) {
       const taskType = this.data.type === "rooms" ? "room_types" : this.data.type;
-      this.importCsvFile(taskType);
+      // 下载模板并入批量导入入口，通过 ActionSheet 选择
+      wx.showActionSheet({
+        itemList: ["下载导入模板", "选择 CSV 文件导入"],
+        success: (res) => {
+          if (res.tapIndex === 0) {
+            this.downloadTemplate();
+          } else if (res.tapIndex === 1) {
+            this.importCsvFile(taskType);
+          }
+        },
+        fail: () => {}
+      });
       return;
     }
     const importHint = tableColumns(this.data.config).map((column) => column.label).join(" / ");
@@ -1019,7 +1226,11 @@ Page({
     return rows.filter((row) => row && String(row.name || "").trim());
   },
 
-  importRowsFromText(text) {
+  async importRowsFromText(text) {
+    if (this.data.previewOnly) {
+      wx.showToast({ title: "该管理模块暂未开放", icon: "none" });
+      return;
+    }
     const source = String(text || "").trim();
     const importHint = tableColumns(this.data.config).map((column) => column.label).join(" / ");
     if (!source) {
@@ -1039,20 +1250,23 @@ Page({
     }
     // 显示导入中状态
     wx.showLoading({ title: "正在导入...", mask: true });
-    const summary = importAdminRuntimeItems(this.data.type, rows);
-    this.setData({ importOpen: false, importDraft: "", importError: "", importHint: "" }, () => this.reloadAdminItems());
-    wx.hideLoading();
-    // 区分新增和更新数量的详细结果
-    const parts = [];
-    if (summary.created > 0) parts.push(`新增${summary.created}条`);
-    if (summary.updated > 0) parts.push(`更新${summary.updated}条`);
-    if (summary.ignored > 0) parts.push(`忽略${summary.ignored}条`);
-    const resultText = parts.length > 0 ? parts.join("，") : "无变更";
-    wx.showToast({
-      title: resultText,
-      icon: "none",
-      duration: 2500
-    });
+    try {
+      const summary = await db.importAdminItems(this.data.type, rows);
+      if (isFailedResult(summary)) {
+        throw new Error(resultMessage(summary, "导入失败"));
+      }
+      this.setData({ importOpen: false, importDraft: "", importError: "", importHint: "" });
+      await this.loadAdminItems();
+      const parts = [];
+      if (summary && summary.created > 0) parts.push(`新增${summary.created}条`);
+      if (summary && summary.updated > 0) parts.push(`更新${summary.updated}条`);
+      if (summary && summary.ignored > 0) parts.push(`忽略${summary.ignored}条`);
+      wx.showToast({ title: parts.length ? parts.join("，") : "导入完成", icon: "none", duration: 2500 });
+    } catch (error) {
+      wx.showToast({ title: error && error.message || "导入失败，请重试", icon: "none" });
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   confirmImport() {
@@ -1071,15 +1285,27 @@ Page({
   },
 
   // 按条件导出（apartments 专属，rooms 暂不触发）
+  // 批量导出入口：公寓打开条件筛选弹窗，户型直接导出全部
+  openExportPanel() {
+    if (this.data.isApartment) {
+      this.setData({ exportPanelOpen: true });
+      return;
+    }
+    // 户型管理无条件导出，直接导出全部
+    this.exportData();
+  },
+
+  closeExportPanel() {
+    this.setData({ exportPanelOpen: false });
+  },
+
   // 调用 db.exportAdminItems 获取过滤后数据，再生成 CSV
   async exportFiltered(e) {
+    this.setData({ exportPanelOpen: false });
     const type = e.currentTarget.dataset.type;
     const filters = {};
     if (this.data.exportDistrictIndex > 0) {
       filters.district = this.data.districtOptions[this.data.exportDistrictIndex];
-    }
-    if (this.data.exportStatusIndex > 0) {
-      filters.status = this.data.statusOptions[this.data.exportStatusIndex];
     }
 
     wx.showLoading({ title: "导出中" });
@@ -1124,53 +1350,25 @@ Page({
   // 失败兜底复制到剪贴板
   downloadCsv(type, csvText) {
     const fileName = type === "apartments" ? "公寓导出.csv" : "户型导出.csv";
-    const fs = wx.getFileSystemManager && wx.getFileSystemManager();
-    if (!fs || !wx.env || !wx.env.USER_DATA_PATH) {
-      wx.setClipboardData({
-        data: csvText,
-        success: () => wx.showToast({ title: "已复制到剪贴板", icon: "none" })
-      });
-      return;
-    }
-    const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
-    try {
-      fs.writeFileSync(filePath, csvText, "utf8");
-    } catch (err) {
-      wx.setClipboardData({
-        data: csvText,
-        success: () => wx.showToast({ title: "已复制到剪贴板", icon: "none" })
-      });
-      return;
-    }
-    if (wx.shareFileMessage) {
-      wx.shareFileMessage({
-        filePath,
-        success() {
-          wx.showToast({ title: "已生成文件", icon: "success" });
-        },
-        fail() {
-          wx.setClipboardData({
-            data: csvText,
-            success: () => wx.showToast({ title: "已复制到剪贴板", icon: "none" })
-          });
-        }
-      });
-    } else {
-      wx.setClipboardData({
-        data: csvText,
-        success: () => wx.showToast({ title: "已复制到剪贴板", icon: "none" })
-      });
-    }
+    writeAndShareCsv({ fileName, content: csvText });
+  },
+
+  // 下载标准 CSV 模板（仅表头，无示例数据，避免误导入）
+  // 复用 APARTMENT_CSV_HEADERS / ROOM_CSV_HEADERS，不维护第三份字段清单
+  downloadTemplate() {
+    const isRoom = this.data.type === "rooms";
+    const headers = isRoom ? ROOM_CSV_HEADERS : APARTMENT_CSV_HEADERS;
+    const fileName = isRoom
+      ? "room-import-template.csv"
+      : "apartment-import-template.csv";
+    // CSV 模板只包含表头行，使用 UTF-8 BOM
+    const csvText = `\ufeff${headers.map((h) => csvCell(h)).join(",")}`;
+    writeAndShareCsv({ fileName, content: csvText });
   },
 
   // picker 变更：区域
   onDistrictChange(e) {
     this.setData({ exportDistrictIndex: e.detail.value });
-  },
-
-  // picker 变更：状态
-  onStatusChange(e) {
-    this.setData({ exportStatusIndex: e.detail.value });
   },
 
   // 任务制导入：选择 CSV 文件 → 创建导入任务 → 跳转预览页

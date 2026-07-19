@@ -26,6 +26,8 @@ const {
   getImportTask,
   listImportTasks
 } = require("./lib/import-task");
+const { geocodeAddress, isInRange } = require("./lib/geocode");
+const { validateApartmentIdentity, attachRoomApartment } = require("./lib/admin-record");
 
 // 全部业务集合清单（含 import_tasks 共 15 个）
 const ALL_COLLECTIONS = [
@@ -366,19 +368,46 @@ async function saveAdminItem(type, item) {
   const colName = ADMIN_COLLECTION_MAP[type];
   if (!colName) return "ignored";
   const col = db.collection(colName);
+  let nextItem = { ...item };
+
+  if (type === "apartments") {
+    const sameCode = await col.where({ apartment_code: String(nextItem.apartment_code || "").trim() }).get();
+    const identity = validateApartmentIdentity(nextItem, sameCode.data);
+    if (!identity.ok) return identity;
+    nextItem = identity.item;
+  }
+
+  if (type === "rooms") {
+    const apartmentCode = String(nextItem.apartment_code || "").trim();
+    const apartmentResult = await db.collection("apartments").where({ apartment_code: apartmentCode }).limit(2).get();
+    const attached = attachRoomApartment(nextItem, apartmentResult.data);
+    if (!attached.ok) return attached;
+    nextItem = attached.item;
+  }
+
+  if (type === "apartments" && !isInRange(Number(nextItem.longitude), Number(nextItem.latitude))) {
+    const address = String(nextItem.address || "").trim();
+    if (!address) return { ok: false, error: "请填写公寓地址" };
+    const location = await geocodeAddress(address);
+    if (!location || location.source === "failed" || !isInRange(location.lng, location.lat)) {
+      return { ok: false, error: `地址无法解析：${address}` };
+    }
+    nextItem.longitude = location.lng;
+    nextItem.latitude = location.lat;
+  }
 
   // 检查是否已存在
-  const { data } = await col.where({ id: Number(item.id) }).get();
+  const { data } = await col.where({ id: Number(nextItem.id) }).get();
   if (data.length > 0) {
     // 更新
     await col.doc(data[0]._id).update({
-      data: { ...item, updated_at: db.serverDate() }
+      data: { ...nextItem, updated_at: db.serverDate() }
     });
     return "updated";
   }
 
   // 新建
-  await col.add({ data: { ...item, created_at: db.serverDate(), updated_at: db.serverDate() } });
+  await col.add({ data: { ...nextItem, created_at: db.serverDate(), updated_at: db.serverDate() } });
   return "created";
 }
 
@@ -395,6 +424,12 @@ async function deleteAdminItem(type, id) {
 
   // 级联删除关联数据
   if (type === "apartments") {
+    // 优先按 apartment_code 删除所属户型（新规则）
+    const apartmentCode = data[0].apartment_code;
+    if (apartmentCode) {
+      await db.collection("room_types").where({ apartment_code: apartmentCode }).remove();
+    }
+    // 兼容旧数据：同时清理 apartment_id 为数字 id 的户型记录
     await db.collection("room_types").where({ apartment_id: numericId }).remove();
     await db.collection("favorites").where({ target_type: "apartment", target_id: numericId }).remove();
   } else if (type === "rooms") {
@@ -443,7 +478,18 @@ async function importAdminItems(type, rows) {
   return { created, updated, ignored };
 }
 
+// 导出集合白名单（安全限制：仅允许公寓和户型导出，禁止导出 users 等敏感集合）
+const EXPORT_ALLOWED_COLLECTIONS = ["apartments", "room_types"];
+
 async function exportAdminItems(targetType, filters = {}) {
+  // 白名单校验：禁止通过 targetType 导出 users 或其他集合
+  if (!EXPORT_ALLOWED_COLLECTIONS.includes(targetType)) {
+    return {
+      ok: false,
+      code: "forbidden_collection",
+      message: `不允许导出集合: ${targetType}，仅支持: ${EXPORT_ALLOWED_COLLECTIONS.join(", ")}`
+    };
+  }
   const col = db.collection(targetType);
   // 合并筛选条件
   const whereClause = {};
@@ -463,6 +509,16 @@ function isValidImagePath(path) {
   const s = path.trim();
   if (!s) return false;
   return /^cloud:\/\/|^https:\/\//i.test(s);
+}
+
+function normalizeFloorPlans(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => ({
+      name: String(item && item.name || "").trim(),
+      image: String(item && item.image || "").trim()
+    }))
+    .filter((item) => item.name && isValidImagePath(item.image));
 }
 
 // 设施图标映射表（label → icon）
@@ -568,6 +624,7 @@ function toApartmentPage(apt) {
     room_summary: apt.room_summary ?? apt.rooms ?? "",
     status: apt.status || "active",
     image: isValidImagePath(apt.image) ? apt.image : "",
+    floor_plans: normalizeFloorPlans(apt.floor_plans),
     hero_class: apt.hero_class ?? apt.heroClass ?? "",
     image_class: apt.image_class ?? apt.imageClass ?? "",
     tags: Array.isArray(apt.tags) ? apt.tags : [],
@@ -624,6 +681,8 @@ function toApartmentCard(apt) {
   if (!Number.isInteger(id) || id <= 0) return null;
   const priceMin = Number(apt.price_min ?? apt.priceMin);
   const priceMax = Number(apt.price_max ?? apt.priceMax);
+  const latitude = Number(apt.latitude);
+  const longitude = Number(apt.longitude);
   return {
     id,
     apartmentCode: apt.apartment_code ?? apt.apartmentCode ?? "",
@@ -633,9 +692,13 @@ function toApartmentCard(apt) {
     priceMax: Number.isFinite(priceMax) ? priceMax : 0,
     rooms: apt.room_summary ?? apt.rooms ?? "",
     location: apt.address ?? apt.location ?? "",
+    // 地图选房页需要经纬度生成 marker；无效值统一为 0，由前端合法性校验拦截
+    latitude: Number.isFinite(latitude) ? latitude : 0,
+    longitude: Number.isFinite(longitude) ? longitude : 0,
     tags: Array.isArray(apt.tags) ? apt.tags : [],
     imageClass: apt.image_class ?? apt.imageClass ?? "",
     image: isValidImagePath(apt.image) ? apt.image : "",
+    floor_plans: normalizeFloorPlans(apt.floor_plans),
     favorite: false
   };
 }

@@ -31,12 +31,13 @@ Component({
 
   data: {
     imageUrl: "",
+    previousImageUrl: "",
     uploading: false
   },
 
   observers: {
     value(val) {
-      this.setData({ imageUrl: val || "" });
+      this.setData({ imageUrl: val || "", previousImageUrl: val || "" });
     }
   },
 
@@ -49,7 +50,13 @@ Component({
         sourceType: ["album", "camera"],
         sizeType: ["compressed"],
         success: (res) => {
-          const tempPath = res.tempFiles[0].tempFilePath;
+          const file = res.tempFiles && res.tempFiles[0];
+          if (!file || !file.tempFilePath) return;
+          if (Number(file.size) > 5 * 1024 * 1024) {
+            wx.showToast({ title: "图片大小不能超过5MB", icon: "none" });
+            return;
+          }
+          const tempPath = file.tempFilePath;
           this.uploadImage(tempPath);
         },
         fail: () => {}
@@ -57,7 +64,8 @@ Component({
     },
 
     uploadImage(tempPath) {
-      this.setData({ uploading: true });
+      const previousImageUrl = this.data.imageUrl || "";
+      this.setData({ uploading: true, previousImageUrl });
       wx.showLoading({ title: "上传中...", mask: true });
 
       if (db.isCloudMode()) {
@@ -70,32 +78,30 @@ Component({
           filePath: tempPath,
           success: (res) => {
             wx.hideLoading();
-            this.setData({ uploading: false, imageUrl: res.fileID });
+            this.setData({ uploading: false, imageUrl: res.fileID, previousImageUrl: res.fileID });
             this.triggerEvent("change", { value: res.fileID });
             wx.showToast({ title: "上传成功", icon: "none" });
           },
           fail: (err) => {
             wx.hideLoading();
-            this.setData({ uploading: false });
+            this.setData({ uploading: false, imageUrl: previousImageUrl });
             console.error("[upload] cloud upload failed:", err);
-            // 云上传失败时降级为本地临时路径（仅预览用）
-            this.setData({ imageUrl: tempPath });
-            this.triggerEvent("change", { value: tempPath });
-            wx.showToast({ title: "云上传失败，使用本地", icon: "none" });
+            this.triggerEvent("uploaderror", { error: err });
+            wx.showToast({ title: "图片上传失败，请重试", icon: "none" });
           }
         });
       } else {
         // mock 模式：使用 wx.getFileSystemManager 读取 base64
         // 但 base64 过大会撑爆 Storage，mock 模式下直接用临时路径
         wx.hideLoading();
-        this.setData({ uploading: false, imageUrl: tempPath });
+        this.setData({ uploading: false, imageUrl: tempPath, previousImageUrl: tempPath });
         this.triggerEvent("change", { value: tempPath });
         wx.showToast({ title: "已选择图片", icon: "none" });
       }
     },
 
     clearImage() {
-      this.setData({ imageUrl: "" });
+      this.setData({ imageUrl: "", previousImageUrl: "" });
       this.triggerEvent("change", { value: "" });
     }
   }

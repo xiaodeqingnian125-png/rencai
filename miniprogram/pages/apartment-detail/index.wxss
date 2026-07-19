@@ -270,6 +270,7 @@
 }
 
 .info-section,
+.floor-plan-section,
 .room-section,
 .comment-section {
   padding: 32rpx;
@@ -378,6 +379,48 @@
   color: #5c4a38;
   font-size: 26rpx;
   line-height: 64rpx;
+}
+
+.floor-plan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.floor-plan-more {
+  margin-bottom: 20rpx;
+  padding: 8rpx 4rpx 8rpx 24rpx;
+  color: #e8723c;
+  font-size: 26rpx;
+  font-weight: 650;
+}
+
+.floor-plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+.floor-plan-item {
+  overflow: hidden;
+  border: 1rpx solid #f0eae0;
+  border-radius: 22rpx;
+  background: #fffdf7;
+}
+
+.floor-plan-image {
+  display: block;
+  width: 100%;
+  background: #f6f2eb;
+}
+
+.floor-plan-caption {
+  padding: 18rpx 20rpx 20rpx;
+  color: #5c4a38;
+  font-size: 26rpx;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
 }
 
 .room-list {
@@ -728,48 +771,4 @@
 .submit-btn {
   background: #e8723c;
   color: #ffffff;
-}
-
-/* 管理员封面图管理区域 */
-.admin-image-section {
-  margin: 24rpx 24rpx 0;
-  padding: 28rpx 24rpx;
-  background: #fffdf7;
-  border-radius: 24rpx;
-  border: 1rpx dashed #e8723c;
-}
-
-.admin-section-title {
-  font-size: 28rpx;
-  font-weight: 650;
-  color: #e8723c;
-  margin-bottom: 20rpx;
-}
-
-/* 管理员经纬度修正区域 */
-.admin-location-section {
-  padding: 24rpx 32rpx;
-  border-top: 1rpx solid #f0eae0;
-}
-
-.location-display {
-  display: flex;
-  gap: 24rpx;
-  font-size: 24rpx;
-  color: #8c7a68;
-  margin-bottom: 16rpx;
-}
-
-.location-map {
-  width: 100%;
-  height: 400rpx;
-  border-radius: 16rpx;
-  border: 1rpx solid #f0eae0;
-}
-
-.location-tip {
-  text-align: center;
-  font-size: 22rpx;
-  color: #a69682;
-  margin-top: 12rpx;
 }

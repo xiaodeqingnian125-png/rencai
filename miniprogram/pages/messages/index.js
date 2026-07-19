@@ -1,4 +1,5 @@
 const business = require("../../data/business");
+const { showPreviewNotice } = require("../../utils/preview-mode");
 
 Page({
   data: {
@@ -140,62 +141,18 @@ Page({
       this.confirmService();
       return;
     }
-    const messageMap = {
-      remind: "已加入提醒",
-      contact: "已为你打开联系入口",
-      comments: "已打开我的评论",
-      reply: "已打开回复入口"
-    };
     if (action === "comments") {
       wx.navigateTo({ url: "/pages/my-comments/index" });
       return;
     }
-    this.setData({ showDetail: false });
-    wx.showToast({
-      title: messageMap[action] || "操作已提交",
-      icon: "none"
-    });
+    showPreviewNotice();
   },
 
   confirmService() {
-    const selected = this.data.selectedMessage;
-    if (!selected) {
-      return;
-    }
-    const messages = this.data.messages.map((message) => {
-      if (message.id !== selected.id) {
-        return message;
-      }
-      return {
-        ...message,
-        title: "服务已确认完成",
-        preview: "你已确认「代取快递」订单完成，感谢你的反馈",
-        detail: "你已确认「代取快递」订单完成。若后续还有代办需求，可在服务页继续提交。",
-        status: "已完成"
-      };
-    });
-    this.setData({
-      messages,
-      filteredMessages: this.getFilteredMessages(messages, this.data.activeType),
-      selectedMessage: null,
-      showDetail: false
-    });
-    wx.showToast({ title: "已确认完成", icon: "none" });
+    showPreviewNotice();
   },
 
   deleteCurrentMessage() {
-    const selected = this.data.selectedMessage;
-    if (!selected) {
-      return;
-    }
-    const messages = this.data.messages.filter((message) => message.id !== selected.id);
-    this.setData({
-      messages,
-      filteredMessages: this.getFilteredMessages(messages, this.data.activeType),
-      hasUnread: messages.some((message) => message.unread),
-      selectedMessage: null,
-      showDetail: false
-    });
-    wx.showToast({ title: "消息已删除", icon: "none" });
+    showPreviewNotice();
   }
 });

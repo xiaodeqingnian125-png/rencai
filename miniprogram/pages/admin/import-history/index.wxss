@@ -65,6 +65,8 @@
 .status-completed { background: #eef5ee; color: #5b9a6f; }
 .status-previewing { background: #fef8ef; color: #d4a04a; }
 .status-pending { background: #eef2f8; color: #5b8cb8; }
+.status-processing { background: #fef8ef; color: #d4a04a; }
+.status-partial_failed { background: #fdf5e6; color: #d4a04a; }
 .status-failed { background: #fdecea; color: #e04a3a; }
 
 .task-meta {

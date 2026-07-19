@@ -7,7 +7,9 @@ Page({
     statusText: {
       pending: "待处理",
       previewing: "待确认",
+      processing: "处理中",
       completed: "已完成",
+      partial_failed: "部分失败",
       failed: "失败"
     }
   },

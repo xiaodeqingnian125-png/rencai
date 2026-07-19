@@ -47,7 +47,6 @@ Page({
     commentCount: "0/200",
     lastCommentAt: 0,
     loginModalVisible: false,
-    isAdmin: false,
     navTop: "",
     navHeight: "",
     navWidth: "",
@@ -131,14 +130,11 @@ Page({
     const payload = res.data || {};
     const apartment = mapApartmentToPage(payload.apartment);
     const room = mapRoomToPage(payload.room, apartment);
-    const app = getApp();
-    const isAdmin = !!app.globalData.isAdmin;
     this._loadedOnce = true;
     this.setData({
       loading: false,
       apartment,
       room,
-      isAdmin,
       favorite: false
     });
   },
@@ -151,19 +147,6 @@ Page({
 
   retryLoad() {
     this.loadRoom();
-  },
-
-  onImageChange(e) {
-    const newImage = e.detail.value;
-    db.saveAdminItem("room_types", {
-      id: this.roomId,
-      image: newImage
-    }).then(() => {
-      this.setData({ "room.image": newImage });
-      wx.showToast({ title: "图片已更新", icon: "success" });
-    }).catch(() => {
-      wx.showToast({ title: "更新失败", icon: "none" });
-    });
   },
 
   ensureLogin() {

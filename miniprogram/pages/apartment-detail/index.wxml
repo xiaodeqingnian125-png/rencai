@@ -106,6 +106,26 @@
       </view>
     </view>
 
+    <view wx:if="{{visibleFloorPlans.length}}" class="floor-plan-section">
+      <view class="floor-plan-header">
+        <view class="info-title">公寓平面图</view>
+        <view wx:if="{{hasMoreFloorPlans}}" class="floor-plan-more" bindtap="goMoreFloorPlans">更多</view>
+      </view>
+      <view class="floor-plan-list">
+        <view wx:for="{{visibleFloorPlans}}" wx:key="image" class="floor-plan-item">
+          <image
+            class="floor-plan-image"
+            src="{{item.image}}"
+            mode="widthFix"
+            lazy-load
+            data-index="{{index}}"
+            bindtap="previewFloorPlan"
+          ></image>
+          <view class="floor-plan-caption">{{item.name}}</view>
+        </view>
+      </view>
+    </view>
+
     <view class="room-section">
       <view class="info-title">户型选择</view>
       <view class="room-list">
@@ -149,32 +169,6 @@
           </view>
         </view>
       </view>
-    </view>
-
-    <view wx:if="{{isAdmin}}" class="admin-image-section">
-      <view class="admin-section-title">封面图管理</view>
-      <image-uploader
-        value="{{apartment.image}}"
-        cloud-path="covers/apartments"
-        bind:change="onImageChange"
-      ></image-uploader>
-    </view>
-
-    <view wx:if="{{isAdmin}}" class="admin-location-section">
-      <view class="admin-section-title">经纬度修正</view>
-      <view class="location-display">
-        <text>经度：{{apartment.longitude || 0}}</text>
-        <text>纬度：{{apartment.latitude || 0}}</text>
-      </view>
-      <map
-        class="location-map"
-        longitude="{{apartment.longitude || 113.6}}"
-        latitude="{{apartment.latitude || 34.7}}"
-        scale="15"
-        markers="{{locationMarkers}}"
-        bindtap="onMapTap"
-      ></map>
-      <view class="location-tip">点击地图修正位置</view>
     </view>
 
     <view class="scroll-spacer"></view>

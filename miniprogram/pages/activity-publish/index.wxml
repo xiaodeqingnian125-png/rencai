@@ -1,4 +1,5 @@
 <view class="form-page">
+  <view class="preview-banner">功能预览 · 即将开放｜当前为示例内容，不会真实发布</view>
   <view class="form-card">
     <view class="form-title">活动信息</view>
     <view class="field">

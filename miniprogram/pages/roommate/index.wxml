@@ -1,4 +1,5 @@
 <view class="roommate-page">
+  <view class="preview-banner">功能预览 · 即将开放｜当前为示例内容</view>
   <view class="type-tabs">
     <button
       wx:for="{{tabs}}"

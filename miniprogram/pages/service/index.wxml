@@ -1,4 +1,5 @@
 <view class="service-page">
+  <view class="preview-banner">功能预览 · 即将开放｜当前为示例内容</view>
   <view class="section-hd">
     <text class="section-hd-title">日常活动</text>
     <view class="section-hd-more" bindtap="goActivityList">

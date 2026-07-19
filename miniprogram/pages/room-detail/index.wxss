@@ -511,19 +511,3 @@
   background: #e8723c;
   color: #ffffff;
 }
-
-/* 管理员户型图管理区域 */
-.admin-image-section {
-  margin: 24rpx 24rpx 0;
-  padding: 28rpx 24rpx;
-  background: #fffdf7;
-  border-radius: 24rpx;
-  border: 1rpx dashed #e8723c;
-}
-
-.admin-section-title {
-  font-size: 28rpx;
-  font-weight: 650;
-  color: #e8723c;
-  margin-bottom: 20rpx;
-}

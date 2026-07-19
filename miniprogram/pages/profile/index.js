@@ -1,5 +1,4 @@
-const business = require("../../data/business");
-const { getProfileBadges } = require("../../data/queries");
+const { showPreviewNotice } = require("../../utils/preview-mode");
 
 Page({
   data: {
@@ -93,18 +92,7 @@ Page({
   },
 
   syncBadges() {
-    if (!this.data.isLoggedIn) return;
-    const app = getApp();
-    // 临时切换 CURRENT_USER_ID 为当前登录用户（查询层暂用固定用户）
-    const badges = getProfileBadges();
-    const menuGroups = this.data.menuGroups.map((group) => ({
-      ...group,
-      items: group.items.map((item) => ({
-        ...item,
-        badge: badges[item.action] !== undefined ? badges[item.action] : item.badge
-      }))
-    }));
-    this.setData({ menuGroups });
+    // 业务模块尚未开放，不展示来自 Mock 数据的数量徽标。
   },
 
   // 点击用户卡片
@@ -138,40 +126,16 @@ Page({
   },
 
   openMenu(e) {
-    if (!this.data.isLoggedIn) {
-      this.setData({ loginModalVisible: true });
-      return;
-    }
     const action = e.currentTarget.dataset.action;
-    const profileRecords = business.profileRecords;
-    const config = profileRecords[action];
-    if (config) {
-      this.setData({
-        sheetOpen: true,
-        sheetTitle: config.title,
-        sheetSubtitle: config.subtitle,
-        sheetEmpty: config.empty,
-        records: config.items || []
-      });
-      return;
-    }
-    if (action === "favorites") {
-      wx.navigateTo({ url: "/pages/favorites/index" });
-      return;
-    }
-    if (action === "comments") {
-      wx.navigateTo({ url: "/pages/my-comments/index" });
-      return;
-    }
     if (action === "settings") {
+      if (!this.data.isLoggedIn) {
+        this.setData({ loginModalVisible: true });
+        return;
+      }
       wx.navigateTo({ url: "/pages/profile-edit/index" });
       return;
     }
-    const messageMap = {};
-    wx.showToast({
-      title: messageMap[action] || "暂不可用",
-      icon: "none"
-    });
+    showPreviewNotice();
   },
 
   closeBusiness() {
@@ -179,36 +143,7 @@ Page({
   },
 
   handleRecordAction(e) {
-    const action = e.currentTarget.dataset.action;
-    if (action === "service") {
-      wx.switchTab({ url: "/pages/service/index" });
-      return;
-    }
-    if (action === "borrowPage") {
-      wx.switchTab({ url: "/pages/borrow/index" });
-      return;
-    }
-    if (action === "roommate") {
-      wx.navigateTo({ url: "/pages/roommate/index" });
-      return;
-    }
-    if (action === "comment") {
-      wx.navigateTo({ url: "/pages/my-comments/index" });
-      return;
-    }
-    const messageMap = {
-      cancelActivity: "已提交取消报名",
-      remind: "已开启候补提醒",
-      closePost: "帖子已下架",
-      contact: "已为你打开联系入口",
-      finishLend: "已确认归还",
-      approveLend: "已同意借出",
-      reject: "已拒绝申请"
-    };
-    wx.showToast({
-      title: messageMap[action] || "操作已提交",
-      icon: "none"
-    });
+    showPreviewNotice();
   },
 
   openAdmin(e) {

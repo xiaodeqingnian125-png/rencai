@@ -354,3 +354,45 @@
 .apt-strip-detail-btn::after {
   display: none;
 }
+
+/* ===== 加载 / 错误 / 空 / 无可导航 状态层 ===== */
+/* 复用米白橙色设计：背景 #fafaf6 / 主色 #e8723c / 主文字 #2d2318 / 辅助文字 #8c7a68 */
+.map-status {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fafaf6;
+}
+
+.map-status-text {
+  max-width: 480rpx;
+  color: #8c7a68;
+  font-size: 28rpx;
+  line-height: 40rpx;
+  text-align: center;
+  padding: 0 48rpx;
+  word-break: break-all;
+}
+
+.map-status-btn {
+  margin-top: 32rpx;
+  padding: 20rpx 56rpx;
+  border-radius: 999rpx;
+  background: #e8723c;
+  color: #fffdf7;
+  font-size: 28rpx;
+  font-weight: 650;
+  line-height: 36rpx;
+  text-align: center;
+}
+
+.map-status-btn:active {
+  opacity: 0.88;
+}

@@ -1,5 +1,5 @@
 const { getBorrowItemById } = require("../../data/business");
-const { createBorrowRequestForUser } = require("../../data/queries");
+const { showPreviewNotice } = require("../../utils/preview-mode");
 
 Page({
   data: {
@@ -49,12 +49,7 @@ Page({
   },
 
   openRequest() {
-    if (!this.ensureLogin()) return;
-    if (this.data.requested) {
-      wx.showToast({ title: "申请已提交，等待物主确认", icon: "none" });
-      return;
-    }
-    this.setData({ requestOpen: true });
+    showPreviewNotice();
   },
 
   closeRequest() {
@@ -67,29 +62,6 @@ Page({
   },
 
   submitRequest() {
-    const { startDate, endDate, message } = this.data.form;
-    if (!startDate.trim() || !endDate.trim()) {
-      wx.showToast({ title: "请填写借用开始和归还时间", icon: "none" });
-      return;
-    }
-    const app = getApp();
-    const userId = app.globalData.userId;
-    const result = createBorrowRequestForUser(
-      this.data.item.id,
-      userId,
-      startDate.trim(),
-      endDate.trim(),
-      message.trim()
-    );
-    if (!result.ok) {
-      wx.showToast({ title: "申请提交失败", icon: "none" });
-      return;
-    }
-    this.setData({ requestOpen: false, requested: true }, () => this.syncRequestState());
-    wx.showModal({
-      title: "申请已发送",
-      content: "物主会在消息页收到借用申请。确认后如需发送具体房间号，会通过消息通知你。",
-      showCancel: false
-    });
+    showPreviewNotice();
   }
 });

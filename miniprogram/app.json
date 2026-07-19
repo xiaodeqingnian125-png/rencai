@@ -2,6 +2,7 @@
   "pages": [
     "pages/index/index",
     "pages/apartment-detail/index",
+    "pages/apartment-plans/index",
     "pages/room-detail/index",
     "pages/roommate/index",
     "pages/community/index",

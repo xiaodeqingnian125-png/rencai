@@ -1,4 +1,5 @@
 const db = require("../../data/db");
+const { normalizeFloorPlans } = require("../../utils/floor-plans");
 
 // 将云端返回的 apartment 对象映射为页面兼容格式（camelCase + 派生字段）
 function mapApartmentToPage(apt) {
@@ -31,6 +32,7 @@ function mapApartmentToPage(apt) {
     privateFacilities: apt.private_facilities || [],
     publicFacilities: apt.public_facilities || [],
     nearby: apt.nearby || [],
+    floorPlans: normalizeFloorPlans(apt.floor_plans),
     comments: [] // 云模式评论走独立链路，暂不展示假数据
   };
 }
@@ -44,16 +46,16 @@ Page({
     commentCount: "0/200",
     lastCommentAt: 0,
     loginModalVisible: false,
-    isAdmin: false,
     navTop: "",
     navHeight: "",
     navWidth: "",
     navRadius: "",
     navIconSize: "",
-    locationMarkers: [],
     loading: true,
     error: "",
-    notFound: false
+    notFound: false,
+    visibleFloorPlans: [],
+    hasMoreFloorPlans: false
   },
 
   onLoad(options) {
@@ -111,20 +113,14 @@ Page({
         return;
       }
       const apartment = mapApartmentToPage(res.data);
-      const app = getApp();
-      const isAdmin = !!app.globalData.isAdmin;
+      const floorPlans = apartment.floorPlans;
       this._loadedOnce = true;
       this.setData({
         loading: false,
         apartment,
-        isAdmin,
-        favorite: false,
-        locationMarkers: [{
-          id: 0,
-          longitude: apartment.longitude,
-          latitude: apartment.latitude,
-          title: apartment.name
-        }]
+        visibleFloorPlans: floorPlans.slice(0, 3),
+        hasMoreFloorPlans: floorPlans.length > 3,
+        favorite: false
       }, () => {
         // 加载该公寓的户型列表（云模式按 apartment_code 查询）
         // 若页面已被卸载，跳过户户型加载（loadRooms 内部也会再检查 _isAlive）
@@ -183,54 +179,6 @@ Page({
     this.loadApartment();
   },
 
-  onMapTap(e) {
-    // 使用 chooseLocation 让用户选择位置
-    wx.chooseLocation({
-      longitude: this.data.apartment.longitude || 113.6,
-      latitude: this.data.apartment.latitude || 34.7,
-      success: (res) => {
-        const { longitude, latitude } = res;
-        // 更新数据库
-        db.saveAdminItem("apartments", {
-          id: this.apartmentId,
-          longitude: longitude,
-          latitude: latitude
-        }).then(() => {
-          this.setData({
-            "apartment.longitude": longitude,
-            "apartment.latitude": latitude,
-            locationMarkers: [{
-              id: 0,
-              longitude,
-              latitude,
-              title: this.data.apartment.name
-            }]
-          });
-          wx.showToast({ title: "位置已更新", icon: "success" });
-        }).catch(() => {
-          wx.showToast({ title: "更新失败", icon: "none" });
-        });
-      },
-      fail: (err) => {
-        // 用户取消选择时不报错，仅打日志
-        console.log("[chooseLocation] cancel or fail:", err.errMsg || err);
-      }
-    });
-  },
-
-  onImageChange(e) {
-    const newImage = e.detail.value;
-    db.saveAdminItem("apartments", {
-      id: this.apartmentId,
-      image: newImage
-    }).then(() => {
-      this.setData({ "apartment.image": newImage });
-      wx.showToast({ title: "图片已更新", icon: "success" });
-    }).catch(() => {
-      wx.showToast({ title: "更新失败", icon: "none" });
-    });
-  },
-
   ensureLogin() {
     const app = getApp();
     if (!app.globalData.isLoggedIn) {
@@ -275,6 +223,23 @@ Page({
   goMap() {
     wx.navigateTo({
       url: `/pages/map/index?id=${this.data.apartment.id}`
+    });
+  },
+
+  previewFloorPlan(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    const floorPlans = this.data.apartment && this.data.apartment.floorPlans || [];
+    const current = floorPlans[index];
+    if (!current) return;
+    wx.previewImage({
+      current: current.image,
+      urls: floorPlans.map((item) => item.image)
+    });
+  },
+
+  goMoreFloorPlans() {
+    wx.navigateTo({
+      url: `/pages/apartment-plans/index?id=${this.data.apartment.id}`
     });
   },
 

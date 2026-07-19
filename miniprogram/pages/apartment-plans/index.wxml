@@ -1,0 +1,35 @@
+<view class="plans-page">
+  <view wx:if="{{loading}}" class="plans-state">
+    <view class="state-title">正在加载平面图</view>
+    <text>请稍候</text>
+  </view>
+
+  <view wx:elif="{{notFound}}" class="plans-state">
+    <view class="state-title">公寓不存在</view>
+    <text>该公寓可能已下架</text>
+  </view>
+
+  <view wx:elif="{{error}}" class="plans-state">
+    <view class="state-title">{{error}}</view>
+    <button bindtap="retryLoad">重新加载</button>
+  </view>
+
+  <view wx:elif="{{!floorPlans.length}}" class="plans-state">
+    <view class="state-title">暂无更多平面图</view>
+    <text>详情页已经展示全部图片</text>
+  </view>
+
+  <view wx:else class="plan-list">
+    <view wx:for="{{floorPlans}}" wx:key="image" class="plan-item">
+      <image
+        class="plan-image"
+        src="{{item.image}}"
+        mode="widthFix"
+        lazy-load
+        data-index="{{index}}"
+        bindtap="previewFloorPlan"
+      ></image>
+      <view class="plan-caption">{{item.name}}</view>
+    </view>
+  </view>
+</view>

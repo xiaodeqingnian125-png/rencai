@@ -1,4 +1,5 @@
 <view wx:if="{{activity}}" class="detail-page">
+  <view class="preview-banner">功能预览 · 即将开放｜当前为示例内容</view>
   <view class="hero {{activity.coverClass}}">
     <image wx:if="{{activity.image}}" class="hero-img" src="{{activity.image}}" mode="aspectFill"></image>
     <view wx:else class="hero-img grad-cover grad-{{(activity.id % 8) + 1}}"></view>
