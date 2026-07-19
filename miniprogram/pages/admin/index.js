@@ -11,6 +11,7 @@ const {
 // 任务 13 新增的异步接口（createImportTask / exportAdminItems 等）
 // 云模式走云函数，mock 模式回退到 queries 本地数据
 const db = require("../../data/db");
+const { toAdminItem, toCloudItem } = require("../../data/admin-adapter");
 
 const configs = {
   apartments: {
