@@ -441,12 +441,11 @@ function importAdminItems(type, rows) {
 
 // ========== 用户登录与身份识别 ==========
 
-const ADMIN_NICKNAME = "晓邱";
-const ADMIN_PHONE = "17739768562";
-
+// 注意：mock 模式不再判定管理员身份
+// 管理员身份只由云端 users.role 字段决定（见 cloudfunctions/rencai/lib/auth.js）
+// mock 模式下所有用户均为普通用户，如需测试管理员功能请在云模式下进行
 function isAdminCredentials(nickname, phone) {
-  return String(nickname || "").trim() === ADMIN_NICKNAME
-    && String(phone || "").trim() === ADMIN_PHONE;
+  return false;
 }
 
 function generateUserId() {
