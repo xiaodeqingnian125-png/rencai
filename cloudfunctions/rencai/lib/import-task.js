@@ -17,6 +17,7 @@
  */
 
 const cloud = require("wx-server-sdk");
+const XLSX = require("xlsx");
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const _ = db.command;
@@ -39,6 +40,22 @@ const PROCESSING_EXPIRE_MS = 5 * 60 * 1000;
  * 允许导入的集合白名单
  */
 const ALLOWED_TARGET_TYPES = ["apartments", "room_types"];
+
+function xlsxBufferToCsv(fileContent) {
+  try {
+    const workbook = XLSX.read(fileContent, { type: "buffer" });
+    const firstSheetName = workbook.SheetNames && workbook.SheetNames[0];
+    const worksheet = firstSheetName && workbook.Sheets[firstSheetName];
+    if (!worksheet) return { ok: false, code: "excel_parse_failed", error: "Excel 文件没有可读取的工作表" };
+    const csvContent = XLSX.utils.sheet_to_csv(worksheet);
+    if (!String(csvContent || "").trim()) {
+      return { ok: false, code: "excel_parse_failed", error: "Excel 文件没有可导入的数据" };
+    }
+    return { ok: true, csvContent };
+  } catch (error) {
+    return { ok: false, code: "excel_parse_failed", error: "Excel 文件解析失败，请确认文件格式" };
+  }
+}
 
 function validateGeocodeRowCount(count) {
   if (count <= MAX_GEOCODE_ROWS) return "";
@@ -90,6 +107,23 @@ async function createImportTask(targetType, fileName, csvContent, operator) {
 
   await db.collection("import_tasks").add({ data: task });
   return { ok: true, taskId };
+}
+
+async function createImportTaskFromFile(targetType, fileName, fileID, operator, cloudClient) {
+  if (!ALLOWED_TARGET_TYPES.includes(targetType)) {
+    return { ok: false, error: `不支持的导入类型: ${targetType}` };
+  }
+  if (!fileID || !cloudClient || typeof cloudClient.downloadFile !== "function") {
+    return { ok: false, error: "Excel 文件上传失败，请重新选择" };
+  }
+  try {
+    const downloaded = await cloudClient.downloadFile({ fileID });
+    const parsed = xlsxBufferToCsv(downloaded && downloaded.fileContent);
+    if (!parsed.ok) return parsed;
+    return await createImportTask(targetType, fileName, parsed.csvContent, operator);
+  } catch (error) {
+    return { ok: false, code: "excel_parse_failed", error: "Excel 文件解析失败，请确认文件格式" };
+  }
 }
 
 /**
@@ -777,6 +811,7 @@ async function listImportTasks(targetType, page = 1, pageSize = 20) {
 
 module.exports = {
   createImportTask,
+  createImportTaskFromFile,
   previewImport,
   confirmImport,
   getImportTask,
@@ -786,6 +821,7 @@ module.exports = {
   MAX_GEOCODE_ROWS,
   validateGeocodeRowCount,
   validateApartmentRow,
+  xlsxBufferToCsv,
   // 以下为本地验证导出的纯函数（不影响云函数运行时行为）
   truncateRawData,
   buildRawData,

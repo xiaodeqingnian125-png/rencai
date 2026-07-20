@@ -1,21 +1,25 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const XLSX = require("../cloudfunctions/rencai/node_modules/xlsx");
 const { createExportFile } = require("../cloudfunctions/rencai/lib/export-file");
 
-test("creates a timestamped apartment CSV in cloud storage", async () => {
+test("creates a timestamped apartment XLSX file in cloud storage", async () => {
   let received;
   const result = await createExportFile({
     uploadFile(options) {
       received = options;
-      return Promise.resolve({ fileID: "cloud://env/exports/apartments-123.csv" });
+      return Promise.resolve({ fileID: "cloud://env/exports/apartments-123.xlsx" });
     }
   }, "apartments", "\ufeff编号,名称", () => 123);
 
   assert.equal(result.ok, true);
-  assert.equal(result.fileName, "公寓导出.csv");
-  assert.equal(result.fileID, "cloud://env/exports/apartments-123.csv");
-  assert.equal(received.cloudPath, "exports/apartments-123.csv");
-  assert.equal(received.fileContent.toString("utf8"), "\ufeff编号,名称");
+  assert.equal(result.fileName, "公寓导出.xlsx");
+  assert.equal(result.fileID, "cloud://env/exports/apartments-123.xlsx");
+  assert.equal(received.cloudPath, "exports/apartments-123.xlsx");
+  assert.equal(received.fileContent.subarray(0, 2).toString("utf8"), "PK");
+  const workbook = XLSX.read(received.fileContent, { type: "buffer" });
+  const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+  assert.deepEqual(rows, [["编号", "名称"]]);
 });
 
 test("rejects non-export types and oversized CSV content", async () => {

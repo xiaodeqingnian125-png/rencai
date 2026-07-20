@@ -21,6 +21,7 @@ const _ = db.command;
 const { migrateApartments, migrateRoomTypes } = require("./lib/migrate");
 const {
   createImportTask,
+  createImportTaskFromFile,
   previewImport,
   confirmImport,
   getImportTask,
@@ -1175,6 +1176,7 @@ exports.main = async (event, context) => {
       case "createExportFile":
       case "initCloud":
       case "createImportTask":
+      case "createImportTaskFromFile":
       case "previewImport":
       case "confirmImport":
       case "getImportTask":
@@ -1196,6 +1198,7 @@ exports.main = async (event, context) => {
           case "createExportFile": return await createExportFile(cloud, event.targetType, event.csvContent);
           case "initCloud": return await initCloud();
           case "createImportTask": return await createImportTask(event.targetType, event.fileName, event.csvContent, operator);
+          case "createImportTaskFromFile": return await createImportTaskFromFile(event.targetType, event.fileName, event.fileID, operator, cloud);
           case "previewImport": return await previewImport(event.taskId);
           case "confirmImport": return await confirmImport(event.taskId);
           case "getImportTask": return await getImportTask(event.taskId);

@@ -3,6 +3,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const XLSX = require("../cloudfunctions/rencai/node_modules/xlsx");
 
 function loadImportTask() {
   const filePath = path.join(__dirname, "../cloudfunctions/rencai/lib/import-task.js");
@@ -44,6 +45,7 @@ function loadImportTask() {
           }
         };
       }
+      if (request === "xlsx") return XLSX;
       throw new Error(`Unexpected require: ${request}`);
     }
   }, { filename: filePath });
@@ -91,4 +93,20 @@ test("exported coordinates, cover path and floor plans can be imported unchanged
   assert.equal(result.data.longitude, 113.62);
   assert.equal(result.data.image, "cloud://env/cover.jpg");
   assert.deepEqual(JSON.parse(JSON.stringify(result.data.floor_plans)), floorPlans);
+});
+
+test("an XLSX worksheet converts to the CSV text used by the import pipeline", () => {
+  const { xlsxBufferToCsv } = loadImportTask();
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(
+    workbook,
+    XLSX.utils.aoa_to_sheet([["公寓编号", "公寓名称"], ["A001", "郑东青年公寓"]]),
+    "公寓"
+  );
+
+  const result = xlsxBufferToCsv(XLSX.write(workbook, { type: "buffer", bookType: "xlsx" }));
+
+  assert.equal(result.ok, true);
+  assert.match(result.csvContent, /公寓编号,公寓名称/);
+  assert.match(result.csvContent, /A001,郑东青年公寓/);
 });
