@@ -26,6 +26,9 @@ function createHarness() {
     deleteAdminItem: [],
     updateAdminItemStatus: [],
     createExportFile: [],
+    downloadCloudCsv: [],
+    openCloudCsv: [],
+    shareCloudCsv: [],
     legacyReads: [],
     legacyWrites: [],
     toasts: []
@@ -111,7 +114,22 @@ function createHarness() {
     "../../data/db": db,
     "../../data/admin-adapter": adapter,
     "../../utils/floor-plans": floorPlans,
-    "../../utils/csv-share": { writeAndShareCsv() {}, downloadAndOpenCloudCsv() {} }
+    "../../utils/csv-share": {
+      writeAndShareCsv() {},
+      downloadAndOpenCloudCsv() {},
+      async downloadCloudCsv(options) {
+        calls.downloadCloudCsv.push(options);
+        return { ok: true, filePath: "/tmp/export.csv" };
+      },
+      async openCloudCsv(options) {
+        calls.openCloudCsv.push(options);
+        return { ok: true };
+      },
+      async shareCloudCsv(options) {
+        calls.shareCloudCsv.push(options);
+        return { ok: true };
+      }
+    }
   }, {
     wx: wxApi,
     getApp: () => ({ globalData: { isAdmin: true } })
@@ -193,6 +211,37 @@ test("apartment export creates a cloud CSV file instead of copying text", async 
 
   assert.equal(calls.createExportFile[0].type, "apartments");
   assert.match(calls.createExportFile[0].content, /公寓编号/);
+});
+
+test("CSV export shows one-time file actions after cloud download", async () => {
+  const { page, calls } = createHarness();
+  await page.onLoad({ type: "apartments" });
+
+  await page.downloadCsv("apartments", "编号,名称");
+
+  assert.equal(calls.downloadCloudCsv[0].fileID, "cloud://env/exports/apartments-1.csv");
+  assert.equal(page.data.exportFileOpen, true);
+  assert.equal(page.data.exportFileName, "公寓导出.csv");
+  assert.equal(page.data.exportFilePath, "/tmp/export.csv");
+
+  await page.openExportFile();
+  await page.shareExportFile();
+  assert.equal(calls.openCloudCsv[0].filePath, "/tmp/export.csv");
+  assert.equal(calls.shareCloudCsv[0].filePath, "/tmp/export.csv");
+  assert.equal(calls.shareCloudCsv[0].fileName, "公寓导出.csv");
+
+  page.closeExportFileActions();
+  assert.equal(page.data.exportFileOpen, false);
+  assert.equal(page.data.exportFilePath, "");
+});
+
+test("admin template includes explicit CSV save and share actions", () => {
+  const wxml = fs.readFileSync(path.join(__dirname, "../miniprogram/pages/admin/index.wxml"), "utf8");
+
+  assert.match(wxml, /打开并保存文件/);
+  assert.match(wxml, /bindtap="openExportFile"/);
+  assert.match(wxml, /转发到微信/);
+  assert.match(wxml, /bindtap="shareExportFile"/);
 });
 
 test("floor plan upload assigns a default name only when the name is blank", async () => {

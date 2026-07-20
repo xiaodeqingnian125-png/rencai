@@ -5,7 +5,12 @@ const { toAdminItem, toCloudItem } = require("../../data/admin-adapter");
 const { encodeFloorPlans, decodeFloorPlans } = require("../../utils/floor-plans");
 
 // CSV 文件生成与分享工具（模板下载、错误报告下载复用）
-const { writeAndShareCsv, downloadAndOpenCloudCsv } = require("../../utils/csv-share");
+const {
+  writeAndShareCsv,
+  downloadCloudCsv,
+  openCloudCsv,
+  shareCloudCsv
+} = require("../../utils/csv-share");
 
 const configs = {
   apartments: {
@@ -772,7 +777,11 @@ Page({
     // picker 选项列表（索引 0 为"全部"，不参与筛选）
     districtOptions: ["全部区域", "郑东新区", "高新区", "经开区", "航空港区", "二七区", "中原区"],
     // 批量导出弹窗（按条件导出并入弹窗）
-    exportPanelOpen: false
+    exportPanelOpen: false,
+    // 导出文件已下载后的单次操作弹窗，不作为独立入口或历史记录保存。
+    exportFileOpen: false,
+    exportFilePath: "",
+    exportFileName: ""
   },
 
   async onLoad(options) {
@@ -1365,7 +1374,49 @@ Page({
       });
       return;
     }
-    downloadAndOpenCloudCsv({ fileID: created.fileID, fileName: created.fileName });
+    const downloaded = await downloadCloudCsv({ fileID: created.fileID });
+    if (!downloaded || !downloaded.ok || !downloaded.filePath) {
+      wx.showToast({ title: "导出文件下载失败，请重试", icon: "none" });
+      return;
+    }
+    this.setData({
+      exportFileOpen: true,
+      exportFilePath: downloaded.filePath,
+      exportFileName: created.fileName || "导出文件.csv"
+    });
+  },
+
+  closeExportFileActions() {
+    this.setData({ exportFileOpen: false, exportFilePath: "", exportFileName: "" });
+  },
+
+  async openExportFile() {
+    const result = await openCloudCsv({ filePath: this.data.exportFilePath });
+    if (result && result.ok) {
+      wx.showToast({ title: "文件已打开，请在右上角保存或转发", icon: "none" });
+      return;
+    }
+    wx.showToast({
+      title: result && result.code === "unsupported" ? "请在真机微信中打开并保存" : "打开文件失败，请重试",
+      icon: "none"
+    });
+  },
+
+  async shareExportFile() {
+    const result = await shareCloudCsv({
+      filePath: this.data.exportFilePath,
+      fileName: this.data.exportFileName
+    });
+    if (result && result.ok) {
+      wx.showToast({ title: "请选择文件转发对象", icon: "none" });
+      return;
+    }
+    wx.showToast({
+      title: result && result.code === "unsupported"
+        ? "当前环境不支持直接转发，请使用打开并保存"
+        : "转发未完成，请使用打开并保存",
+      icon: "none"
+    });
   },
 
   // 下载标准 CSV 模板（仅表头，无示例数据，避免误导入）
