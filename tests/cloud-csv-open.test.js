@@ -1,6 +1,50 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { downloadAndOpenCloudCsv } = require("../miniprogram/utils/csv-share");
+const {
+  downloadAndOpenCloudCsv,
+  downloadCloudCsv,
+  openCloudCsv,
+  shareCloudCsv
+} = require("../miniprogram/utils/csv-share");
+
+test("separates downloading, opening and sharing a cloud CSV", async () => {
+  const calls = [];
+  global.wx = {
+    cloud: {
+      downloadFile({ fileID, success }) {
+        calls.push(["download", fileID]);
+        success({ tempFilePath: "/tmp/export.csv" });
+      }
+    },
+    openDocument({ filePath, fileType, showMenu, success }) {
+      calls.push(["open", filePath, fileType, showMenu]);
+      success();
+    },
+    shareFileMessage({ filePath, fileName, success }) {
+      calls.push(["share", filePath, fileName]);
+      success();
+    }
+  };
+
+  const downloaded = await downloadCloudCsv({ fileID: "cloud://env/export.csv" });
+  assert.deepEqual(downloaded, { ok: true, filePath: "/tmp/export.csv" });
+  assert.deepEqual(await openCloudCsv({ filePath: downloaded.filePath }), { ok: true });
+  assert.deepEqual(await shareCloudCsv({ filePath: downloaded.filePath, fileName: "公寓导出.csv" }), { ok: true });
+  assert.deepEqual(calls, [
+    ["download", "cloud://env/export.csv"],
+    ["open", "/tmp/export.csv", "csv", true],
+    ["share", "/tmp/export.csv", "公寓导出.csv"]
+  ]);
+});
+
+test("reports direct share as unsupported without a success toast", async () => {
+  global.wx = {};
+
+  assert.deepEqual(
+    await shareCloudCsv({ filePath: "/tmp/export.csv", fileName: "公寓导出.csv" }),
+    { ok: false, code: "unsupported" }
+  );
+});
 
 test("downloads a cloud CSV and opens it with the share menu", async () => {
   const calls = [];

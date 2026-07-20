@@ -178,50 +178,90 @@ function writeAndShareCsv({ fileName, content, complete } = {}) {
   });
 }
 
+function downloadCloudCsv({ fileID } = {}) {
+  if (!fileID || typeof wx === "undefined" || !wx.cloud || typeof wx.cloud.downloadFile !== "function") {
+    return Promise.resolve({ ok: false, code: "unsupported" });
+  }
+  return new Promise((resolve) => {
+    wx.cloud.downloadFile({
+      fileID,
+      success(downloaded) {
+        const filePath = downloaded && downloaded.tempFilePath;
+        resolve(filePath ? { ok: true, filePath } : { ok: false, code: "download_failed" });
+      },
+      fail() {
+        resolve({ ok: false, code: "download_failed" });
+      }
+    });
+  });
+}
+
+function openCloudCsv({ filePath } = {}) {
+  if (!filePath || typeof wx === "undefined" || typeof wx.openDocument !== "function") {
+    return Promise.resolve({ ok: false, code: "unsupported" });
+  }
+  return new Promise((resolve) => {
+    wx.openDocument({
+      filePath,
+      fileType: "csv",
+      showMenu: true,
+      success() {
+        resolve({ ok: true });
+      },
+      fail() {
+        resolve({ ok: false, code: "open_failed" });
+      }
+    });
+  });
+}
+
+function shareCloudCsv({ filePath, fileName } = {}) {
+  if (!filePath || typeof wx === "undefined" || typeof wx.shareFileMessage !== "function") {
+    return Promise.resolve({ ok: false, code: "unsupported" });
+  }
+  return new Promise((resolve) => {
+    wx.shareFileMessage({
+      filePath,
+      fileName: fileName || "导出文件.csv",
+      success() {
+        resolve({ ok: true });
+      },
+      fail() {
+        resolve({ ok: false, code: "share_failed" });
+      }
+    });
+  });
+}
+
 function downloadAndOpenCloudCsv({ fileID, complete } = {}) {
   const finish = (result) => {
     if (typeof complete === "function") complete({ result });
   };
 
-  if (!fileID || !wx.cloud || typeof wx.cloud.downloadFile !== "function") {
-    wx.showToast({ title: "导出文件下载失败，请重试", icon: "none" });
-    finish("download_failed");
-    return;
-  }
-
-  wx.cloud.downloadFile({
-    fileID,
-    success(downloaded) {
-      const filePath = downloaded && downloaded.tempFilePath;
-      if (!filePath || typeof wx.openDocument !== "function") {
-        wx.showToast({ title: "文件已生成，请在微信文件中查看", icon: "none" });
-        finish("open_failed");
-        return;
-      }
-      wx.openDocument({
-        filePath,
-        fileType: "csv",
-        showMenu: true,
-        success() {
-          wx.showToast({ title: "文件已打开，可转发或保存", icon: "none" });
-          finish("opened");
-        },
-        fail() {
-          wx.showToast({ title: "文件已生成，请在微信文件中查看", icon: "none" });
-          finish("open_failed");
-        }
-      });
-    },
-    fail() {
+  downloadCloudCsv({ fileID }).then((downloaded) => {
+    if (!downloaded.ok) {
       wx.showToast({ title: "导出文件下载失败，请重试", icon: "none" });
       finish("download_failed");
+      return;
     }
+    openCloudCsv({ filePath: downloaded.filePath }).then((opened) => {
+      if (opened.ok) {
+        wx.showToast({ title: "文件已打开，可转发或保存", icon: "none" });
+        finish("opened");
+        return;
+      }
+      wx.showToast({ title: "文件已生成，请在微信文件中查看", icon: "none" });
+      finish("open_failed");
+    });
   });
 }
 
 module.exports = {
   writeAndShareCsv,
   downloadAndOpenCloudCsv,
+  downloadCloudCsv,
+  openCloudCsv,
+  shareCloudCsv,
   csvCell,
   cleanTableCell,
   escapeFormulaInjection,
