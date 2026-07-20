@@ -26,7 +26,12 @@ function createHarness() {
     deleteAdminItem: [],
     updateAdminItemStatus: [],
     createExportFile: [],
+    createImportTaskFromFile: [],
+    previewImport: [],
+    uploadFiles: [],
+    navigation: [],
     downloadCloudCsv: [],
+    openCloudSpreadsheet: [],
     openCloudCsv: [],
     shareCloudCsv: [],
     legacyReads: [],
@@ -67,12 +72,20 @@ function createHarness() {
       calls.createExportFile.push({ type, content });
       return {
         ok: true,
-        fileID: "cloud://env/exports/apartments-1.csv",
-        fileName: "公寓导出.csv"
+        fileID: "cloud://env/exports/apartments-1.xlsx",
+        fileName: "公寓导出.xlsx"
       };
     },
     async exportAdminItems() {
       return { ok: true, items: cloudItems };
+    },
+    async createImportTaskFromFile(type, fileName, fileID) {
+      calls.createImportTaskFromFile.push({ type, fileName, fileID });
+      return { ok: true, taskId: "IMP-XLSX-001" };
+    },
+    async previewImport(taskId) {
+      calls.previewImport.push(taskId);
+      return { ok: true };
     }
   };
   const queries = {
@@ -107,7 +120,19 @@ function createHarness() {
     setNavigationBarTitle() {},
     navigateBack() {},
     showLoading() {},
-    hideLoading() {}
+    hideLoading() {},
+    navigateTo(args) {
+      calls.navigation.push(args);
+    },
+    chooseMessageFile(options) {
+      return options.success({ tempFiles: [{ path: "/tmp/apartments.xlsx", name: "公寓导出.xlsx" }] });
+    },
+    cloud: {
+      uploadFile({ cloudPath, filePath, success }) {
+        calls.uploadFiles.push({ cloudPath, filePath });
+        return success({ fileID: "cloud://env/imports/apartments.xlsx" });
+      }
+    }
   };
   const definition = loadPage(PAGE_PATH, {
     "../../data/queries": queries,
@@ -123,6 +148,10 @@ function createHarness() {
       },
       async openCloudCsv(options) {
         calls.openCloudCsv.push(options);
+        return { ok: true };
+      },
+      async openCloudSpreadsheet(options) {
+        calls.openCloudSpreadsheet.push(options);
         return { ok: true };
       },
       async shareCloudCsv(options) {
@@ -213,35 +242,37 @@ test("apartment export creates a cloud CSV file instead of copying text", async 
   assert.match(calls.createExportFile[0].content, /公寓编号/);
 });
 
-test("CSV export shows one-time file actions after cloud download", async () => {
+test("XLSX export opens the native save menu after cloud download", async () => {
   const { page, calls } = createHarness();
   await page.onLoad({ type: "apartments" });
 
   await page.downloadCsv("apartments", "编号,名称");
 
-  assert.equal(calls.downloadCloudCsv[0].fileID, "cloud://env/exports/apartments-1.csv");
-  assert.equal(page.data.exportFileOpen, true);
-  assert.equal(page.data.exportFileName, "公寓导出.csv");
-  assert.equal(page.data.exportFilePath, "/tmp/export.csv");
-
-  await page.openExportFile();
-  await page.shareExportFile();
-  assert.equal(calls.openCloudCsv[0].filePath, "/tmp/export.csv");
-  assert.equal(calls.shareCloudCsv[0].filePath, "/tmp/export.csv");
-  assert.equal(calls.shareCloudCsv[0].fileName, "公寓导出.csv");
-
-  page.closeExportFileActions();
-  assert.equal(page.data.exportFileOpen, false);
-  assert.equal(page.data.exportFilePath, "");
+  assert.equal(calls.downloadCloudCsv[0].fileID, "cloud://env/exports/apartments-1.xlsx");
+  assert.equal(calls.openCloudSpreadsheet[0].filePath, "/tmp/export.csv");
+  assert.equal(page.data.exportFileOpen, undefined);
 });
 
-test("admin template includes explicit CSV save and share actions", () => {
+test("admin template removes CSV transfer actions", () => {
   const wxml = fs.readFileSync(path.join(__dirname, "../miniprogram/pages/admin/index.wxml"), "utf8");
 
-  assert.match(wxml, /打开并保存文件/);
-  assert.match(wxml, /bindtap="openExportFile"/);
-  assert.match(wxml, /转发到微信/);
-  assert.match(wxml, /bindtap="shareExportFile"/);
+  assert.doesNotMatch(wxml, /打开并保存文件/);
+  assert.doesNotMatch(wxml, /转发到微信/);
+  assert.doesNotMatch(wxml, /exportFileOpen/);
+});
+
+test("XLSX import uploads the edited file and enters the existing preview", async () => {
+  const { page, calls } = createHarness();
+
+  await page.importCsvFile("apartments");
+
+  assert.equal(calls.uploadFiles[0].filePath, "/tmp/apartments.xlsx");
+  assert.match(calls.uploadFiles[0].cloudPath, /^imports\/.+\.xlsx$/);
+  assert.equal(calls.createImportTaskFromFile[0].type, "apartments");
+  assert.equal(calls.createImportTaskFromFile[0].fileName, "公寓导出.xlsx");
+  assert.equal(calls.createImportTaskFromFile[0].fileID, "cloud://env/imports/apartments.xlsx");
+  assert.deepEqual(calls.previewImport, ["IMP-XLSX-001"]);
+  assert.equal(calls.navigation[0].url, "/pages/admin/import-preview/index?taskId=IMP-XLSX-001");
 });
 
 test("floor plan upload assigns a default name only when the name is blank", async () => {

@@ -299,14 +299,4 @@
     </view>
   </view>
 
-  <view wx:if="{{exportFileOpen}}" class="modal-mask" catchtap="closeExportFileActions"></view>
-  <view wx:if="{{exportFileOpen}}" class="export-file-card">
-    <view class="export-file-icon">▧</view>
-    <view class="modal-title">导出文件已生成</view>
-    <text class="export-file-name">{{exportFileName}}</text>
-    <text class="export-file-tip">真机微信可在右上角菜单保存或转发</text>
-    <button class="export-file-open" bindtap="openExportFile">打开并保存文件</button>
-    <button class="export-file-share" bindtap="shareExportFile">转发到微信</button>
-    <view class="export-file-cancel" bindtap="closeExportFileActions">取消</view>
-  </view>
 </view>

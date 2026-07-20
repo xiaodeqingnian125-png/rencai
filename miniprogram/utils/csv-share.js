@@ -215,6 +215,25 @@ function openCloudCsv({ filePath } = {}) {
   });
 }
 
+function openCloudSpreadsheet({ filePath } = {}) {
+  if (!filePath || typeof wx === "undefined" || typeof wx.openDocument !== "function") {
+    return Promise.resolve({ ok: false, code: "unsupported" });
+  }
+  return new Promise((resolve) => {
+    wx.openDocument({
+      filePath,
+      fileType: "xlsx",
+      showMenu: true,
+      success() {
+        resolve({ ok: true });
+      },
+      fail() {
+        resolve({ ok: false, code: "open_failed" });
+      }
+    });
+  });
+}
+
 function shareCloudCsv({ filePath, fileName } = {}) {
   if (!filePath || typeof wx === "undefined" || typeof wx.shareFileMessage !== "function") {
     return Promise.resolve({ ok: false, code: "unsupported" });
@@ -261,6 +280,7 @@ module.exports = {
   downloadAndOpenCloudCsv,
   downloadCloudCsv,
   openCloudCsv,
+  openCloudSpreadsheet,
   shareCloudCsv,
   csvCell,
   cleanTableCell,

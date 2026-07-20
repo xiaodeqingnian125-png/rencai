@@ -8,8 +8,7 @@ const { encodeFloorPlans, decodeFloorPlans } = require("../../utils/floor-plans"
 const {
   writeAndShareCsv,
   downloadCloudCsv,
-  openCloudCsv,
-  shareCloudCsv
+  openCloudSpreadsheet
 } = require("../../utils/csv-share");
 
 const configs = {
@@ -777,11 +776,7 @@ Page({
     // picker 选项列表（索引 0 为"全部"，不参与筛选）
     districtOptions: ["全部区域", "郑东新区", "高新区", "经开区", "航空港区", "二七区", "中原区"],
     // 批量导出弹窗（按条件导出并入弹窗）
-    exportPanelOpen: false,
-    // 导出文件已下载后的单次操作弹窗，不作为独立入口或历史记录保存。
-    exportFileOpen: false,
-    exportFilePath: "",
-    exportFileName: ""
+    exportPanelOpen: false
   },
 
   async onLoad(options) {
@@ -1162,7 +1157,7 @@ Page({
       this.openPasteImport(importHint);
       return;
     }
-    wx.chooseMessageFile({
+    return wx.chooseMessageFile({
       count: 1,
       type: "file",
       extension: ["csv", "tsv", "txt", "xls", "xlsx"],
@@ -1379,42 +1374,13 @@ Page({
       wx.showToast({ title: "导出文件下载失败，请重试", icon: "none" });
       return;
     }
-    this.setData({
-      exportFileOpen: true,
-      exportFilePath: downloaded.filePath,
-      exportFileName: created.fileName || "导出文件.csv"
-    });
-  },
-
-  closeExportFileActions() {
-    this.setData({ exportFileOpen: false, exportFilePath: "", exportFileName: "" });
-  },
-
-  async openExportFile() {
-    const result = await openCloudCsv({ filePath: this.data.exportFilePath });
+    const result = await openCloudSpreadsheet({ filePath: downloaded.filePath });
     if (result && result.ok) {
-      wx.showToast({ title: "文件已打开，请在右上角保存或转发", icon: "none" });
+      wx.showToast({ title: "文件已打开，请在右上角保存", icon: "none" });
       return;
     }
     wx.showToast({
       title: result && result.code === "unsupported" ? "请在真机微信中打开并保存" : "打开文件失败，请重试",
-      icon: "none"
-    });
-  },
-
-  async shareExportFile() {
-    const result = await shareCloudCsv({
-      filePath: this.data.exportFilePath,
-      fileName: this.data.exportFileName
-    });
-    if (result && result.ok) {
-      wx.showToast({ title: "请选择文件转发对象", icon: "none" });
-      return;
-    }
-    wx.showToast({
-      title: result && result.code === "unsupported"
-        ? "当前环境不支持直接转发，请使用打开并保存"
-        : "转发未完成，请使用打开并保存",
       icon: "none"
     });
   },
@@ -1437,22 +1403,58 @@ Page({
     this.setData({ exportDistrictIndex: e.detail.value });
   },
 
-  // 任务制导入：选择 CSV 文件 → 创建导入任务 → 跳转预览页
+  // 任务制导入：选择 CSV / XLSX 文件 → 创建导入任务 → 跳转预览页
   // type 为导入任务的 targetType（apartments / room_types）
   async importCsvFile(type) {
     if (!wx.chooseMessageFile) {
       wx.showToast({ title: "当前版本不支持文件导入", icon: "none" });
       return;
     }
-    wx.chooseMessageFile({
+    return wx.chooseMessageFile({
       count: 1,
       type: "file",
-      extension: ["csv", "txt"],
+      extension: ["csv", "txt", "xlsx"],
       success: async (res) => {
         const file = res.tempFiles && res.tempFiles[0];
         if (!file) return;
         const filePath = file.path;
         const fileName = file.name || "";
+        if (/\.xlsx$/i.test(fileName)) {
+          if (!wx.cloud || typeof wx.cloud.uploadFile !== "function") {
+            wx.showToast({ title: "当前版本不支持 Excel 文件导入", icon: "none" });
+            return;
+          }
+          wx.showLoading({ title: "上传表格中" });
+          return wx.cloud.uploadFile({
+            cloudPath: `imports/${Date.now()}_${Math.floor(Math.random() * 10000)}.xlsx`,
+            filePath,
+            success: async (uploaded) => {
+              try {
+                const createRes = await db.createImportTaskFromFile(type, fileName, uploaded.fileID);
+                if (!createRes || !createRes.ok) {
+                  wx.showToast({ title: (createRes && createRes.error) || "Excel 文件解析失败", icon: "none" });
+                  return;
+                }
+                wx.showLoading({ title: "解析预览中", mask: true });
+                const previewRes = await db.previewImport(createRes.taskId);
+                if (!previewRes || !previewRes.ok) {
+                  wx.showToast({ title: (previewRes && previewRes.error) || "预览失败", icon: "none" });
+                  return;
+                }
+                wx.navigateTo({ url: `/pages/admin/import-preview/index?taskId=${createRes.taskId}` });
+              } catch (err) {
+                wx.showToast({ title: "Excel 文件导入失败", icon: "none" });
+              } finally {
+                wx.hideLoading();
+              }
+            },
+            fail: () => {
+              wx.hideLoading();
+              wx.showToast({ title: "Excel 文件上传失败", icon: "none" });
+            }
+          });
+          return;
+        }
         const fs = wx.getFileSystemManager && wx.getFileSystemManager();
         if (!fs) {
           wx.showToast({ title: "无法读取文件", icon: "none" });

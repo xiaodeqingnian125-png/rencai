@@ -104,6 +104,13 @@ function createImportTask(targetType, fileName, csvContent, operator) {
   return Promise.resolve({ ok: false, error: "导入任务需云模式支持" });
 }
 
+function createImportTaskFromFile(targetType, fileName, fileID) {
+  if (isCloudMode()) {
+    return callCloud("createImportTaskFromFile", { targetType, fileName, fileID });
+  }
+  return Promise.resolve({ ok: false, error: "Excel 文件导入需云模式支持" });
+}
+
 function previewImport(taskId) {
   if (isCloudMode()) {
     return callCloud("previewImport", { taskId });
@@ -343,6 +350,7 @@ module.exports = {
   updateAdminItemStatus,
   importAdminItems,
   createImportTask,
+  createImportTaskFromFile,
   previewImport,
   confirmImport,
   getImportTask,

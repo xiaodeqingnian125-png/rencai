@@ -4,6 +4,7 @@ const {
   downloadAndOpenCloudCsv,
   downloadCloudCsv,
   openCloudCsv,
+  openCloudSpreadsheet,
   shareCloudCsv
 } = require("../miniprogram/utils/csv-share");
 
@@ -44,6 +45,19 @@ test("reports direct share as unsupported without a success toast", async () => 
     await shareCloudCsv({ filePath: "/tmp/export.csv", fileName: "公寓导出.csv" }),
     { ok: false, code: "unsupported" }
   );
+});
+
+test("opens an XLSX file with the native save menu", async () => {
+  const calls = [];
+  global.wx = {
+    openDocument({ filePath, fileType, showMenu, success }) {
+      calls.push([filePath, fileType, showMenu]);
+      success();
+    }
+  };
+
+  assert.deepEqual(await openCloudSpreadsheet({ filePath: "/tmp/export.xlsx" }), { ok: true });
+  assert.deepEqual(calls, [["/tmp/export.xlsx", "xlsx", true]]);
 });
 
 test("downloads a cloud CSV and opens it with the share menu", async () => {
