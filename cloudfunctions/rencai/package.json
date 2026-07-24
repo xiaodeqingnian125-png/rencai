@@ -6,6 +6,7 @@
   "dependencies": {
     "axios": "^1.6.0",
     "wx-server-sdk": "latest",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xlsx-js-style": "1.2.0"
   }
 }

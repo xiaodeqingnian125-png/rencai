@@ -101,8 +101,11 @@
 
     <view class="info-section">
       <view class="info-title">周边服务</view>
-      <view class="nearby-row">
-        <text wx:for="{{apartment.nearby}}" wx:key="*this" class="nearby-tag">{{item}}</text>
+      <view class="fac-grid nearby-grid">
+        <view wx:for="{{apartment.nearby}}" wx:key="label" class="fac-cell nearby-cell {{item.active ? 'active' : 'inactive'}}">
+          <view class="fac-icon">{{item.icon}}</view>
+          <text>{{item.label}}</text>
+        </view>
       </view>
     </view>
 

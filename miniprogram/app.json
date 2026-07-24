@@ -33,15 +33,6 @@
     "navigationBarTitleText": "晓得青年",
     "navigationBarTextStyle": "black"
   },
-  "permission": {
-    "scope.userLocation": {
-      "desc": "用于在地图选房中展示您与人才公寓的位置距离"
-    }
-  },
-  "requiredPrivateInfos": [
-    "getLocation",
-    "chooseLocation"
-  ],
   "tabBar": {
     "color": "#7C8580",
     "selectedColor": "#E8723C",

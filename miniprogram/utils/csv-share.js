@@ -234,6 +234,28 @@ function openCloudSpreadsheet({ filePath } = {}) {
   });
 }
 
+function prepareCloudSpreadsheetFile({ filePath, fileName } = {}) {
+  if (!filePath || !fileName || typeof wx === "undefined") {
+    return { ok: false, code: "unsupported" };
+  }
+  const fs = wx.getFileSystemManager && wx.getFileSystemManager();
+  const userDataPath = wx.env && wx.env.USER_DATA_PATH;
+  if (!fs || !userDataPath) {
+    return { ok: false, code: "unsupported" };
+  }
+  const safeFileName = String(fileName).replace(/[\\/:*?"<>|]/g, "_");
+  if (!safeFileName) {
+    return { ok: false, code: "invalid_file_name" };
+  }
+  const destination = `${userDataPath}/${safeFileName}`;
+  try {
+    fs.writeFileSync(destination, fs.readFileSync(filePath));
+    return { ok: true, filePath: destination };
+  } catch (error) {
+    return { ok: false, code: "prepare_failed" };
+  }
+}
+
 function shareCloudCsv({ filePath, fileName } = {}) {
   if (!filePath || typeof wx === "undefined" || typeof wx.shareFileMessage !== "function") {
     return Promise.resolve({ ok: false, code: "unsupported" });
@@ -281,6 +303,7 @@ module.exports = {
   downloadCloudCsv,
   openCloudCsv,
   openCloudSpreadsheet,
+  prepareCloudSpreadsheetFile,
   shareCloudCsv,
   csvCell,
   cleanTableCell,

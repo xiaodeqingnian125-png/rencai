@@ -26,12 +26,6 @@ Page({
           { title: "我的收藏", badge: "", action: "favorites", icon: "/assets/icons/profile-fav.svg", toneClass: "icon-fav" },
           { title: "我的评论", badge: "", action: "comments", icon: "/assets/icons/msg-comment.svg", toneClass: "icon-comment" }
         ]
-      },
-      {
-        id: "settings",
-        items: [
-          { title: "设置", badge: "", action: "settings", icon: "/assets/icons/profile-settings.svg", toneClass: "icon-settings" }
-        ]
       }
     ],
     adminMenus: [
@@ -43,7 +37,6 @@ Page({
       { title: "评论管理", type: "comments", icon: "/assets/icons/admin-comment.svg" },
       { title: "用户管理", type: "users", icon: "/assets/icons/admin-user.svg" }
     ],
-    adminOpen: false,
     sheetOpen: false,
     sheetTitle: "",
     sheetSubtitle: "",
@@ -85,8 +78,7 @@ Page({
           avatarText: "游",
           name: "点击登录",
           status: "游客模式"
-        },
-        adminOpen: false
+        }
       });
     }
   },
@@ -121,20 +113,8 @@ Page({
     this.setData({ loginModalVisible: false });
   },
 
-  toggleAdmin() {
-    this.setData({ adminOpen: !this.data.adminOpen });
-  },
-
   openMenu(e) {
     const action = e.currentTarget.dataset.action;
-    if (action === "settings") {
-      if (!this.data.isLoggedIn) {
-        this.setData({ loginModalVisible: true });
-        return;
-      }
-      wx.navigateTo({ url: "/pages/profile-edit/index" });
-      return;
-    }
     showPreviewNotice();
   },
 

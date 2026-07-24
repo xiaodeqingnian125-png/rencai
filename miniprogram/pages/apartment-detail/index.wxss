@@ -364,21 +364,9 @@
   background: transparent;
 }
 
-.nearby-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-}
-
-.nearby-tag {
-  height: 64rpx;
-  padding: 0 24rpx;
-  border: 1rpx solid #f0eae0;
-  border-radius: 16rpx;
-  background: #fffdf7;
-  color: #5c4a38;
-  font-size: 26rpx;
-  line-height: 64rpx;
+.nearby-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28rpx 12rpx;
 }
 
 .floor-plan-header {

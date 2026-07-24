@@ -7,7 +7,6 @@
       latitude="{{mapCenter.latitude}}"
       scale="{{mapCenter.scale}}"
       markers="{{mapMarkers}}"
-      show-location="{{showUserLocation}}"
       enable-scroll="{{true}}"
       enable-zoom="{{true}}"
       show-compass="{{true}}"
@@ -19,14 +18,6 @@
           <cover-view class="map-title">地图选房</cover-view>
         </cover-view>
         <cover-view class="map-count">{{markers.length}} 处房源</cover-view>
-      </cover-view>
-
-      <cover-view wx:if="{{!loading && !error && validApartments.length > 0}}" class="locate-btn {{locating ? 'locating' : ''}}" bindtap="locate" aria-label="定位到当前位置">
-        <cover-view class="locate-icon">
-          <cover-view class="locate-line locate-line-v"></cover-view>
-          <cover-view class="locate-line locate-line-h"></cover-view>
-          <cover-view class="locate-core"></cover-view>
-        </cover-view>
       </cover-view>
 
       <cover-view wx:if="{{activeApartment}}" class="map-info-card">

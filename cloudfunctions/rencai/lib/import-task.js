@@ -24,6 +24,16 @@ const _ = db.command;
 
 const { stripBOM, parseCsv, rowsToObjects, toInt, toFloat, parseJsonArray, parseFloorPlans, isStoredImagePath, stripFormulaEscape } = require("./csv-parser");
 const { geocodeAddress } = require("./geocode");
+const {
+  hasFriendlyApartmentColumns,
+  missingFriendlyApartmentHeaders,
+  hasLegacyFriendlyApartmentColumns,
+  buildCostsFromColumns,
+  buildOptionsFromColumns,
+  PRIVATE_OPTIONS,
+  PUBLIC_OPTIONS,
+  NEARBY_OPTIONS
+} = require("./apartment-import-options");
 
 const BATCH_SIZE = 20; // 每批写入条数
 const GEOCODE_BATCH = 5; // 每批并发地理编码条数
@@ -355,16 +365,25 @@ async function previewImport(taskId) {
  *   - 格式错误返回 error，整行不入库
  */
 async function validateApartmentRow(row) {
+  if (hasLegacyFriendlyApartmentColumns(row)) {
+    return { error: "检测到旧版表头，请使用新版 Excel 表头重新导入。" };
+  }
   // 导入时先还原公式注入保护用的单引号前缀
   const code = stripFormulaEscape((row["公寓编号"] || "")).trim();
   const name = stripFormulaEscape((row["公寓名称"] || "")).trim();
   const address = stripFormulaEscape((row["地址"] || "")).trim();
   const image = stripFormulaEscape((row["封面图路径"] || row["封面图文件名"] || "")).trim();
+  const usesFriendlyColumns = hasFriendlyApartmentColumns(row);
 
   if (!code) return { error: "公寓编号为空" };
   if (!name) return { error: "公寓名称为空" };
   if (!address) return { error: "地址为空" };
   if (!isStoredImagePath(image)) return { error: "封面图路径必须是 cloud:// 或 https:// 地址" };
+
+  const missingFriendlyHeaders = missingFriendlyApartmentHeaders(row);
+  if (missingFriendlyHeaders.length > 0) {
+    return { error: `Excel 表头不完整，缺少：${missingFriendlyHeaders.join("、")}。请使用最新导出的 Excel。` };
+  }
 
   // 业务 id 处理
   const csvIdRaw = stripFormulaEscape((row["业务ID"] || "")).trim();
@@ -423,31 +442,12 @@ async function validateApartmentRow(row) {
   let nearby = [];
   let floorPlans = [];
 
-  try {
-    tags = parseJsonArray(stripFormulaEscape(row["标签"] || ""));
-  } catch (err) {
-    return { error: `标签字段${err.message}` };
-  }
-  try {
-    costs = parseJsonArray(stripFormulaEscape(row["费用项"] || ""));
-  } catch (err) {
-    return { error: `费用项字段${err.message}` };
-  }
-  try {
-    privateFacilities = parseJsonArray(stripFormulaEscape(row["私人设施"] || ""));
-  } catch (err) {
-    return { error: `私人设施字段${err.message}` };
-  }
-  try {
-    publicFacilities = parseJsonArray(stripFormulaEscape(row["公共设施"] || ""));
-  } catch (err) {
-    return { error: `公共设施字段${err.message}` };
-  }
-  try {
-    nearby = parseJsonArray(stripFormulaEscape(row["周边配套"] || ""));
-  } catch (err) {
-    return { error: `周边配套字段${err.message}` };
-  }
+  const tagText = stripFormulaEscape(row["展示标签"] || "");
+  tags = tagText.split(/[、，,]/).map((label) => label.trim()).filter(Boolean).map((label) => ({ label }));
+  costs = buildCostsFromColumns(row);
+  privateFacilities = buildOptionsFromColumns(row, PRIVATE_OPTIONS, "室内");
+  publicFacilities = buildOptionsFromColumns(row, PUBLIC_OPTIONS, "公共");
+  nearby = buildOptionsFromColumns(row, NEARBY_OPTIONS, "周边");
   try {
     floorPlans = parseFloorPlans(stripFormulaEscape(row["平面图"] || ""));
   } catch (err) {
@@ -468,8 +468,8 @@ async function validateApartmentRow(row) {
     status: (row["状态"] || "active").trim(),
     image,
     floor_plans: floorPlans,
-    hero_class: stripFormulaEscape((row["渐变背景类"] || "")).trim(),
-    image_class: stripFormulaEscape((row["备用图片类"] || "")).trim(),
+    hero_class: usesFriendlyColumns ? String(exist.data[0] && exist.data[0].hero_class || "") : stripFormulaEscape((row["渐变背景类"] || "")).trim(),
+    image_class: usesFriendlyColumns ? String(exist.data[0] && exist.data[0].image_class || "") : stripFormulaEscape((row["备用图片类"] || "")).trim(),
     tags: tags,
     costs: costs,
     private_facilities: privateFacilities,

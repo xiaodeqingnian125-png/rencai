@@ -30,6 +30,7 @@ const {
 const { geocodeAddress, isInRange } = require("./lib/geocode");
 const { validateApartmentIdentity, attachRoomApartment } = require("./lib/admin-record");
 const { createExportFile } = require("./lib/export-file");
+const { parseCsv } = require("./lib/csv-parser");
 
 // 全部业务集合清单（含 import_tasks 共 15 个）
 const ALL_COLLECTIONS = [
@@ -478,6 +479,159 @@ async function importAdminItems(type, rows) {
     }
   }
   return { created, updated, ignored };
+}
+
+const RECOVERY_RECORD_COUNT = 77;
+const RECOVERY_FEE_LABELS = ["水费", "电费", "燃气费", "物业费", "暖气费", "停车费"];
+
+function normalizeRecoveryRecords(input) {
+  if (!Array.isArray(input) || input.length !== RECOVERY_RECORD_COUNT) {
+    throw new Error(`恢复数据必须恰好包含 ${RECOVERY_RECORD_COUNT} 套公寓`);
+  }
+  const codes = new Set();
+  return input.map((record) => {
+    const apartmentCode = String(record && record.apartment_code || "").trim();
+    if (!apartmentCode) throw new Error("恢复数据包含空公寓编号");
+    if (codes.has(apartmentCode)) throw new Error(`恢复数据中的公寓编号重复：${apartmentCode}`);
+    codes.add(apartmentCode);
+    const values = new Map();
+    (Array.isArray(record && record.costs) ? record.costs : []).forEach((item) => {
+      const label = String(item && item.label || "").trim();
+      if (!RECOVERY_FEE_LABELS.includes(label) || values.has(label)) return;
+      const rawValue = item && item.value;
+      values.set(label, rawValue === undefined || rawValue === null ? "" : String(rawValue));
+    });
+    const missing = RECOVERY_FEE_LABELS.filter((label) => !values.has(label));
+    if (missing.length > 0) throw new Error(`公寓 ${apartmentCode} 的费用项不完整：${missing.join("、")}`);
+    return {
+      apartment_code: apartmentCode,
+      costs: RECOVERY_FEE_LABELS.map((label) => {
+        const value = values.get(label);
+        return { label, value, active: value !== "" };
+      })
+    };
+  });
+}
+
+function assertRecoveryDuplicate(record) {
+  if (!record || record.apartment_code !== "A001" || !Number.isInteger(record.id) || record.id !== 1) {
+    throw new Error("重复记录不符合已确认的 A001 数字业务ID条件，已停止删除");
+  }
+}
+
+// 仅用于本次已确认的数据恢复：严格校验 77 条费用记录，按文档 ID 只更新 costs，
+// 并仅删除指定的数值 id=1 的 A001 重复记录；不触发任何关联数据级联删除。
+async function restoreApartmentFees(records, duplicateId) {
+  let normalizedRecords;
+  try {
+    normalizedRecords = normalizeRecoveryRecords(records);
+  } catch (error) {
+    return { ok: false, code: "invalid_recovery_records", message: error.message || String(error) };
+  }
+
+  const duplicateDocId = String(duplicateId || "").trim();
+  if (!duplicateDocId) return { ok: false, code: "missing_duplicate_id", message: "缺少待删除的重复记录 ID" };
+
+  const col = db.collection("apartments");
+  let currentApartments;
+  try {
+    currentApartments = await getAll(col);
+    const duplicate = currentApartments.find((item) => item && item._id === duplicateDocId);
+    assertRecoveryDuplicate(duplicate);
+  } catch (error) {
+    return { ok: false, code: "invalid_duplicate", message: error.message || "待删除的重复记录校验失败" };
+  }
+
+  const recordsByCode = currentApartments.reduce((result, item) => {
+    if (!item || !item.apartment_code) return result;
+    const code = String(item.apartment_code);
+    if (!result.has(code)) result.set(code, []);
+    result.get(code).push(item);
+    return result;
+  }, new Map());
+  const targets = [];
+  for (const record of normalizedRecords) {
+    const matches = (recordsByCode.get(record.apartment_code) || []).filter((item) => item && item._id !== duplicateDocId);
+    if (matches.length !== 1) {
+      return {
+        ok: false,
+        code: "recovery_target_mismatch",
+        message: `公寓 ${record.apartment_code} 恢复目标数量异常：${matches.length}`
+      };
+    }
+    targets.push({ _id: matches[0]._id, apartment_code: record.apartment_code, costs: record.costs });
+  }
+
+  await Promise.all(targets.map((target) => col.doc(target._id).update({ data: { costs: target.costs } })));
+  await col.doc(duplicateDocId).remove();
+
+  return {
+    ok: true,
+    updatedCount: targets.length,
+    deletedDuplicateId: duplicateDocId,
+    apartmentCodes: targets.map((item) => item.apartment_code)
+  };
+}
+
+// 当前 Excel 的费用表头是云端导入契约。即使旧版 import-task 尚未同步更新，
+// 入口层也会先拦截不完整表头，并在确认写入前用原始单元格值修正六项费用。
+const CURRENT_APARTMENT_FEE_COLUMNS = [
+  ["水费", "水费（元/m³）"], ["电费", "电费（元/度）"], ["燃气费", "燃气费（元/m³）"],
+  ["物业费", "物业费（元/㎡/月）"], ["暖气费", "暖气费（元/㎡/天）"], ["停车费", "停车费（元/月）"]
+];
+
+function parseCurrentApartmentFeeContract(csvContent) {
+  const rows = parseCsv(String(csvContent || ""));
+  const headers = rows[0] || [];
+  const headerIndexes = new Map(headers.map((header, index) => [String(header || "").trim(), index]));
+  const missing = CURRENT_APARTMENT_FEE_COLUMNS.map(([, header]) => header).filter((header) => !headerIndexes.has(header));
+  if (missing.length > 0) {
+    return { ok: false, error: `Excel 表头不完整，缺少：${missing.join("、")}。请使用最新导出的 Excel。` };
+  }
+  const codeIndex = headerIndexes.get("公寓编号");
+  if (codeIndex === undefined) return { ok: false, error: "Excel 表头缺少：公寓编号。请使用最新导出的 Excel。" };
+  const costsByCode = new Map();
+  for (let index = 1; index < rows.length; index += 1) {
+    const row = rows[index];
+    const code = String(row[codeIndex] === undefined || row[codeIndex] === null ? "" : row[codeIndex]).trim();
+    if (!code) continue;
+    if (costsByCode.has(code)) return { ok: false, error: `Excel 中的公寓编号重复：${code}` };
+    costsByCode.set(code, CURRENT_APARTMENT_FEE_COLUMNS.map(([label, header]) => {
+      const value = String(row[headerIndexes.get(header)] === undefined || row[headerIndexes.get(header)] === null ? "" : row[headerIndexes.get(header)]);
+      return { label, value, active: value !== "" };
+    }));
+  }
+  return { ok: true, costsByCode };
+}
+
+async function loadCurrentApartmentFeeContract(taskId) {
+  const taskCol = db.collection("import_tasks");
+  const { data: tasks } = await taskCol.where({ task_id: taskId }).get();
+  if (!tasks.length) return { ok: false, error: "任务不存在" };
+  const task = tasks[0];
+  if (task.target_type !== "apartments") return { ok: true, task, costsByCode: null };
+  const contract = parseCurrentApartmentFeeContract(task.csv_content);
+  return contract.ok ? { ok: true, task, costsByCode: contract.costsByCode } : contract;
+}
+
+async function previewCurrentApartmentImport(taskId) {
+  const contract = await loadCurrentApartmentFeeContract(taskId);
+  if (!contract.ok) return contract;
+  return await previewImport(taskId);
+}
+
+async function confirmCurrentApartmentImport(taskId) {
+  const contract = await loadCurrentApartmentFeeContract(taskId);
+  if (!contract.ok || !contract.costsByCode) return contract.ok ? await confirmImport(taskId) : contract;
+  const previewData = Array.isArray(contract.task.preview_data) ? contract.task.preview_data : [];
+  const repairedData = previewData.map((item) => {
+    const costs = contract.costsByCode.get(String(item && item.apartment_code || "").trim());
+    return costs ? { ...item, costs } : item;
+  });
+  const missingCodes = previewData.filter((item) => !contract.costsByCode.has(String(item && item.apartment_code || "").trim()));
+  if (missingCodes.length > 0) return { ok: false, error: "导入预览与 Excel 公寓编号不一致，已停止写入" };
+  await db.collection("import_tasks").doc(contract.task._id).update({ data: { preview_data: repairedData } });
+  return await confirmImport(taskId);
 }
 
 // 导出集合白名单（安全限制：仅允许公寓和户型导出，禁止导出 users 等敏感集合）
@@ -1180,7 +1334,8 @@ exports.main = async (event, context) => {
       case "previewImport":
       case "confirmImport":
       case "getImportTask":
-      case "listImportTasks": {
+      case "listImportTasks":
+      case "restoreApartmentFees": {
         const auth = await requireAdmin(wxContext);
         if (!auth.ok) return auth;
         // 用服务端权威身份覆盖操作人字段
@@ -1199,10 +1354,11 @@ exports.main = async (event, context) => {
           case "initCloud": return await initCloud();
           case "createImportTask": return await createImportTask(event.targetType, event.fileName, event.csvContent, operator);
           case "createImportTaskFromFile": return await createImportTaskFromFile(event.targetType, event.fileName, event.fileID, operator, cloud);
-          case "previewImport": return await previewImport(event.taskId);
-          case "confirmImport": return await confirmImport(event.taskId);
+          case "previewImport": return await previewCurrentApartmentImport(event.taskId);
+          case "confirmImport": return await confirmCurrentApartmentImport(event.taskId);
           case "getImportTask": return await getImportTask(event.taskId);
           case "listImportTasks": return await listImportTasks(event.targetType, event.page, event.pageSize);
+          case "restoreApartmentFees": return await restoreApartmentFees(params.records, params.duplicateId);
           default: return { ok: false, code: "unknown_action", message: `未知 action: ${action}`, action };
         }
       }

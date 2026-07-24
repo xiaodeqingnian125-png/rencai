@@ -45,27 +45,21 @@
   </view>
 
   <view wx:if="{{isAdmin}}" class="menu-section admin-section">
-    <button class="admin-toggle {{adminOpen ? 'open' : ''}}" bindtap="toggleAdmin">
-      <text>管理员</text>
-      <image src="/assets/icons/chevron-down-muted.svg" mode="aspectFit"></image>
-    </button>
-    <view class="admin-panel {{adminOpen ? 'show' : ''}}">
-      <view class="admin-label">内容管理</view>
-      <view class="menu-group">
-        <view
-          wx:for="{{adminMenus}}"
-          wx:key="title"
-          class="menu-item admin-item"
-          data-name="{{item.title}}"
-          data-type="{{item.type}}"
-          bindtap="openAdmin"
-        >
-          <view class="menu-icon icon-admin">
-            <image src="{{item.icon}}" mode="aspectFit"></image>
-          </view>
-          <text class="menu-label">{{item.title}}</text>
-          <image class="menu-arrow" src="/assets/icons/chevron-muted.svg" mode="aspectFit"></image>
+    <view class="admin-label">内容管理</view>
+    <view class="menu-group">
+      <view
+        wx:for="{{adminMenus}}"
+        wx:key="title"
+        class="menu-item admin-item"
+        data-name="{{item.title}}"
+        data-type="{{item.type}}"
+        bindtap="openAdmin"
+      >
+        <view class="menu-icon icon-admin">
+          <image src="{{item.icon}}" mode="aspectFit"></image>
         </view>
+        <text class="menu-label">{{item.title}}</text>
+        <image class="menu-arrow" src="/assets/icons/chevron-muted.svg" mode="aspectFit"></image>
       </view>
     </view>
   </view>

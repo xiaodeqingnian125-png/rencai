@@ -1,5 +1,6 @@
 const db = require("../../data/db");
 const { normalizeFloorPlans } = require("../../utils/floor-plans");
+const { buildApartmentDisplayOptions } = require("../../utils/apartment-display-options");
 
 // 将云端返回的 apartment 对象映射为页面兼容格式（camelCase + 派生字段）
 function mapApartmentToPage(apt) {
@@ -8,6 +9,7 @@ function mapApartmentToPage(apt) {
   const priceMax = Number(apt.price_max) || 0;
   const latitude = Number(apt.latitude) || 0;
   const longitude = Number(apt.longitude) || 0;
+  const options = buildApartmentDisplayOptions(apt);
   return {
     id: apt.id,
     apartment_code: apt.apartment_code || "",
@@ -28,10 +30,10 @@ function mapApartmentToPage(apt) {
     apartmentFavoriteCount: 0, // 云模式暂不展示收藏数，避免假数据
     roomFavoriteCount: 0,
     rooms: [],
-    costs: Array.isArray(apt.costs) ? apt.costs : [],
-    privateFacilities: apt.private_facilities || [],
-    publicFacilities: apt.public_facilities || [],
-    nearby: apt.nearby || [],
+    costs: options.costs,
+    privateFacilities: options.privateFacilities,
+    publicFacilities: options.publicFacilities,
+    nearby: options.nearby,
     floorPlans: normalizeFloorPlans(apt.floor_plans),
     comments: [] // 云模式评论走独立链路，暂不展示假数据
   };

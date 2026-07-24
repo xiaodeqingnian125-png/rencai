@@ -5,6 +5,7 @@ const {
   downloadCloudCsv,
   openCloudCsv,
   openCloudSpreadsheet,
+  prepareCloudSpreadsheetFile,
   shareCloudCsv
 } = require("../miniprogram/utils/csv-share");
 
@@ -58,6 +59,36 @@ test("opens an XLSX file with the native save menu", async () => {
 
   assert.deepEqual(await openCloudSpreadsheet({ filePath: "/tmp/export.xlsx" }), { ok: true });
   assert.deepEqual(calls, [["/tmp/export.xlsx", "xlsx", true]]);
+});
+
+test("copies a cloud spreadsheet to a dated local filename before opening it", () => {
+  const calls = [];
+  global.wx = {
+    env: { USER_DATA_PATH: "/user-data" },
+    getFileSystemManager() {
+      return {
+        readFileSync(source) {
+          calls.push(["read", source]);
+          return Buffer.from("xlsx");
+        },
+        writeFileSync(destination, content) {
+          calls.push(["write", destination, content.toString()]);
+        }
+      };
+    }
+  };
+
+  assert.deepEqual(
+    prepareCloudSpreadsheetFile({
+      filePath: "/tmp/random-name.xlsx",
+      fileName: "人才公寓-20260720-153045.xlsx"
+    }),
+    { ok: true, filePath: "/user-data/人才公寓-20260720-153045.xlsx" }
+  );
+  assert.deepEqual(calls, [
+    ["read", "/tmp/random-name.xlsx"],
+    ["write", "/user-data/人才公寓-20260720-153045.xlsx", "xlsx"]
+  ]);
 });
 
 test("downloads a cloud CSV and opens it with the share menu", async () => {

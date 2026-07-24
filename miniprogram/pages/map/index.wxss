@@ -66,67 +66,6 @@
   line-height: 30rpx;
 }
 
-.locate-btn {
-  position: absolute;
-  right: 28rpx;
-  bottom: 232rpx;
-  z-index: 12;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 50%;
-  background: #fffdf7;
-  box-sizing: border-box;
-}
-
-.locate-btn.locating {
-  opacity: 0.72;
-}
-
-.locate-icon {
-  position: relative;
-  width: 38rpx;
-  height: 38rpx;
-  border: 4rpx solid #e8723c;
-  border-radius: 50%;
-  box-sizing: border-box;
-}
-
-.locate-line {
-  position: absolute;
-  background: #e8723c;
-}
-
-.locate-line-v {
-  left: 50%;
-  top: -11rpx;
-  bottom: -11rpx;
-  width: 4rpx;
-  transform: translateX(-50%);
-}
-
-.locate-line-h {
-  top: 50%;
-  left: -11rpx;
-  right: -11rpx;
-  height: 4rpx;
-  transform: translateY(-50%);
-}
-
-.locate-core {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 1;
-  width: 10rpx;
-  height: 10rpx;
-  border-radius: 50%;
-  background: #e8723c;
-  transform: translate(-50%, -50%);
-}
-
 .map-info-card {
   position: absolute;
   left: 24rpx;

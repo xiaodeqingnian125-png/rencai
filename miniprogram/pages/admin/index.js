@@ -4,11 +4,10 @@ const db = require("../../data/db");
 const { toAdminItem, toCloudItem } = require("../../data/admin-adapter");
 const { encodeFloorPlans, decodeFloorPlans } = require("../../utils/floor-plans");
 
-// CSV 文件生成与分享工具（模板下载、错误报告下载复用）
 const {
-  writeAndShareCsv,
   downloadCloudCsv,
-  openCloudSpreadsheet
+  openCloudSpreadsheet,
+  prepareCloudSpreadsheetFile
 } = require("../../utils/csv-share");
 
 const configs = {
@@ -593,20 +592,53 @@ function fileExt(name) {
 // 经纬度由后续地理编码模块自动生成，CSV 不再承载 longitude/latitude
 // apartment_code 作为外键（关联户型），由管理员维护唯一性
 
-// 公寓 CSV 表头（21 列完整字段，含业务 id、封面路径和平面图）
-// 业务ID 对应 apartments.id，导出时输出数据库数字 id；导入时可留空由服务端生成
-// 经纬度可选，为空时云函数自动地理编码；非空直接使用不调地图 API
-// tags/costs/private_facilities/public_facilities/nearby 使用 JSON 字符串
+// 公寓导入导出表头：费用拆列，设施与周边使用“有 / 无”显式状态。
+// 业务ID 对应 apartments.id，导入时可留空；经纬度同时留空时云函数自动地理编码。
+const APARTMENT_COST_COLUMNS = [
+  { header: "水费（元/m³）", label: "水费" },
+  { header: "电费（元/度）", label: "电费" },
+  { header: "燃气费（元/m³）", label: "燃气费" },
+  { header: "物业费（元/㎡/月）", label: "物业费" },
+  { header: "暖气费（元/㎡/天）", label: "暖气费" },
+  { header: "停车费（元/月）", label: "停车费" }
+];
+const APARTMENT_PRIVATE_OPTIONS = ["独立卫浴", "空调", "热水器", "宽带", "衣柜", "书桌", "凳子"];
+const APARTMENT_PUBLIC_OPTIONS = ["自助洗衣房", "公共厨房", "健身区", "快递柜", "休闲区", "充电桩"];
+const APARTMENT_NEARBY_OPTIONS = ["超市/便利店", "快餐小吃", "药店", "公交站", "地铁站", "银行"];
 const APARTMENT_CSV_HEADERS = [
   "业务ID", "公寓编号", "公寓名称", "区域", "地址", "经度", "纬度",
   "位置摘要", "最低租金", "最高租金", "居室类型",
-  "状态", "封面图路径", "平面图", "渐变背景类", "备用图片类",
-  "标签", "费用项", "私人设施", "公共设施", "周边配套"
+  "状态", "封面图路径", "平面图", "展示标签",
+  ...APARTMENT_COST_COLUMNS.map((item) => item.header),
+  ...APARTMENT_PRIVATE_OPTIONS.map((item) => `室内·${item}`),
+  ...APARTMENT_PUBLIC_OPTIONS.map((item) => `公共·${item}`),
+  ...APARTMENT_NEARBY_OPTIONS.map((item) => `周边·${item}`)
 ];
 
-// 公寓对象 → CSV 行
-// JSON 字段统一 stringify，空数组输出空字符串
-// id 输出为字符串以避免公式注入；空值输出空字符串
+function getActiveOption(items, label) {
+  return (Array.isArray(items) ? items : []).some((item) => {
+    if (typeof item === "string") return item === label;
+    return item && item.label === label && item.active !== false;
+  }) ? "有" : "无";
+}
+
+function getCostAmount(costs, label) {
+  const item = (Array.isArray(costs) ? costs : []).find((cost) => {
+    const costLabel = String(cost && cost.label || "");
+    return costLabel === label || (label === "暖气费" && costLabel === "网费");
+  });
+  if (!item || item.active === false) return "";
+  return String(item.value === undefined || item.value === null ? "" : item.value);
+}
+
+function getTagLabels(tags) {
+  return (Array.isArray(tags) ? tags : [])
+    .map((tag) => typeof tag === "string" ? tag : tag && tag.label)
+    .filter(Boolean)
+    .join("、");
+}
+
+// 公寓对象 → 导出行：费用列严格保留数据库中的原始文本，所有多选项均显式输出“有 / 无”。
 function apartmentToCsvRow(apt) {
   return [
     apt.id !== undefined && apt.id !== null ? String(apt.id) : "",
@@ -623,26 +655,12 @@ function apartmentToCsvRow(apt) {
     apt.status || "",
     apt.image || "",
     encodeFloorPlans(apt.floor_plans),
-    apt.hero_class || "",
-    apt.image_class || "",
-    safeStringify(apt.tags),
-    safeStringify(apt.costs),
-    safeStringify(apt.private_facilities),
-    safeStringify(apt.public_facilities),
-    safeStringify(apt.nearby)
+    getTagLabels(apt.tags),
+    ...APARTMENT_COST_COLUMNS.map((item) => getCostAmount(apt.costs, item.label)),
+    ...APARTMENT_PRIVATE_OPTIONS.map((item) => getActiveOption(apt.private_facilities, item)),
+    ...APARTMENT_PUBLIC_OPTIONS.map((item) => getActiveOption(apt.public_facilities, item)),
+    ...APARTMENT_NEARBY_OPTIONS.map((item) => getActiveOption(apt.nearby, item))
   ];
-}
-
-// 安全 JSON 字符串化：空数组/空对象/null 输出空字符串，非空输出 JSON
-function safeStringify(value) {
-  if (value === null || value === undefined) return "";
-  if (Array.isArray(value) && value.length === 0) return "";
-  if (typeof value === "object" && Object.keys(value).length === 0) return "";
-  try {
-    return JSON.stringify(value);
-  } catch (err) {
-    return "";
-  }
 }
 
 // CSV 行 → 公寓对象（导入用，仅作前端展示，真正校验在云函数）
@@ -1069,13 +1087,24 @@ Page({
       const exportType = this.data.type === "rooms" ? "room_types" : this.data.type;
       wx.showLoading({ title: "导出中" });
       try {
-        const res = await db.exportAdminItems(exportType, {});
+        const exportRequests = [db.exportAdminItems(exportType, {})];
+        if (this.data.isRoom) exportRequests.push(db.exportAdminItems("apartments", {}));
+        const [res, apartmentRes] = await Promise.all(exportRequests);
         const items = Array.isArray(res) ? res : (res && res.ok ? res.items : []);
         if (items.length === 0 && res && !res.ok) {
           wx.showToast({ title: res.error || "导出失败", icon: "none" });
           return;
         }
-        const csvText = this.generateCsvFromItems(this.data.type, items);
+        const apartments = Array.isArray(apartmentRes)
+          ? apartmentRes
+          : (apartmentRes && apartmentRes.ok ? apartmentRes.items : []);
+        if (this.data.isRoom && (isFailedResult(apartmentRes) || !Array.isArray(apartments))) {
+          wx.showToast({ title: resultMessage(apartmentRes, "无法读取所属公寓"), icon: "none" });
+          return;
+        }
+        const csvText = this.data.isRoom
+          ? exportRoomCsv(items, apartments)
+          : this.generateCsvFromItems(this.data.type, items);
         await this.downloadCsv(this.data.type, csvText);
       } catch (err) {
         wx.showToast({ title: "导出失败", icon: "none" });
@@ -1138,19 +1167,15 @@ Page({
     // admin 页内部 type 为 "apartments"/"rooms"，导入任务 targetType 对应 "apartments"/"room_types"
     if (this.data.isApartment || this.data.isRoom) {
       const taskType = this.data.type === "rooms" ? "room_types" : this.data.type;
-      // 下载模板并入批量导入入口，通过 ActionSheet 选择
-      wx.showActionSheet({
-        itemList: ["下载导入模板", "选择 CSV 文件导入"],
+      return wx.showModal({
+        title: "选择 Excel 文件",
+        content: "请先将 .xlsx 文件发送到文件传输助手或任意微信聊天，然后从聊天中选择。",
+        confirmText: "选择文件",
+        cancelText: "取消",
         success: (res) => {
-          if (res.tapIndex === 0) {
-            this.downloadTemplate();
-          } else if (res.tapIndex === 1) {
-            this.importCsvFile(taskType);
-          }
-        },
-        fail: () => {}
+          if (res.confirm) return this.importSpreadsheetFile(taskType);
+        }
       });
-      return;
     }
     const importHint = tableColumns(this.data.config).map((column) => column.label).join(" / ");
     if (!wx.chooseMessageFile) {
@@ -1374,7 +1399,15 @@ Page({
       wx.showToast({ title: "导出文件下载失败，请重试", icon: "none" });
       return;
     }
-    const result = await openCloudSpreadsheet({ filePath: downloaded.filePath });
+    const prepared = prepareCloudSpreadsheetFile({
+      filePath: downloaded.filePath,
+      fileName: created.fileName
+    });
+    if (!prepared || !prepared.ok || !prepared.filePath) {
+      wx.showToast({ title: "导出文件准备失败，请重试", icon: "none" });
+      return;
+    }
+    const result = await openCloudSpreadsheet({ filePath: prepared.filePath });
     if (result && result.ok) {
       wx.showToast({ title: "文件已打开，请在右上角保存", icon: "none" });
       return;
@@ -1385,119 +1418,77 @@ Page({
     });
   },
 
-  // 下载标准 CSV 模板（仅表头，无示例数据，避免误导入）
-  // 复用 APARTMENT_CSV_HEADERS / ROOM_CSV_HEADERS，不维护第三份字段清单
-  downloadTemplate() {
-    const isRoom = this.data.type === "rooms";
-    const headers = isRoom ? ROOM_CSV_HEADERS : APARTMENT_CSV_HEADERS;
-    const fileName = isRoom
-      ? "room-import-template.csv"
-      : "apartment-import-template.csv";
-    // CSV 模板只包含表头行，使用 UTF-8 BOM
-    const csvText = `\ufeff${headers.map((h) => csvCell(h)).join(",")}`;
-    writeAndShareCsv({ fileName, content: csvText });
-  },
-
   // picker 变更：区域
   onDistrictChange(e) {
     this.setData({ exportDistrictIndex: e.detail.value });
   },
 
-  // 任务制导入：选择 CSV / XLSX 文件 → 创建导入任务 → 跳转预览页
+  // 任务制导入：选择导出的 XLSX 文件 → 创建导入任务 → 跳转预览页
   // type 为导入任务的 targetType（apartments / room_types）
-  async importCsvFile(type) {
+  async importSpreadsheetFile(type) {
     if (!wx.chooseMessageFile) {
-      wx.showToast({ title: "当前版本不支持文件导入", icon: "none" });
+      wx.showModal({
+        title: "当前微信不支持",
+        content: "请升级微信后重试。导入时需先将 .xlsx 文件发送到文件传输助手或任意微信聊天。",
+        showCancel: false
+      });
       return;
     }
     return wx.chooseMessageFile({
       count: 1,
       type: "file",
-      extension: ["csv", "txt", "xlsx"],
       success: async (res) => {
         const file = res.tempFiles && res.tempFiles[0];
         if (!file) return;
         const filePath = file.path;
         const fileName = file.name || "";
-        if (/\.xlsx$/i.test(fileName)) {
-          if (!wx.cloud || typeof wx.cloud.uploadFile !== "function") {
-            wx.showToast({ title: "当前版本不支持 Excel 文件导入", icon: "none" });
-            return;
-          }
-          wx.showLoading({ title: "上传表格中" });
-          return wx.cloud.uploadFile({
-            cloudPath: `imports/${Date.now()}_${Math.floor(Math.random() * 10000)}.xlsx`,
-            filePath,
-            success: async (uploaded) => {
-              try {
-                const createRes = await db.createImportTaskFromFile(type, fileName, uploaded.fileID);
-                if (!createRes || !createRes.ok) {
-                  wx.showToast({ title: (createRes && createRes.error) || "Excel 文件解析失败", icon: "none" });
-                  return;
-                }
-                wx.showLoading({ title: "解析预览中", mask: true });
-                const previewRes = await db.previewImport(createRes.taskId);
-                if (!previewRes || !previewRes.ok) {
-                  wx.showToast({ title: (previewRes && previewRes.error) || "预览失败", icon: "none" });
-                  return;
-                }
-                wx.navigateTo({ url: `/pages/admin/import-preview/index?taskId=${createRes.taskId}` });
-              } catch (err) {
-                wx.showToast({ title: "Excel 文件导入失败", icon: "none" });
-              } finally {
-                wx.hideLoading();
+        if (!/\.xlsx$/i.test(fileName)) {
+          wx.showToast({ title: "请选择 .xlsx 文件", icon: "none" });
+          return;
+        }
+        if (!wx.cloud || typeof wx.cloud.uploadFile !== "function") {
+          wx.showToast({ title: "当前版本不支持 Excel 文件导入", icon: "none" });
+          return;
+        }
+        wx.showLoading({ title: "上传表格中" });
+        return wx.cloud.uploadFile({
+          cloudPath: `imports/${Date.now()}_${Math.floor(Math.random() * 10000)}.xlsx`,
+          filePath,
+          success: async (uploaded) => {
+            try {
+              const createRes = await db.createImportTaskFromFile(type, fileName, uploaded.fileID);
+              if (!createRes || !createRes.ok) {
+                wx.showToast({ title: (createRes && createRes.error) || "Excel 文件解析失败", icon: "none" });
+                return;
               }
-            },
-            fail: () => {
+              wx.showLoading({ title: "解析预览中", mask: true });
+              const previewRes = await db.previewImport(createRes.taskId);
+              if (!previewRes || !previewRes.ok) {
+                wx.showToast({ title: (previewRes && previewRes.error) || "预览失败", icon: "none" });
+                return;
+              }
+              wx.navigateTo({ url: `/pages/admin/import-preview/index?taskId=${createRes.taskId}` });
+            } catch (err) {
+              wx.showToast({ title: "Excel 文件导入失败", icon: "none" });
+            } finally {
               wx.hideLoading();
-              wx.showToast({ title: "Excel 文件上传失败", icon: "none" });
             }
-          });
-          return;
-        }
-        const fs = wx.getFileSystemManager && wx.getFileSystemManager();
-        if (!fs) {
-          wx.showToast({ title: "无法读取文件", icon: "none" });
-          return;
-        }
-        let csvContent = "";
-        try {
-          csvContent = fs.readFileSync(filePath, "utf-8");
-        } catch (err) {
-          wx.showToast({ title: "读取文件失败", icon: "none" });
-          return;
-        }
-
-        wx.showLoading({ title: "创建任务中" });
-        try {
-          const app = getApp();
-          const operator = (app.globalData && app.globalData.userId) || "";
-          const createRes = await db.createImportTask(type, fileName, csvContent, operator);
-          if (!createRes || !createRes.ok) {
+          },
+          fail: () => {
             wx.hideLoading();
-            wx.showToast({ title: (createRes && createRes.error) || "创建失败", icon: "none" });
-            return;
+            wx.showToast({ title: "Excel 文件上传失败", icon: "none" });
           }
-          // 创建成功后立即触发预览（解析+校验+地理编码），
-          // 否则任务停留在 pending，预览页确认按钮不显示
-          wx.showLoading({ title: "解析预览中", mask: true });
-          const previewRes = await db.previewImport(createRes.taskId);
-          wx.hideLoading();
-          if (!previewRes || !previewRes.ok) {
-            wx.showToast({ title: (previewRes && previewRes.error) || "预览失败", icon: "none" });
-            return;
-          }
-          wx.navigateTo({
-            url: `/pages/admin/import-preview/index?taskId=${createRes.taskId}`
-          });
-        } catch (err) {
-          wx.hideLoading();
-          wx.showToast({ title: "创建失败", icon: "none" });
-        }
+        });
       },
       fail: (error) => {
-        if (error && String(error.errMsg || "").indexOf("cancel") >= 0) return;
-        wx.showToast({ title: "选择文件失败", icon: "none" });
+        const errMsg = String(error && error.errMsg || "").trim();
+        if (/cancel/i.test(errMsg)) return;
+        console.error("[admin-import] chooseMessageFile failed", error);
+        wx.showModal({
+          title: "无法选择文件",
+          content: `请先将 .xlsx 文件发送到文件传输助手或任意微信聊天后重试。${errMsg ? `\n错误：${errMsg}` : ""}`,
+          showCancel: false
+        });
       }
     });
   }

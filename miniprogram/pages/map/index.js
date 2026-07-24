@@ -88,9 +88,6 @@ Page({
     activeApartment: null,
     activeId: 0,
     mapCenter: DEFAULT_CENTER,
-    // 定位
-    showUserLocation: false,
-    locating: false,
     locationLabel: "腾讯地图 · 郑州"
   },
 
@@ -357,38 +354,4 @@ Page({
     });
   },
 
-  locate() {
-    if (this.data.locating) return;
-    this.setData({ locating: true });
-    wx.getLocation({
-      type: "gcj02",
-      success: (res) => {
-        if (!this._isAlive) return;
-        this.setData({
-          locating: false,
-          showUserLocation: true,
-          locationLabel: "已定位当前位置",
-          mapCenter: {
-            latitude: res.latitude,
-            longitude: res.longitude,
-            scale: 13
-          }
-        });
-      },
-      fail: () => {
-        if (!this._isAlive) return;
-        this.setData({ locating: false });
-        wx.showModal({
-          title: "需要位置权限",
-          content: "允许定位后，可在腾讯地图中查看你与房源的相对位置。",
-          confirmText: "去设置",
-          success: (modalRes) => {
-            if (modalRes.confirm) {
-              wx.openSetting();
-            }
-          }
-        });
-      }
-    });
-  }
 });

@@ -16,7 +16,7 @@
     "hero_class": "hero-zd",
     "image_class": "apt-img-1",
     "tags": [{"label": "热门", "className": "tag-hot"}, {"label": "地铁直达", "className": "tag-metro"}],
-    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气", "value": "2.5元/立方"}, {"label": "物业费", "value": "1.2元/㎡/月"}, {"label": "网费", "value": "50元/月"}],
+    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气费", "value": "2.5元/m³"}, {"label": "物业费", "value": "1.2元/㎡/月"}, {"label": "暖气费", "value": "50元/㎡/天"}],
     "private_facilities": ["独立卫浴", "空调", "热水器", "宽带", "衣柜", "书桌"],
     "public_facilities": ["自助洗衣房", "公共厨房", "健身区", "快递柜", "休闲区", "充电桩"],
     "nearby": ["超市/便利店", "快餐小吃", "药店", "公交站", "地铁站", "银行"]
@@ -38,7 +38,7 @@
     "hero_class": "hero-gx",
     "image_class": "apt-img-2",
     "tags": [{"label": "热租", "className": "tag-hot"}, {"label": "性价比", "className": "tag-value"}],
-    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气", "value": "2.5元/立方"}, {"label": "物业费", "value": "1元/㎡/月"}, {"label": "网费", "value": "40元/月"}],
+    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气费", "value": "2.5元/m³"}, {"label": "物业费", "value": "1元/㎡/月"}, {"label": "暖气费", "value": "40元/㎡/天"}],
     "private_facilities": ["独立卫浴", "空调", "热水器", "宽带", "衣柜", "书桌"],
     "public_facilities": ["自助洗衣房", "公共厨房", "快递柜", "休闲区"],
     "nearby": ["超市/便利店", "快餐小吃", "药店", "公交站", "便利店"]
@@ -60,7 +60,7 @@
     "hero_class": "hero-jk",
     "image_class": "apt-img-3",
     "tags": [{"label": "通勤", "className": "tag-metro"}],
-    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气", "value": "2.5元/立方"}, {"label": "物业费", "value": "1元/㎡/月"}, {"label": "网费", "value": "50元/月"}],
+    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气费", "value": "2.5元/m³"}, {"label": "物业费", "value": "1元/㎡/月"}, {"label": "暖气费", "value": "50元/㎡/天"}],
     "private_facilities": ["独立卫浴", "空调", "热水器", "宽带", "衣柜", "书桌"],
     "public_facilities": ["自助洗衣房", "快递柜", "休闲区", "充电桩"],
     "nearby": ["超市/便利店", "快餐小吃", "药店", "公交站"]
@@ -82,7 +82,7 @@
     "hero_class": "hero-gq",
     "image_class": "apt-img-4",
     "tags": [{"label": "近机场", "className": "tag-value"}],
-    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气", "value": "2.5元/立方"}, {"label": "物业费", "value": "0.8元/㎡/月"}, {"label": "网费", "value": "40元/月"}],
+    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气费", "value": "2.5元/m³"}, {"label": "物业费", "value": "0.8元/㎡/月"}, {"label": "暖气费", "value": "40元/㎡/天"}],
     "private_facilities": ["独立卫浴", "空调", "热水器", "宽带", "衣柜"],
     "public_facilities": ["自助洗衣房", "快递柜", "休闲区"],
     "nearby": ["超市/便利店", "快餐小吃", "药店"]
@@ -104,7 +104,7 @@
     "hero_class": "hero-eq",
     "image_class": "apt-img-5",
     "tags": [{"label": "商圈", "className": "tag-hot"}],
-    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气", "value": "2.5元/立方"}, {"label": "物业费", "value": "1.2元/㎡/月"}, {"label": "网费", "value": "50元/月"}],
+    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气费", "value": "2.5元/m³"}, {"label": "物业费", "value": "1.2元/㎡/月"}, {"label": "暖气费", "value": "50元/㎡/天"}],
     "private_facilities": ["独立卫浴", "空调", "热水器", "宽带", "衣柜", "书桌"],
     "public_facilities": ["自助洗衣房", "公共厨房", "快递柜", "休闲区"],
     "nearby": ["超市/便利店", "快餐小吃", "药店", "公交站", "地铁站"]
@@ -126,7 +126,7 @@
     "hero_class": "hero-zy",
     "image_class": "apt-img-6",
     "tags": [{"label": "地铁直达", "className": "tag-metro"}],
-    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气", "value": "2.5元/立方"}, {"label": "物业费", "value": "1元/㎡/月"}, {"label": "网费", "value": "50元/月"}],
+    "costs": [{"label": "水费", "value": "按实际用量"}, {"label": "电费", "value": "0.56元/度"}, {"label": "燃气费", "value": "2.5元/m³"}, {"label": "物业费", "value": "1元/㎡/月"}, {"label": "暖气费", "value": "50元/㎡/天"}],
     "private_facilities": ["独立卫浴", "空调", "热水器", "宽带", "衣柜", "书桌"],
     "public_facilities": ["自助洗衣房", "公共厨房", "健身区", "快递柜"],
     "nearby": ["超市/便利店", "快餐小吃", "药店", "公交站", "地铁站", "银行"]
